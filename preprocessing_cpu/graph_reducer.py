@@ -58,14 +58,15 @@ class GraphReducer():
 
 class IterativeGraphReducer(GraphReducer):
   def out_reduce(self, G):
+    limit = len(G.nodes())/3
     sorted_out_degrees = sorted(G.out_degree, key=lambda x: x[1], reverse=True)
     edges_to_add = set()
     nodes_to_remove = set()
     reduced = set()
-    while len(G.nodes()) >= 180 and sorted_out_degrees[0][1] > 2:
-      sd = sorted_out_degrees[0]   
+    while len(G.nodes()) >= limit and sorted_out_degrees[0][1] > 2:
+      sd = sorted_out_degrees[0]
       succesors = list(G.out_edges(sd[0]))
-      supernode = succesors[0][1]      
+      supernode = succesors[0][1]
       for s in succesors:
         if s[1] in reduced:
           continue
@@ -82,12 +83,13 @@ class IterativeGraphReducer(GraphReducer):
     return G
 
   def in_reduce(self, G):
+    limit = len(G.nodes())/3
     sorted_in_degrees = sorted(G.in_degree, key=lambda x: x[1], reverse=True)
     edges_to_add = set()
     nodes_to_remove = set()
     reduced = set()
 
-    while len(G.nodes()) >= 180 and sorted_in_degrees[0][1] > 2:
+    while len(G.nodes()) >= limit and sorted_in_degrees[0][1] > 2:
       sd = sorted_in_degrees[0] 
       predecessors = list(G.in_edges(sd[0]))
       supernode = predecessors[0][1]
@@ -107,7 +109,7 @@ class IterativeGraphReducer(GraphReducer):
     return G
 
   def reduce(self, G):
-    G = super().reduce(G)
+    # G = super().reduce(G)
     G = self.out_reduce(G)
     G = self.in_reduce(G)
     return G
@@ -169,7 +171,7 @@ class RecursiveGraphReducer(GraphReducer):
       return self.in_reduce(G)
 
   def reduce(self, G):
-      G = super().reduce(G)
+      # G = super().reduce(G)
       G = self.out_reduce(G)
       G = self.in_reduce(G)
       return G
