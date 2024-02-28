@@ -306,7 +306,7 @@ function createInstancedCylinders(count) {
 }
 
 // Load and process CSV data
-loadCSV("sample.csv")
+loadCSV("sample_1.csv")
   .then((edgesData) => {
     let count = 0;
     edgesData.forEach((edge, index) => {
