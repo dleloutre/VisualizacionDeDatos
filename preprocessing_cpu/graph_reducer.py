@@ -58,24 +58,26 @@ class GraphReducer():
 
 class IterativeGraphReducer(GraphReducer):
   def out_reduce(self, G):
-    limit = len(G.nodes())/3
+    limit = len(G.nodes())/2
     sorted_out_degrees = sorted(G.out_degree, key=lambda x: x[1], reverse=True)
     edges_to_add = set()
     nodes_to_remove = set()
     reduced = set()
     while len(G.nodes()) >= limit and sorted_out_degrees[0][1] > 2:
       sd = sorted_out_degrees[0]
+      print("sd[0]", sd[0])
       succesors = list(G.out_edges(sd[0]))
-      supernode = succesors[0][1]
+      supernode = sd[0]
       for s in succesors:
         if s[1] in reduced:
           continue
         in_edges = [(e[0], supernode) for e in G.in_edges(s[1])]
+        in_edges.pop(0)
         out_edges = [(supernode, e[1]) for e in G.out_edges(s[1])]
         edges_to_add.update(in_edges)
         edges_to_add.update(out_edges)
-        if s[1] != supernode:
-          nodes_to_remove.add(s[1])
+        #if s[1] != supernode:
+        nodes_to_remove.add(s[1])
         reduced.add(s[1])
       sorted_out_degrees = sorted(G.out_degree, key=lambda x: x[1], reverse=True)
       G.add_edges_from(edges_to_add)
@@ -83,7 +85,7 @@ class IterativeGraphReducer(GraphReducer):
     return G
 
   def in_reduce(self, G):
-    limit = len(G.nodes())/3
+    limit = len(G.nodes())/2
     sorted_in_degrees = sorted(G.in_degree, key=lambda x: x[1], reverse=True)
     edges_to_add = set()
     nodes_to_remove = set()
@@ -92,12 +94,13 @@ class IterativeGraphReducer(GraphReducer):
     while len(G.nodes()) >= limit and sorted_in_degrees[0][1] > 2:
       sd = sorted_in_degrees[0] 
       predecessors = list(G.in_edges(sd[0]))
-      supernode = predecessors[0][1]
+      supernode = sd[0]
       for p in predecessors:
         if p[0] in reduced:
           continue
         in_edges = [(e[0], supernode) for e in G.in_edges(p[0])]
         out_edges = [(supernode, e[1]) for e in G.out_edges(p[0])]
+        out_edges.pop(0)
         edges_to_add.update(in_edges)
         edges_to_add.update(out_edges)
         if p[0] != supernode:
