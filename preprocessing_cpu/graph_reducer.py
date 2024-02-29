@@ -65,8 +65,7 @@ class IterativeGraphReducer(GraphReducer):
     reduced = set()
     while len(G.nodes()) >= limit and sorted_out_degrees[0][1] > 2:
       sd = sorted_out_degrees[0]
-      print("sd[0]", sd[0])
-      succesors = list(G.out_edges(sd[0]))
+      succesors = list(G.out_edges([sd[0]]))
       supernode = sd[0]
       for s in succesors:
         if s[1] in reduced:
@@ -93,7 +92,7 @@ class IterativeGraphReducer(GraphReducer):
 
     while len(G.nodes()) >= limit and sorted_in_degrees[0][1] > 2:
       sd = sorted_in_degrees[0] 
-      predecessors = list(G.in_edges(sd[0]))
+      predecessors = list(G.in_edges([sd[0]]))
       supernode = sd[0]
       for p in predecessors:
         if p[0] in reduced:
@@ -103,8 +102,8 @@ class IterativeGraphReducer(GraphReducer):
         out_edges.pop(0)
         edges_to_add.update(in_edges)
         edges_to_add.update(out_edges)
-        if p[0] != supernode:
-          nodes_to_remove.add(p[0])
+        #if p[0] != supernode:
+        nodes_to_remove.add(p[0])
         reduced.add(p[0])
       sorted_in_degrees = sorted(G.in_degree, key=lambda x: x[1], reverse=True)
       G.add_edges_from(edges_to_add)
