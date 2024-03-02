@@ -1,6 +1,6 @@
 import pytest
 import networkx as nx
-from preprocessing_cpu.graph_reducer import *
+from graph_reducer import *
 
 def test_simple_reduction():
     G = nx.DiGraph()
@@ -8,17 +8,18 @@ def test_simple_reduction():
     reducer = IterativeGraphReducer()
     reduced_G = reducer.reduce(G)
     
-    #assert list(reduced_G.edges()) == [(1, 4)]
-    assert len(reduced_G.nodes()) == 2 ##Chequear cual es el grafo que queda
+    assert list(reduced_G.edges()) == [(2, 4)]
+    assert len(reduced_G.nodes()) == 2
     assert len(reduced_G.edges()) == 1
 
-def test_cyclic_graph(): ##Habria que ver bien este caso, que hacemos con los ciclos?
+def test_cyclic_graph():
     G = nx.DiGraph()
     G.add_edges_from([(1, 2), (2, 3), (1, 3)])
     reducer = IterativeGraphReducer()
     reduced_G = reducer.reduce(G)
     
-    assert list(reduced_G.edges()) == [(1, 2), (2, 3), (1, 3)]
+    assert list(reduced_G.edges()) == []
+    assert list(reduced_G.nodes()) == [1]
 
 def test_empty_graph():
     G = nx.DiGraph()
