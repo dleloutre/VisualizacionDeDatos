@@ -7,7 +7,7 @@ def main():
     nex = NetworkXAdapter()
     df = pd.read_csv(reduceFile, sep=';', header=None, names=["v1", "v2", "_ignore"])
     G = nex.directed_graph_from_pandas(df)
-    iterative_reducer = IterativeGraphReducer() # recursive_reducer = RecursiveGraphReducer()
+    iterative_reducer = TransitiveGraphReducer() # recursive_reducer = RecursiveGraphReducer()
     Gs = iterative_reducer.reduce(G)
     print("Cantidad de nodos: ", len(Gs.nodes()))
     print("Cantidad de aristas: ", len(Gs.edges()))

@@ -92,6 +92,37 @@ class IterativeGraphReducer(GraphReducer):
         reduced_nodes.add(node)
     return G
 
+class TransitiveGraphReducer(GraphReducer):
+  def reduce(self, G):
+    G = self.remove_leaf_nodes(G)
+    TR = self.transitivity(G)
+    #TR = nx.transitive_reduction(G)
+    #TR.add_nodes_from(G.nodes(data=True))
+    #TR.add_edges_from((u, v, G.edges[u, v]) for u, v in TR.edges)
+    return TR
+  
+  def remove_leaf_nodes(self, G):
+    nodes = G.nodes()
+    nodes_to_remove = set()
+    for node in nodes:
+      if G.degree(node) == 1:
+        nodes_to_remove.add(node)
+    for node in nodes_to_remove:
+      G.remove_node(node)
+    return G
+  
+  def transitivity(self, G):
+    for node in list(G.nodes()):
+      if node in G.nodes():
+        for neighbor in list(G.neighbors(node)):
+          for neighbor_neighbor in list(G.neighbors(neighbor)):
+            if neighbor_neighbor != node and G.has_edge(node, neighbor) and G.has_edge(neighbor, neighbor_neighbor):
+              G.remove_edge(node, neighbor)
+              G.remove_edge(neighbor, neighbor_neighbor)
+              if G.degree(neighbor) == 0:
+                G.remove_node(neighbor)
+    return G
+
 
 class RecursiveGraphReducer(GraphReducer):
   def out_reduce(self, G):
