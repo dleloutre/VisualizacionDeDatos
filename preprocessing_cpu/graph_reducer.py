@@ -1,35 +1,7 @@
 import networkx as nx
-
-class NetworkXAdapter(object):
-    def __init__(self):
-        pass
-
-    def directed_graph_from_pandas(self, df):
-        graph = nx.from_pandas_edgelist(df, source='v1', target='v2', create_using=nx.DiGraph())
-        return graph
-    
-    def in_degree(G, node):
-      return G.in_degree(node) 
-    
-    def out_degree(G, node):
-      return G.out_degree(node)
-    
-    def get_node_list(G):
-      return list(G.nodes())
-    
-    def get_in_edges(G, node):
-      return list(G.in_edges(node))
-    
-    def get_out_edges(G, node):
-      return list(G.out_edges(node))
-
-    def transitive_reduction(self, G):
-      return nx.transitive_reduction(G)
+from mcgs import MCGS
 
 class GraphReducer():
-  def __init__(self):
-    self.adapter = NetworkXAdapter()
-
   def find_node_to_contract(self, G):
     for node in list(G.nodes()):
       if G.in_degree(node) == 1 and G.out_degree(node) == 1:
@@ -53,7 +25,7 @@ class GraphReducer():
 
   def reduce(self, G):
     G = self.edge_contraction(G)
-    G = self.adapter.transitive_reduction(G)
+    G = nx.transitive_reduction(G)
     return G
 
 class IterativeGraphReducer(GraphReducer):
@@ -180,7 +152,13 @@ class RecursiveGraphReducer(GraphReducer):
       return self.in_reduce(G)
 
   def reduce(self, G):
-      # G = super().reduce(G)
       G = self.out_reduce(G)
       G = self.in_reduce(G)
       return G
+  
+class MCGSReducer():
+  def __init__(self):
+    self.mcgs = MCGS()
+  
+  def reduce(self, G):
+    return self.mcgs.run_sampling(G, rate=0.5)
