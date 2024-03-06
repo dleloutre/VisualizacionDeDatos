@@ -5,7 +5,7 @@ from graph_reducer import *
 def test_simple_reduction():
     G = nx.DiGraph()
     G.add_edges_from([(1, 2), (2, 3), (3, 4)])
-    reducer = IterativeGraphReducer()
+    reducer = ByDegreeGraphReducer()
     reduced_G = reducer.reduce(G)
     
     assert list(reduced_G.edges()) == [(2, 4)]
@@ -15,7 +15,7 @@ def test_simple_reduction():
 def test_cyclic_graph():
     G = nx.DiGraph()
     G.add_edges_from([(1, 2), (2, 3), (1, 3)])
-    reducer = IterativeGraphReducer()
+    reducer = ByDegreeGraphReducer()
     reduced_G = reducer.reduce(G)
     
     assert list(reduced_G.edges()) == []
@@ -23,7 +23,7 @@ def test_cyclic_graph():
 
 def test_empty_graph():
     G = nx.DiGraph()
-    reducer = IterativeGraphReducer()
+    reducer = ByDegreeGraphReducer()
     reduced_G = reducer.reduce(G)
     
     assert len(reduced_G.nodes()) == 0
@@ -34,7 +34,7 @@ def test_empty_graph():
 def test_single_node():
     G = nx.DiGraph()
     G.add_node(1)
-    reducer = IterativeGraphReducer()
+    reducer = ByDegreeGraphReducer()
     reduced_G = reducer.reduce(G)
     
     assert len(reduced_G.nodes()) == 1
@@ -46,7 +46,7 @@ def test_single_node():
 def test_edges_in():
     G = nx.DiGraph()
     G.add_edges_from([(1, 2), (1, 3), (1, 4), (4, 5)])
-    reducer = IterativeGraphReducer()
+    reducer = ByDegreeGraphReducer()
     reduced_graph = reducer.reduce(G)
     
     assert len(reduced_graph.nodes()) == 2
@@ -57,7 +57,7 @@ def test_edges_in():
 def test_edges_out():
     G = nx.DiGraph()
     G.add_edges_from([(2, 1), (3, 1), (4, 1), (5, 4)])
-    reducer = IterativeGraphReducer()
+    reducer = ByDegreeGraphReducer()
     reduced_graph = reducer.reduce(G)
     
     assert len(reduced_graph.nodes()) == 2

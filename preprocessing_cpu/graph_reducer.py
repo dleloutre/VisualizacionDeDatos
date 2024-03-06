@@ -9,7 +9,6 @@ class GraphReducer():
     return None
 
   def contract_edge_from_node(self, G, node):
-    # ver si es necesario sumar los pesos
     in_edge = list(G.in_edges(node))
     out_edge = list(G.out_edges(node))
     G.add_edge(in_edge[0][0], out_edge[0][1])
@@ -28,7 +27,7 @@ class GraphReducer():
     G = nx.transitive_reduction(G)
     return G
 
-class IterativeGraphReducer(GraphReducer):
+class ByDegreeGraphReducer(GraphReducer):
   def reduce(self, G):
     G = G.copy()
     reduced_nodes = set()
@@ -55,11 +54,7 @@ class IterativeGraphReducer(GraphReducer):
 class TransitiveGraphReducer(GraphReducer):
   def reduce(self, G):
     G = self.remove_leaf_nodes(G)
-    TR = self.transitivity(G)
-    #TR = nx.transitive_reduction(G)
-    #TR.add_nodes_from(G.nodes(data=True))
-    #TR.add_edges_from((u, v, G.edges[u, v]) for u, v in TR.edges)
-    return TR
+    return self.transitivity(G)
   
   def remove_leaf_nodes(self, G):
     nodes = G.nodes()
