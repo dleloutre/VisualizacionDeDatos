@@ -37,7 +37,8 @@ def get_graph(fileName):
 def main():
     G = get_graph(sys.argv[1])
     reducer = get_reducer(sys.argv[2])
-    show_properties(G)
+    outputDir = sys.argv[3]
+    # show_properties(G)
     # reduce connected components separately and then join again
     subgraphs = []
     connected_components = nx.weakly_connected_components(G)
@@ -46,7 +47,7 @@ def main():
         subgraphs.append(reducer.reduce(subgraph))
     Gs = nx.compose_all(subgraphs)
     show_properties(Gs)
-    nx.write_weighted_edgelist(Gs, 'mcgs_reduced_lasalle.csv', delimiter=';', encoding='utf-8')
+    nx.write_weighted_edgelist(Gs, outputDir, delimiter=';', encoding='utf-8')
 
 if __name__=="__main__":
     start_time = time.time()
