@@ -46,7 +46,7 @@ def main():
         subgraph = G.subgraph(connected_component).copy()
         subgraphs.append(reducer.reduce(subgraph))
     Gs = nx.compose_all(subgraphs)
-    show_properties(Gs)
+    # show_properties(Gs)
     nx.write_weighted_edgelist(Gs, outputDir, delimiter=';', encoding='utf-8')
 
 if __name__=="__main__":

@@ -1,8 +1,5 @@
-import pandas as pd
-
 class Scalator():
     def scalate_3D(self, df):
-
         max_x = df['x'].max()
         min_x = df['x'].min()
         max_y = df['y'].max()
@@ -24,9 +21,7 @@ class Scalator():
 
         return df_scaled
 
-
     def scalate_2D(self, df):
-
         max_x = df['x'].max()
         min_x = df['x'].min()
         max_y = df['y'].max()
@@ -43,6 +38,3 @@ class Scalator():
         df_scaled.columns = ['node_id', 'x', 'y'] 
 
         return df_scaled
-
-
-
