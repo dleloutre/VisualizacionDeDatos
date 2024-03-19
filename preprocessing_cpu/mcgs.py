@@ -1,10 +1,10 @@
+# https://github.com/csuvis/MCGS
 # Ying Zhao, Haojin Jiang, Qi'an Chen, Yaqi Qin, Huixuan Xie, Yitao Wu, Shixia Liu, Zhiguang Zhou, Jiazhi Xia, 
 # and Fangfang Zhou. Preserving Minority Structures in Graph Sampling[J]. IEEE Transactions on Visualization and 
 # Computer Graphics, 2021 (IEEE VIS 2020 VAST TVCG Track).
 
 import math
 import random
-
 import networkx as nx
 import numpy as np
 
@@ -135,7 +135,7 @@ class MCGS(object):
         minority_structures.update(rim_tie_structures)
 
         # sampling graph
-        Gs = nx.Graph()
+        Gs = nx.DiGraph()
 
         # sample minority structures
         self.__minority_structure_sampling(G, Gs, minority_structures)
@@ -420,9 +420,9 @@ class MCGS(object):
         temp_graph.add_nodes_from(subgraph.nodes())
         temp_graph.add_edges_from(subgraph.edges())
         # the number of connected components in original graph
-        G_connected_components = len(sorted(nx.strongly_connected_components(G)))
+        G_connected_components = len(sorted(nx.weakly_connected_components(G)))
         # the number of connected components in current sampling graph
-        temp_connected_components = len(sorted(nx.strongly_connected_components(temp_graph)))
+        temp_connected_components = len(sorted(nx.weakly_connected_components(temp_graph)))
         
         # the similarity of connectivity between Gs and G, and the initial value is 1
         temp_NCC = 1
