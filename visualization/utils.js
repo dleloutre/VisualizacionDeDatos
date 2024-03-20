@@ -1,5 +1,5 @@
 // Function to load CSV data
-export function loadCSV(url, delimiter) {
+export function loadCSV(url) {
   return fetch(url)
     .then((response) => response.text())
     .then(

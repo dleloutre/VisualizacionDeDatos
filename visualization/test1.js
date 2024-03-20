@@ -26,8 +26,8 @@ const stats = new Stats();
 document.body.appendChild(stats.dom);
 
 async function loadData() {
-  const nodesData = await loadCSV("mcgs_reduced_lasalle_FR.csv", ",");
-  const edgesData = await loadCSV("mcgs_reduced_lasalle.csv", ";");
+  const nodesData = await loadCSV("mcgs_reduced_lasalle_FR.csv");
+  const edgesData = await loadCSV("mcgs_reduced_lasalle.csv");
   console.log(nodesData);
   var contador = 0;
   nodesData.forEach((node) => {
