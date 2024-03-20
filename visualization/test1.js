@@ -26,15 +26,11 @@ const stats = new Stats();
 document.body.appendChild(stats.dom);
 
 async function loadData() {
-  const nodesData = await loadCSV(
-    "mcgs_reduced_hidalgo_node_positions_scaled.csv",
-    ","
-  );
-  const edgesData = await loadCSV("mcgs_reduced_hidalgo.csv", ";");
-
+  const nodesData = await loadCSV("mcgs_reduced_lasalle_FR.csv", ",");
+  const edgesData = await loadCSV("mcgs_reduced_lasalle.csv", ";");
+  console.log(nodesData);
   var contador = 0;
   nodesData.forEach((node) => {
-    console.log("node", node);
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
     const sphere = new THREE.Mesh(sphereGeometry, material);
@@ -48,19 +44,10 @@ async function loadData() {
   });
 
   edgesData.forEach((edge) => {
-    //const node1 = nodesData.find((node) => node.node_id === edge.node_1);
-    //const node2 = nodesData.find((node) => node.node_id === edge.node_2);
-
-    console.log("edge: " + edge);
-    console.log("edge 1: " + edge[0]);
-    console.log("edge 2: " + edge[1]);
-
     const node1 = nodesData.find((node) => node[0] == edge[0]);
     const node2 = nodesData.find((node) => node[0] == edge[1]);
-    console.log("arista_" + node1 + "_" + node2);
 
     if (node1 && node2) {
-      console.log("hola");
       const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
       const points = [];
       points.push(

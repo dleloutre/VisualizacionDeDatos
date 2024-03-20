@@ -8,7 +8,7 @@ export function loadCSV(url, delimiter) {
           header: false,
           dynamicTyping: true,
           skipEmptyLines: true,
-          delimiter: delimiter,
+          delimiter: ";",
         }).data
     );
 }

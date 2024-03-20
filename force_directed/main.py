@@ -13,7 +13,9 @@ def main():
     df_nodes_position = force_alg.apply_force_algorithm_3D(G)
     scalator = Scalator()
     df_nodes_position_scalated = scalator.scalate_3D(df_nodes_position) 
-    df_nodes_position_scalated.to_csv(outputFile, index=False)
+    # df_nodes_position_scalated.to_csv(outputFile, index=False)
+    df_nodes_position_scalated.to_csv(outputFile, index=False, sep=";", header=False)
+
 
 if __name__=='__main__':
     main()
