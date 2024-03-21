@@ -5,7 +5,6 @@ import Stats from "https://cdnjs.cloudflare.com/ajax/libs/stats.js/17/Stats.js";
 import { loadCSV } from "./utils.js";
 
 let nodePositions = [];
-let nodesData, edgesData;
 let instancedEdges;
 let instancedNodes;
 let scene, camera, renderer, stats;
@@ -130,7 +129,7 @@ function buildNodesMaterial(nodeSize = 1) {
   return m;
 }
 
-function buildNodes() {
+function buildNodes(nodesData) {
   const nodeSize = 0.5;
 
   nodesData.forEach(nodeData => {
@@ -146,7 +145,7 @@ function buildNodes() {
   return nodes;
 }
 
-function buildEdges() {
+function buildEdges(edgesData, nodesData) {
   const edgeGeometry = new THREE.CylinderGeometry(0.01, 0.01, 1, 3, 1, true);
 	// desplazo 0.5 en y para que el Origen este en la tapa inferior
 	edgeGeometry.translate(0,0.5,0);
@@ -170,7 +169,6 @@ function buildEdges() {
 	const rotMatrix = new THREE.Matrix4();
 	const translationMatrix = new THREE.Matrix4();  
 	const matrix = new THREE.Matrix4();
-
 	// orientamos y posicionamos cada instancia
   edgesData.forEach((edgeData, idx) => {
     const node1 = nodesData.find((node) => node[0] == edgeData[0]);
@@ -198,13 +196,13 @@ function buildEdges() {
 	return instancedEdges;
 }
 
-function drawEdges() {
-	instancedEdges = buildEdges();
+function drawEdges(edges, nodes) {
+	instancedEdges = buildEdges(edges, nodes);
 	scene.add(instancedEdges);
 }
 
-function drawNodes() {
-	instancedNodes = buildNodes();
+function drawNodes(nodes) {
+	instancedNodes = buildNodes(nodes);
 	scene.add(instancedNodes);
 }
 
@@ -215,16 +213,33 @@ const animate = function () {
 	stats.end();
 };
 
-async function loadData() {
-  nodesData = await loadCSV("mcgs_reduced_lasalle_FR.csv");
-  edgesData = await loadCSV("mcgs_reduced_lasalle.csv");
+function loadData() {
+  const nodeFilePrefix = "/data/nodes/mcgs_reduced_";
+  const edgeFilePrefix = "/data/edges/mcgs_reduced_";
+  const edgeFileSuffix = ".csv";
+  const nodeFileSuffix = "_FR.csv";
+  const fileKeys = [
+    "lasalle",
+    "hidalgo"
+  ];
+
+  fileKeys.forEach(async (key) => {
+    const nodeFile = nodeFilePrefix + key + nodeFileSuffix;
+    const edgeFile = edgeFilePrefix + key + edgeFileSuffix;
+    loadCSV(nodeFile)
+      .then((nodesData) => {
+        loadCSV(edgeFile)
+          .then((edgesData) => {
+            drawNodes(nodesData);
+            drawEdges(edgesData, nodesData);
+            animate();
+          })
+          .catch(console.error)
+      })
+      .catch(console.error)
+  })
 }
 
-loadData()
-  .then(() => {
-    setup();
-    drawNodes();
-    drawEdges();
-    animate();
-  })
-  .catch(console.error);
+setup();
+loadData();
+
