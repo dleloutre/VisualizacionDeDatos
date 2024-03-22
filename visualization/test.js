@@ -1,4 +1,3 @@
-// Importar la biblioteca three.js
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import Stats from "https://cdnjs.cloudflare.com/ajax/libs/stats.js/17/Stats.js";
@@ -9,8 +8,32 @@ let instancedEdges;
 let instancedNodes;
 let scene, camera, renderer, stats;
 
+const nodeColors = [
+  0xFF204E,
+  0xFCDC2A,
+  0xFF8E8F,
+  0xEEEEEE,
+  0x76ABAE,
+  0xE8751A,
+  0xFFE6E6,
+  0x59D5E0,
+  0xC5EBAA,
+  0xFFBE98,
+  0x416D19,
+  0x265073,
+  0xCCD3CA,
+  0xB7C9F2,
+  0xF72798,
+  0xC68484,
+  0x15F5BA,
+  0xB67352,
+  0xFEFBF6,
+  0xB4B4B8,
+  0xE8C872,
+  0xD04848
+]
+
 function setup() {
-  // Inicializar la escena, la cámara y el renderizador
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(
     75,
@@ -21,13 +44,12 @@ function setup() {
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
-  camera.position.set(2, 0, 5);
+  camera.position.set(0, 0, 300);
 
   const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
   directionalLight.position.set(1, 1, 1);
   scene.add(directionalLight);
 
-  // Añadir controles de órbita
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.update();
 
@@ -90,7 +112,7 @@ function buildNodesGeometry(nodePositions) {
   return geometry;
 }
 
-function buildNodesMaterial(nodeSize = 1) {
+function buildNodesMaterial(nodeSize = 1, index) {
   let m = new THREE.ShaderMaterial({
     vertexShader: `
             varying vec2 vUv;
@@ -121,7 +143,7 @@ function buildNodesMaterial(nodeSize = 1) {
             }
         `,
     uniforms: {
-      color: { value: new THREE.Color(0x00ff00) }, // color de los nodos
+      color: { value: new THREE.Color(nodeColors[index]) }, // color de los nodos
       size: { value: nodeSize }, // tamano de los nodos
     },
     transparent: false,
@@ -129,7 +151,7 @@ function buildNodesMaterial(nodeSize = 1) {
   return m;
 }
 
-function buildNodes(nodesData) {
+function buildNodes(nodesData, index) {
   const nodeSize = 0.5;
 
   nodesData.forEach(nodeData => {
@@ -139,13 +161,13 @@ function buildNodes(nodesData) {
   });
 
   let geo = buildNodesGeometry(nodePositions);
-  let mat = buildNodesMaterial(nodeSize);
+  let mat = buildNodesMaterial(nodeSize, index);
 
   let nodes = new THREE.Mesh(geo, mat);
   return nodes;
 }
 
-function buildEdges(edgesData, nodesData) {
+function buildEdges(edgesData, nodesData, index) {
   const edgeGeometry = new THREE.CylinderGeometry(0.01, 0.01, 1, 3, 1, true);
 	// desplazo 0.5 en y para que el Origen este en la tapa inferior
 	edgeGeometry.translate(0,0.5,0);
@@ -157,7 +179,7 @@ function buildEdges(edgesData, nodesData) {
 	instancedEdgeGeometry.copy(edgeGeometry);
 
 	// Crear el material y el objeto InstancedMesh
-	const material = new THREE.MeshNormalMaterial();
+	const material = new THREE.MeshBasicMaterial({ color: nodeColors[index] })
 
 	const instancedEdges = new THREE.InstancedMesh(
 		instancedEdgeGeometry,
@@ -196,14 +218,48 @@ function buildEdges(edgesData, nodesData) {
 	return instancedEdges;
 }
 
-function drawEdges(edges, nodes) {
-	instancedEdges = buildEdges(edges, nodes);
-	scene.add(instancedEdges);
+function positionNodesInSemiCircle() {
+  const numSubGraphs = 20;
+  const radius = 500;
+  const positionsForSubGraphs = [];
+  const angleIncrement = Math.PI / (numSubGraphs + 1);
+
+  for (let i = 1; i <= numSubGraphs; i++) {
+      const angle = i * angleIncrement;
+      const x = radius * Math.cos(angle); // convert polar coordinates to cartesian coordinates
+      const y = radius * Math.sin(angle);
+      const z = 0; // can be adjusted to position along the z-axis
+
+      positionsForSubGraphs.push({ x, y, z });
+  }
+
+  return positionsForSubGraphs;
 }
 
-function drawNodes(nodes) {
-	instancedNodes = buildNodes(nodes);
-	scene.add(instancedNodes);
+function positionNodesInLine() {
+  const spaceBetweenSubGraphs = 60;
+  const numSubGraphs = 21;
+  const startPositionX = -((numSubGraphs - 1) * spaceBetweenSubGraphs) / 2;
+  const positionsForSubGraphs = [];
+  for (let i = 0; i < numSubGraphs; i++) {
+      const positionX = startPositionX + i * spaceBetweenSubGraphs;
+      const positionY = 0; // Can be adjusted to position along the y-axis
+      const positionZ = 0; // Can be adjusted to position along the z-axis
+      positionsForSubGraphs.push({ x: positionX, y: positionY, z: positionZ });
+  }
+
+  return positionsForSubGraphs;
+}
+
+function drawGraph(nodes, edges, index) {
+  const group = new THREE.Group();
+  instancedNodes = buildNodes(nodes, index);
+  instancedEdges = buildEdges(edges, nodes, index);
+  group.add(instancedNodes);
+  group.add(instancedEdges);
+  const positionsForSubGraphs = positionNodesInSemiCircle();
+  group.position.x = positionsForSubGraphs[index].x;
+  scene.add(group);
 }
 
 const animate = function () {
@@ -219,19 +275,36 @@ function loadData() {
   const edgeFileSuffix = ".csv";
   const nodeFileSuffix = "_FR.csv";
   const fileKeys = [
-    "lasalle",
-    "hidalgo"
+    //"macron",
+    "zemmour",
+    "melenchon",
+    "philippot",
+    "poutou",
+    "roussel",
+    "mlp",
+    "pecresse",
+    "jadot",
+    "asselineau",
+    "sandrousseau",
+    "hidalgo",
+    "kazib",
+    "taubira",
+    "lassalle",
+    "dupontaignan",
+    "bertrand",
+    "arthaud",
+    "barnier",
+    "montebourg",
   ];
 
-  fileKeys.forEach(async (key) => {
+  fileKeys.forEach(async (key, idx) => {
     const nodeFile = nodeFilePrefix + key + nodeFileSuffix;
     const edgeFile = edgeFilePrefix + key + edgeFileSuffix;
     loadCSV(nodeFile)
       .then((nodesData) => {
         loadCSV(edgeFile)
           .then((edgesData) => {
-            drawNodes(nodesData);
-            drawEdges(edgesData, nodesData);
+            drawGraph(nodesData, edgesData, idx);
             animate();
           })
           .catch(console.error)
@@ -242,4 +315,3 @@ function loadData() {
 
 setup();
 loadData();
-
