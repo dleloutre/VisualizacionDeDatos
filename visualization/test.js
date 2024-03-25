@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import Stats from "https://cdnjs.cloudflare.com/ajax/libs/stats.js/17/Stats.js";
 import { loadCSV } from "./utils.js";
+import partiesJson from "./data/parties.json";
 
 let nodePositions = [];
 let instancedEdges;
@@ -9,25 +10,8 @@ let instancedNodes;
 let scene, camera, renderer, stats;
 
 const nodeColors = [
-  0xFF204E,
-  0xFCDC2A,
-  0xFF8E8F,
-  0xEEEEEE,
-  0x76ABAE,
-  0xE8751A,
-  0xFFE6E6,
-  0x59D5E0,
-  0xC5EBAA,
-  0xFFBE98,
   0x416D19,
-  0x265073,
-  0xCCD3CA,
   0xB7C9F2,
-  0xF72798,
-  0xC68484,
-  0x15F5BA,
-  0xB67352,
-  0xFEFBF6,
   0xB4B4B8,
   0xE8C872,
   0xD04848
@@ -112,7 +96,7 @@ function buildNodesGeometry(nodePositions) {
   return geometry;
 }
 
-function buildNodesMaterial(nodeSize = 1, index) {
+function buildNodesMaterial(nodeSize = 1, key) {
   let m = new THREE.ShaderMaterial({
     vertexShader: `
             varying vec2 vUv;
@@ -143,7 +127,7 @@ function buildNodesMaterial(nodeSize = 1, index) {
             }
         `,
     uniforms: {
-      color: { value: new THREE.Color(nodeColors[index]) }, // color de los nodos
+      color: { value: new THREE.Color(parseInt(partiesJson[key].color)) }, // color de los nodos
       size: { value: nodeSize }, // tamano de los nodos
     },
     transparent: false,
@@ -151,7 +135,7 @@ function buildNodesMaterial(nodeSize = 1, index) {
   return m;
 }
 
-function buildNodes(nodesData, index) {
+function buildNodes(nodesData, key) {
   const nodeSize = 0.5;
 
   nodesData.forEach(nodeData => {
@@ -161,13 +145,13 @@ function buildNodes(nodesData, index) {
   });
 
   let geo = buildNodesGeometry(nodePositions);
-  let mat = buildNodesMaterial(nodeSize, index);
+  let mat = buildNodesMaterial(nodeSize, key);
 
   let nodes = new THREE.Mesh(geo, mat);
   return nodes;
 }
 
-function buildEdges(edgesData, nodesData, index) {
+function buildEdges(edgesData, nodesData, key) {
   const edgeGeometry = new THREE.CylinderGeometry(0.01, 0.01, 1, 3, 1, true);
 	// desplazo 0.5 en y para que el Origen este en la tapa inferior
 	edgeGeometry.translate(0,0.5,0);
@@ -179,7 +163,7 @@ function buildEdges(edgesData, nodesData, index) {
 	instancedEdgeGeometry.copy(edgeGeometry);
 
 	// Crear el material y el objeto InstancedMesh
-	const material = new THREE.MeshBasicMaterial({ color: nodeColors[index] })
+	const material = new THREE.MeshBasicMaterial({ color: parseInt(partiesJson[key].color) })
 
 	const instancedEdges = new THREE.InstancedMesh(
 		instancedEdgeGeometry,
@@ -218,23 +202,132 @@ function buildEdges(edgesData, nodesData, index) {
 	return instancedEdges;
 }
 
-function positionNodesInSemiCircle() {
+// BORRAR
+function drawLine(x, y, color) {
+  const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
+  const points = [];
+  points.push(
+    new THREE.Vector3(
+      parseFloat(x),
+      parseFloat(y),
+      0
+    )
+  );
+  points.push(
+    new THREE.Vector3(
+      x,
+      y,
+      0
+    )
+  );
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  const line = new THREE.Line(geometry, material);
+  scene.add(line);
+}
+
+function calculateGraphPositions() {
+  //const totalSize = Object.values(partiesJson).reduce((acc, {lines}) => acc + lines, 0);
+  //console.log("total size", totalSize);
+  const keys = Object.keys(partiesJson);
+  const radius = 400;
+  //let currentAngle = 0
+  const angleIncrement = Math.PI / 18
+
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    //const graphSize = partiesJson[key].lines;
+    //const angleSegment = (graphSize / totalSize) * Math.PI;
+    //const angle = currentAngle + (graphSize / totalSize) * Math.PI;
+    const angle = i * angleIncrement;
+    const x = radius * Math.cos(angle); // convert polar coordinates to cartesian coordinates
+    const y = radius * Math.sin(angle) - 150;
+    const z = 0; // can be adjusted to position along the z-axis
+    partiesJson[key].position = { x, y, z };
+    // currentAngle += angleSegment
+  }
+  console.log(partiesJson)
+  return partiesJson;
+}
+
+function positionNodesInSemiCircle(graphSize, index) {
+  const totalGraphSize = 35338;
+  const sizePercentage = graphSize / totalGraphSize * 100;
   const numSubGraphs = 20;
-  const radius = 500;
+  const radius = 350;
   const positionsForSubGraphs = [];
-  const angleIncrement = Math.PI / (numSubGraphs + 1);
+  const angleIncrement = (Math.PI / (totalGraphSize + 1));
+
+  let currentAngle = 0
 
   for (let i = 1; i <= numSubGraphs; i++) {
-      const angle = i * angleIncrement;
+      // const angle = i * angleIncrement;
+      const angle = currentAngle + (graphSize / totalGraphSize) * Math.PI;
+      console.log("angle", angle)
       const x = radius * Math.cos(angle); // convert polar coordinates to cartesian coordinates
-      const y = radius * Math.sin(angle);
+      const y = radius * Math.sin(angle) - 150;
       const z = 0; // can be adjusted to position along the z-axis
 
       positionsForSubGraphs.push({ x, y, z });
+      currentAngle = angle
   }
 
   return positionsForSubGraphs;
 }
+
+/**
+  function positionNodesInSemiCircle(subGraphSizes) {
+    const numSubGraphs = subGraphSizes.length;
+    const radius = 500;
+    const positionsForSubGraphs = [];
+    const totalSize = subGraphSizes.reduce((acc, size) => acc + size, 0);
+    const angleIncrement = Math.PI / (totalSize + 1); // Distribuye los subgrafos proporcionalmente al tamaño total
+
+    let currentAngle = 0;
+
+    for (let i = 0; i < numSubGraphs; i++) {
+      const size = subGraphSizes[i];
+      const angle = currentAngle + (size / totalSize) * Math.PI;
+      const x = radius * Math.cos(angle); // convertir coordenadas polares a coordenadas cartesianas
+      const y = radius * Math.sin(angle);
+      const z = 0; // puede ajustarse para posicionar a lo largo del eje z
+
+      positionsForSubGraphs.push({ x, y, z });
+      currentAngle = angle;
+    }
+
+    return positionsForSubGraphs;
+  }
+
+ */
+
+/*function positionNodesInSemiCircle(graphs) {
+  // Calcular el tamaño total de todos los subgrafos
+  let totalSize = 35338;
+
+  // Calcular el ángulo total del semicírculo (en radianes)
+  let totalAngle = Math.PI;
+
+  // Inicializar el ángulo actual en el que estamos posicionando nodos
+  let currentAngle = 0;
+
+  for (let graph of graphs) {
+      // Calcular el ángulo que este subgrafo debe ocupar en el semicírculo
+      let graphAngle = (graph.size / totalSize) * totalAngle;
+
+      // Posicionar los nodos en este subgrafo
+      for (let node of graph.nodes) {
+          // Calcular la posición del nodo en el semicírculo
+          let x = Math.cos(currentAngle);
+          let y = Math.sin(currentAngle);
+
+          // Actualizar la posición del nodo
+          node.position = {x, y};
+
+          // Avanzar el ángulo actual para el próximo nodo
+          currentAngle += graphAngle / graph.nodes.length;
+      }
+  }
+}*/
 
 function positionNodesInLine() {
   const spaceBetweenSubGraphs = 60;
@@ -251,14 +344,15 @@ function positionNodesInLine() {
   return positionsForSubGraphs;
 }
 
-function drawGraph(nodes, edges, index) {
+function drawGraph(nodes, edges, key, partiesData) {
   const group = new THREE.Group();
-  instancedNodes = buildNodes(nodes, index);
-  instancedEdges = buildEdges(edges, nodes, index);
+  instancedNodes = buildNodes(nodes, key);
+  instancedEdges = buildEdges(edges, nodes, key);
   group.add(instancedNodes);
   group.add(instancedEdges);
-  const positionsForSubGraphs = positionNodesInSemiCircle();
-  group.position.x = positionsForSubGraphs[index].x;
+  // const positionsForSubGraphs = positionNodesInSemiCircle(nodes.length, index);
+  group.position.x = partiesData[key].position.x//positionsForSubGraphs[index].x;
+  group.position.y = partiesData[key].position.y//positionsForSubGraphs[index].y;
   scene.add(group);
 }
 
@@ -270,6 +364,7 @@ const animate = function () {
 };
 
 function loadData() {
+  const partiesData = calculateGraphPositions();
   const nodeFilePrefix = "/data/nodes/mcgs_reduced_";
   const edgeFilePrefix = "/data/edges/mcgs_reduced_";
   const edgeFileSuffix = ".csv";
@@ -286,10 +381,10 @@ function loadData() {
     "jadot",
     "asselineau",
     "sandrousseau",
-    "hidalgo",
+    //"hidalgo",
     "kazib",
     "taubira",
-    "lassalle",
+    //"lassalle",
     "dupontaignan",
     "bertrand",
     "arthaud",
@@ -297,7 +392,18 @@ function loadData() {
     "montebourg",
   ];
 
+  // secuencial
   fileKeys.forEach(async (key, idx) => {
+    const nodeFile = nodeFilePrefix + key + nodeFileSuffix;
+    const edgeFile = edgeFilePrefix + key + edgeFileSuffix;
+    const nodesData = await loadCSV(nodeFile);
+    const edgesData = await loadCSV(edgeFile);
+    drawGraph(nodesData, edgesData, key, partiesData);
+    animate();
+  })
+
+  // asincrono
+  /*fileKeys.forEach(async (key, idx) => {
     const nodeFile = nodeFilePrefix + key + nodeFileSuffix;
     const edgeFile = edgeFilePrefix + key + edgeFileSuffix;
     loadCSV(nodeFile)
@@ -310,7 +416,7 @@ function loadData() {
           .catch(console.error)
       })
       .catch(console.error)
-  })
+  })*/
 }
 
 setup();
