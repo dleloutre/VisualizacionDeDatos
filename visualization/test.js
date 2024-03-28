@@ -5,6 +5,7 @@ import { loadCSV } from "./utils.js";
 import partiesJson from "./data/parties.json";
 
 let nodePositions = [];
+let nodesIds = [];
 let instancedEdges;
 let instancedNodes;
 let scene, camera, renderer, stats;
@@ -51,7 +52,7 @@ function setup() {
   document.body.appendChild(stats.dom);
 }
 
-function buildNodesGeometry(nodePositions) {
+function buildNodesGeometry(nodePositions, nodesIds) {
   // positions es un array de 3 * n elementos, donde n es la cantidad de nodos
   // quad son 2 triangulos que forman un cuadrado
   let totalQuads = nodePositions.length / 3;
@@ -59,6 +60,7 @@ function buildNodesGeometry(nodePositions) {
 
   let pos = new Float32Array(totalQuads * totalVerticesPerQuad * 3); // 6 vertices por quad, 3 coordenadas por vertice
   let uvs = new Float32Array(totalQuads * totalVerticesPerQuad * 2); // 6 vertices por quad, 2 coordenadas por vertice
+  let ids = new Float32Array(totalQuads * totalVerticesPerQuad); // 6 vertices por quad, 1 id por vertice
 
   // los 6 vertices que forman un quad
   let uv = [
@@ -71,11 +73,12 @@ function buildNodesGeometry(nodePositions) {
     [0.5, 0.5],
   ];
 
-  // llenar los arrays pos y uvs
+  // llenar los arrays pos, uvs e ids
   // por cada quad todos los vertices tienen la posicion del nodo
   // pero los uvs son distintos, tienen el desplazamiento en 2D para formar el quad
   let offsetPos = 0;
   let offsetUv = 0;
+  let offsetId = 0;
   for (let i = 0; i < totalQuads; i++) {
     for (let j = 0; j < totalVerticesPerQuad; j++) {
       pos[offsetPos + 0] = nodePositions[i * 3 + 0];
@@ -86,13 +89,16 @@ function buildNodesGeometry(nodePositions) {
       uvs[offsetUv + 0] = uv[j][0];
       uvs[offsetUv + 1] = uv[j][1];
       offsetUv += 2;
+
+      ids[offsetId] = nodesIds[i];
+      offsetId++;
     }
   }
 
   var geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.BufferAttribute(pos, 3));
   geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
-
+  geometry.setAttribute("id", new THREE.BufferAttribute(ids, 1));
   return geometry;
 }
 
@@ -142,9 +148,10 @@ function buildNodes(nodesData, key) {
     nodePositions.push(nodeData[1]);
     nodePositions.push(nodeData[2]);
     nodePositions.push(nodeData[3]);
+    nodesIds.push(nodeData[0]);
   });
 
-  let geo = buildNodesGeometry(nodePositions);
+  let geo = buildNodesGeometry(nodePositions, nodesIds);
   let mat = buildNodesMaterial(nodeSize, key);
 
   let nodes = new THREE.Mesh(geo, mat);
@@ -152,24 +159,7 @@ function buildNodes(nodesData, key) {
 }
 
 function buildEdges(edgesData, nodesData, key) {
-  const edgeGeometry = new THREE.CylinderGeometry(0.01, 0.01, 1, 3, 1, true);
-	// desplazo 0.5 en y para que el Origen este en la tapa inferior
-	edgeGeometry.translate(0,0.5,0);
-	// Esto es clave, la geometria tiene que estar alineada con el eje -Z
-	// porque el lookAt apunta el -z en la direccion del target
-  edgeGeometry.rotateX(-Math.PI/2)
-
-	const instancedEdgeGeometry = new THREE.InstancedBufferGeometry();
-	instancedEdgeGeometry.copy(edgeGeometry);
-
-	// Crear el material y el objeto InstancedMesh
-	const material = new THREE.MeshBasicMaterial({ color: parseInt(partiesJson[key].color) })
-
-	const instancedEdges = new THREE.InstancedMesh(
-		instancedEdgeGeometry,
-		material,
-		edgesData.length
-	);
+  const instancedEdges = instanceEdges(key, edgesData);
 
 	// Crear matrices de transformación aleatorias para cada instancia
 	const rotMatrix = new THREE.Matrix4();
@@ -179,6 +169,64 @@ function buildEdges(edgesData, nodesData, key) {
   edgesData.forEach((edgeData, idx) => {
     const node1 = nodesData.find((node) => node[0] == edgeData[0]);
     const node2 = nodesData.find((node) => node[0] == edgeData[1]);
+
+    if (node1 && node2) {
+      let source = new THREE.Vector3(node1[1], node1[2], node1[3]);
+		  let target = new THREE.Vector3(node2[1], node2[2], node2[3]);
+
+      translationMatrix.makeTranslation(source.x, source.y, source.z);
+      rotMatrix.lookAt(source, target, new THREE.Vector3(0,1,0))
+
+      // calculo distancia entre source y target
+      let length = source.distanceTo(target);
+
+      matrix.identity();
+      matrix.makeScale(1, 1, length);
+      matrix.premultiply(rotMatrix);
+      matrix.premultiply(translationMatrix);
+
+      instancedEdges.setMatrixAt(idx, matrix);
+    }
+  });
+
+	return instancedEdges;
+}
+
+function instanceEdges(key, edgesData) {
+  const edgeGeometry = new THREE.CylinderGeometry(0.01, 0.01, 1, 3, 1, true);
+  // desplazo 0.5 en y para que el Origen este en la tapa inferior
+  edgeGeometry.translate(0, 0.5, 0);
+  // Esto es clave, la geometria tiene que estar alineada con el eje -Z
+  // porque el lookAt apunta el -z en la direccion del target
+  edgeGeometry.rotateX(-Math.PI / 2);
+
+  const instancedEdgeGeometry = new THREE.InstancedBufferGeometry();
+  instancedEdgeGeometry.copy(edgeGeometry);
+
+  // Crear el material y el objeto InstancedMesh
+  const material = new THREE.MeshBasicMaterial({ color: parseInt(partiesJson[key].color) });
+
+  const instancedEdges = new THREE.InstancedMesh(
+    instancedEdgeGeometry,
+    material,
+    edgesData.length
+  );
+  return instancedEdges;
+}
+
+function buildCrossingEdges(edgesData, nodesData, key) {
+  const instancedEdges = instanceEdges(key, edgesData);
+
+	// Crear matrices de transformación aleatorias para cada instancia
+	const rotMatrix = new THREE.Matrix4();
+	const translationMatrix = new THREE.Matrix4();  
+	const matrix = new THREE.Matrix4();
+  nodesData = nodesData.flat();
+  console.log("nodesData crossing", nodesData)
+	// orientamos y posicionamos cada instancia
+  edgesData.forEach((edgeData, idx) => {
+    const node1 = nodesData.find((node) => node[0] == edgeData[3]);
+    const node2 = nodesData.find((node) => node[0] == edgeData[4]);
 
     if (node1 && node2) {
       let source = new THREE.Vector3(node1[1], node1[2], node1[3]);
@@ -344,6 +392,12 @@ function positionNodesInLine() {
   return positionsForSubGraphs;
 }
 
+function drawCrossingEdges(edges, nodes, key="poutou") {
+  console.log("crossing edges", edges);
+  instancedEdges = buildCrossingEdges(edges, nodes, key);
+  scene.add(instancedEdges);
+}
+
 function drawGraph(nodes, edges, key, partiesData) {
   const group = new THREE.Group();
   instancedNodes = buildNodes(nodes, key);
@@ -363,7 +417,7 @@ const animate = function () {
 	stats.end();
 };
 
-function loadData() {
+async function loadData() {
   const partiesData = calculateGraphPositions();
   const nodeFilePrefix = "/data/nodes/mcgs_reduced_";
   const edgeFilePrefix = "/data/edges/mcgs_reduced_";
@@ -393,14 +447,20 @@ function loadData() {
   ];
 
   // secuencial
-  fileKeys.forEach(async (key, idx) => {
-    const nodeFile = nodeFilePrefix + key + nodeFileSuffix;
-    const edgeFile = edgeFilePrefix + key + edgeFileSuffix;
+
+  for (let i = 0; i < fileKeys.length; i++) {
+    const nodeFile = nodeFilePrefix + fileKeys[i] + nodeFileSuffix;
+    const edgeFile = edgeFilePrefix + fileKeys[i] + edgeFileSuffix;
     const nodesData = await loadCSV(nodeFile);
     const edgesData = await loadCSV(edgeFile);
-    drawGraph(nodesData, edgesData, key, partiesData);
+    console.log("nodesData", nodesData.length)
+    nodes_crossing.push(nodesData);
+    drawGraph(nodesData, edgesData, fileKeys[i], partiesData);
     animate();
-  })
+  }
+  console.log("load data nodes", nodes_crossing.length)
+  return nodes_crossing;
+  
 
   // asincrono
   /*fileKeys.forEach(async (key, idx) => {
@@ -419,5 +479,15 @@ function loadData() {
   })*/
 }
 
+let nodes_crossing = [];
 setup();
-loadData();
+nodes_crossing = await loadData();
+const crossingEdges = await loadCSV("/data/edges/df_crossed_edges.csv");
+drawCrossingEdges(crossingEdges, nodes_crossing);
+animate();
+/*.then(async (crossing) => {
+  console.log("nodes_crossing", crossing.length)
+  const crossingEdges = await loadCSV("/data/edges/df_crossed_edges.csv");
+  drawCrossingEdges(crossingEdges, crossing);
+  animate();
+});*/
