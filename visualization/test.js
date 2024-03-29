@@ -161,7 +161,7 @@ function buildNodes(nodesData, key) {
 function buildEdges(edgesData, nodesData, key) {
   const instancedEdges = instanceEdges(key, edgesData);
 
-	// Crear matrices de transformación aleatorias para cada instancia
+	// Crear matrices 1 transformación aleatorias para cada instancia
 	const rotMatrix = new THREE.Matrix4();
 	const translationMatrix = new THREE.Matrix4();  
 	const matrix = new THREE.Matrix4();
@@ -214,23 +214,33 @@ function instanceEdges(key, edgesData) {
   return instancedEdges;
 }
 
+function getNodePositionById(mesh, id) {
+  const index = mesh.geometry.attributes.id.array.findIndex((element) => {
+      return element === id;
+  });
+  return mesh.geometry.attributes.position.array.slice(index * 3, index * 3 + 3);
+}
+
 function buildCrossingEdges(edgesData, nodesData, key) {
-  const instancedEdges = instanceEdges(key, edgesData);
+  const instancedCrossingEdges = instanceEdges(key, edgesData);
 
 	// Crear matrices de transformación aleatorias para cada instancia
 	const rotMatrix = new THREE.Matrix4();
 	const translationMatrix = new THREE.Matrix4();  
 	const matrix = new THREE.Matrix4();
   nodesData = nodesData.flat();
-  console.log("nodesData crossing", nodesData)
 	// orientamos y posicionamos cada instancia
+  console.log("instancedNodes", instancedNodes);
   edgesData.forEach((edgeData, idx) => {
     const node1 = nodesData.find((node) => node[0] == edgeData[3]);
     const node2 = nodesData.find((node) => node[0] == edgeData[4]);
-
+    
     if (node1 && node2) {
-      let source = new THREE.Vector3(node1[1], node1[2], node1[3]);
-		  let target = new THREE.Vector3(node2[1], node2[2], node2[3]);
+      const sourceNode = getNodePositionById(instancedNodes, node1[0]);
+      const targetNode = getNodePositionById(instancedNodes, node2[0]);
+
+      let source = new THREE.Vector3(sourceNode[0], sourceNode[1], sourceNode[2]);
+		  let target = new THREE.Vector3(targetNode[0], targetNode[1], targetNode[2]);
 
       translationMatrix.makeTranslation(source.x, source.y, source.z);
       rotMatrix.lookAt(source, target, new THREE.Vector3(0,1,0))
@@ -243,11 +253,11 @@ function buildCrossingEdges(edgesData, nodesData, key) {
       matrix.premultiply(rotMatrix);
       matrix.premultiply(translationMatrix);
 
-      instancedEdges.setMatrixAt(idx, matrix);
+      instancedCrossingEdges.setMatrixAt(idx, matrix);
     }
   });
 
-	return instancedEdges;
+	return instancedCrossingEdges;
 }
 
 // BORRAR
@@ -293,7 +303,6 @@ function calculateGraphPositions() {
     partiesJson[key].position = { x, y, z };
     // currentAngle += angleSegment
   }
-  console.log(partiesJson)
   return partiesJson;
 }
 
@@ -310,7 +319,6 @@ function positionNodesInSemiCircle(graphSize, index) {
   for (let i = 1; i <= numSubGraphs; i++) {
       // const angle = i * angleIncrement;
       const angle = currentAngle + (graphSize / totalGraphSize) * Math.PI;
-      console.log("angle", angle)
       const x = radius * Math.cos(angle); // convert polar coordinates to cartesian coordinates
       const y = radius * Math.sin(angle) - 150;
       const z = 0; // can be adjusted to position along the z-axis
@@ -453,12 +461,10 @@ async function loadData() {
     const edgeFile = edgeFilePrefix + fileKeys[i] + edgeFileSuffix;
     const nodesData = await loadCSV(nodeFile);
     const edgesData = await loadCSV(edgeFile);
-    console.log("nodesData", nodesData.length)
     nodes_crossing.push(nodesData);
     drawGraph(nodesData, edgesData, fileKeys[i], partiesData);
     animate();
   }
-  console.log("load data nodes", nodes_crossing.length)
   return nodes_crossing;
   
 
