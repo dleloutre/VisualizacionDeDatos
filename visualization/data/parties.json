@@ -1,70 +1,87 @@
 {
     "zemmour": {
         "color": "0xFF204E",
-        "lines": 5250
+        "lines": 5250,
+        "id": "ZemmourEric"
     },
     "melenchon": {
         "color": "0xFCDC2A",
-        "lines": 6034
+        "lines": 6034,
+        "id": "JLMelenchon"
     },
     "philippot": {
         "color": "0xFF8E8F",
-        "lines": 1866
+        "lines": 1866,
+        "id": "f_philippot"
     },
     "poutou": {
         "color": "0xEEEEEE",
-        "lines": 6064
+        "lines": 6064,
+        "id": "PhilippePoutou"
     },
     "roussel": {
         "color": "0x76ABAE",
-        "lines": 1439
+        "lines": 1439,
+        "id": "Fabien_Roussel"
     },
     "mlp": {
         "color": "0xE8751A",
-        "lines": 943
+        "lines": 943,
+        "id": "MLP_officiel"
     },
     "pecresse": {
         "color": "0xFFE6E6",
-        "lines": 1205
+        "lines": 1205,
+        "id": "vpecresse"
     },
     "jadot": {
         "color": "0x59D5E0",
-        "lines": 1021
+        "lines": 1021,
+        "id": "yjadot"
     },
     "asselineau": {
         "color": "0xC5EBAA",
-        "lines": 890
+        "lines": 890,
+        "id": "UPR_Asselineau"
     },
     "sandrousseau": {
         "color": "0xFFBE98",
-        "lines": 455
+        "lines": 455,
+        "id": "sandrousseau"
     },
     "kazib": {
         "color": "0x265073",
-        "lines": 862
+        "lines": 862,
+        "id": "AnasseKazib"
     },
     "taubira": {
         "color": "0xCCD3CA",
-        "lines": 386
+        "lines": 386,
+        "id": "ChTaubira"
     },
     "dupontaignan": {
         "color": "0xF72798",
-        "lines": 66
+        "lines": 66,
+        "id": "dupontaignan"
     },
     "bertrand": {
         "color": "0xC68484",
-        "lines": 184
+        "lines": 184,
+        "id": "xavierbertrand"
     },
     "arthaud": {
         "color": "0x15F5BA",
-        "lines": 43
+        "lines": 43,
+        "id": "n_arthaud"
     },
     "barnier": {
         "color": "0xB67352",
-        "lines": 46
+        "lines": 46,
+        "id": "MichelBarnier"
     },
     "montebourg": {
         "color": "0xFEFBF6",
-        "lines": 94
+        "lines": 94,
+        "id": "montebourg"
     }
 }

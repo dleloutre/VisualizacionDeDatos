@@ -53,29 +53,22 @@ function setup() {
 }
 
 function buildNodesGeometry(nodePositions, nodesIds) {
-  // positions es un array de 3 * n elementos, donde n es la cantidad de nodos
-  // quad son 2 triangulos que forman un cuadrado
   let totalQuads = nodePositions.length / 3;
-  let totalVerticesPerQuad = 6; // 6 vertices por quad
+  let totalVerticesPerQuad = 6;
 
-  let pos = new Float32Array(totalQuads * totalVerticesPerQuad * 3); // 6 vertices por quad, 3 coordenadas por vertice
-  let uvs = new Float32Array(totalQuads * totalVerticesPerQuad * 2); // 6 vertices por quad, 2 coordenadas por vertice
-  let ids = new Float32Array(totalQuads * totalVerticesPerQuad); // 6 vertices por quad, 1 id por vertice
+  let pos = new Float32Array(totalQuads * totalVerticesPerQuad * 3);
+  let uvs = new Float32Array(totalQuads * totalVerticesPerQuad * 2);
+  let ids = new Float32Array(totalQuads * totalVerticesPerQuad);
 
-  // los 6 vertices que forman un quad
   let uv = [
     [-0.5, -0.5],
     [0.5, -0.5],
     [-0.5, 0.5],
-
     [-0.5, 0.5],
     [0.5, -0.5],
     [0.5, 0.5],
   ];
 
-  // llenar los arrays pos, uvs e ids
-  // por cada quad todos los vertices tienen la posicion del nodo
-  // pero los uvs son distintos, tienen el desplazamiento en 2D para formar el quad
   let offsetPos = 0;
   let offsetUv = 0;
   let offsetId = 0;
@@ -218,6 +211,7 @@ function getNodePositionById(mesh, id) {
   const index = mesh.geometry.attributes.id.array.findIndex((element) => {
       return element === id;
   });
+  console.log("index", index);
   return mesh.geometry.attributes.position.array.slice(index * 3, index * 3 + 3);
 }
 
@@ -238,9 +232,21 @@ function buildCrossingEdges(edgesData, nodesData, key) {
     if (node1 && node2) {
       const sourceNode = getNodePositionById(instancedNodes, node1[0]);
       const targetNode = getNodePositionById(instancedNodes, node2[0]);
-
-      let source = new THREE.Vector3(sourceNode[0], sourceNode[1], sourceNode[2]);
-		  let target = new THREE.Vector3(targetNode[0], targetNode[1], targetNode[2]);
+      const sourceGroupId = edgeData[1];
+      const targetGroupId = edgeData[2];
+      console.log("sourceGroupId", sourceGroupId);
+      console.log("targetGroupId", targetGroupId);
+      for (let i = 0; i < Object.keys(partiesJson).length; i++) {
+        if (partiesJson[Object.keys(partiesJson)[i]].id === sourceGroupId) {
+          var sourceGroup = Object.keys(partiesJson)[i];
+        }
+        if (partiesJson[Object.keys(partiesJson)[i]].id === targetGroupId) {
+          var targetGroup = Object.keys(partiesJson)[i];
+        }
+      }
+      
+      let source = new THREE.Vector3(sourceNode[0] + partiesJson[sourceGroup].position.x, sourceNode[1] + partiesJson[sourceGroup].position.y, sourceNode[2] + partiesJson[sourceGroup].position.z);
+		  let target = new THREE.Vector3(targetNode[0] + partiesJson[targetGroup].position.x, targetNode[1] + partiesJson[targetGroup].position.y, targetNode[2] + partiesJson[targetGroup].position.z);
 
       translationMatrix.makeTranslation(source.x, source.y, source.z);
       rotMatrix.lookAt(source, target, new THREE.Vector3(0,1,0))
