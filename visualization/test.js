@@ -144,10 +144,13 @@ function buildNodes(nodesData, key) {
     nodesIds.push(nodeData[0]);
   });
 
+  console.log(nodePositions);
+
   let geo = buildNodesGeometry(nodePositions, nodesIds);
   let mat = buildNodesMaterial(nodeSize, key);
 
   let nodes = new THREE.Mesh(geo, mat);
+
   return nodes;
 }
 
@@ -211,7 +214,6 @@ function getNodePositionById(mesh, id) {
   const index = mesh.geometry.attributes.id.array.findIndex((element) => {
       return element === id;
   });
-  console.log("index", index);
   return mesh.geometry.attributes.position.array.slice(index * 3, index * 3 + 3);
 }
 
@@ -224,7 +226,6 @@ function buildCrossingEdges(edgesData, nodesData, key) {
 	const matrix = new THREE.Matrix4();
   nodesData = nodesData.flat();
 	// orientamos y posicionamos cada instancia
-  console.log("instancedNodes", instancedNodes);
   edgesData.forEach((edgeData, idx) => {
     const node1 = nodesData.find((node) => node[0] == edgeData[3]);
     const node2 = nodesData.find((node) => node[0] == edgeData[4]);
@@ -232,10 +233,9 @@ function buildCrossingEdges(edgesData, nodesData, key) {
     if (node1 && node2) {
       const sourceNode = getNodePositionById(instancedNodes, node1[0]);
       const targetNode = getNodePositionById(instancedNodes, node2[0]);
-      const sourceGroupId = edgeData[1];
-      const targetGroupId = edgeData[2];
-      console.log("sourceGroupId", sourceGroupId);
-      console.log("targetGroupId", targetGroupId);
+      const sourceGroupId = edgeData[2];
+      const targetGroupId = edgeData[1];
+
       for (let i = 0; i < Object.keys(partiesJson).length; i++) {
         if (partiesJson[Object.keys(partiesJson)[i]].id === sourceGroupId) {
           var sourceGroup = Object.keys(partiesJson)[i];
@@ -244,7 +244,7 @@ function buildCrossingEdges(edgesData, nodesData, key) {
           var targetGroup = Object.keys(partiesJson)[i];
         }
       }
-      
+
       let source = new THREE.Vector3(sourceNode[0] + partiesJson[sourceGroup].position.x, sourceNode[1] + partiesJson[sourceGroup].position.y, sourceNode[2] + partiesJson[sourceGroup].position.z);
 		  let target = new THREE.Vector3(targetNode[0] + partiesJson[targetGroup].position.x, targetNode[1] + partiesJson[targetGroup].position.y, targetNode[2] + partiesJson[targetGroup].position.z);
 
