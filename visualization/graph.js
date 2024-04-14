@@ -29,29 +29,39 @@ export class Graph {
     }
 
     distributeNodes(nodesData) {
-        const radius = 100;
-        const angleIncrement = Math.PI / 18;
-        // distribute party groups
+        const initialRadius = 60;  // Radio inicial para la espiral
+        const heightIncrement = 5; // Incremento en Z por cada grupo
+        const angleIncrement = Math.PI / 4; // Incremento del ángulo para la espiral
+        const expansionRate = 10;  // Tasa de expansión del radio de la espiral por cada paso
+    
+        let currentHeight = 0;  // Altura inicial en Z
+        let currentRadius = initialRadius; // Radio inicial de la espiral
+    
+        // Distribute party groups
         for (let i = 0; i < nodesData.length; i++) {
             const angle = i * angleIncrement;
             const partyPosition = new THREE.Vector3(
-				radius * Math.cos(angle), // * this.CLOUD_RADIUS,
-				radius * Math.sin(angle), // - 100, // * this.CLOUD_RADIUS,
-				(-0.5 + Math.random()) * this.CLOUD_RADIUS
-			);
-			this.cumulus.push(partyPosition);
-            // guardo el dato de cantidad de usuarios por grupo politico
+                currentHeight,
+                currentRadius * Math.sin(angle),
+                currentRadius * Math.cos(angle),
+            );
+    
+            this.cumulus.push(partyPosition);
             this.partySizes.push(nodesData[i].length);
-            // distribute nodes inside each party
+    
+            // Distribute nodes inside each party
             for (let j = 0; j < nodesData[i].length; j++) {
                 const position = new THREE.Vector3(
                     (nodesData[i][j][1] + partyPosition.x) * this.SATELLITES_RADIUS,
                     (nodesData[i][j][2] + partyPosition.y) * this.SATELLITES_RADIUS,
                     (nodesData[i][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
                 );
-
+    
                 this.nodePositions.push(position);
             }
+    
+            currentHeight += heightIncrement; // Incrementa la altura para el siguiente grupo
+            currentRadius += expansionRate; // Incrementa el radio para el siguiente grupo
         }
     }
 

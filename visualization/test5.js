@@ -27,7 +27,7 @@ function setup() {
   document.body.appendChild(renderer.domElement);
 
   controls = new OrbitControls(camera, renderer.domElement);
-  camera.position.set(500, 300, 500);
+  camera.position.set(3000, 200, 0);
 
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);
@@ -74,7 +74,7 @@ function drawGraph(graph) {
 	let gmb = new GraphMeshBuilder(graph);
     const e = graph.getEdges();
 	edges = gmb.createEdges(e);
-    console.log("instanced edges", edges)
+    console.log("instanced edges draw graph", edges)
 	scene.add(edges);
 
 	let texture = edges.material.uniforms.edgeColor.value;
@@ -93,31 +93,32 @@ const animate = function () {
 };
 
 async function loadFiles() {
-  const nodeFilePrefix = "/data/nodes/mcgs_reduced_";
-  const edgeFilePrefix = "/data/edges/mcgs_reduced_";
+  const nodeFilePrefix = "/data/nodes/dataset_";
+  const edgeFilePrefix = "/data/edges/dataset_";
   const edgeFileSuffix = ".csv";
   const nodeFileSuffix = "_FR.csv";
   const fileKeys = [
-    //"macron", // raro
-    //"zemmour",
-    //"melenchon",
-    //"poutou", 
-    "jadot",
+     // raro
+    "zemmour",
+    "melenchon",
+    "arthaud",
+    "sandrousseau",
     "mlp",
+    "jadot", 
+    "taubira",
+    "roussel", // sin aristas
+    "asselineau",
+    "macron",
+    "hidalgo", // raro
+    "philippot", // sin aristas
+    "kazib",
+    "lasalle", // raro
+    "dupontaignan",
+    "bertrand",
     "pecresse",
-    //"roussel", // sin aristas
-    //"asselineau",
-    //"sandrousseau",
-    //"hidalgo", // raro
-    //"philippot", // sin aristas
-    //"kazib",
-    //"taubira",
-    //"lasalle", // raro
-    //"dupontaignan",
-    //"bertrand",
-    //"arthaud",
-    //"barnier",
-    //"montebourg",
+    "barnier",
+    "poutou",
+    "montebourg",
   ];
 
   const nodesInfo = [];
