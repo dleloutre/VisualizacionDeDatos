@@ -27,10 +27,15 @@ function setup() {
   document.body.appendChild(renderer.domElement);
 
   controls = new OrbitControls(camera, renderer.domElement);
-  camera.position.set(3000, 200, 0);
+  // Semicircle layout: camera.position.set(0,500,2500)
+  // Circle layout: 
+  camera.position.set(0, 3000, 0);
 
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);
+
+  const gridHelper = new THREE.GridHelper(4000);
+  //scene.add(gridHelper);
 
   stats = new Stats();
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
@@ -44,7 +49,7 @@ function setup() {
   plane.position.x = -1500;
   plane.position.y = 500;
   plane.name = "textureDebuggerPlane";
-  scene.add(plane);
+  //scene.add(plane);
   window.addEventListener("resize", onResize);
 }
 
@@ -98,27 +103,26 @@ async function loadFiles() {
   const edgeFileSuffix = ".csv";
   const nodeFileSuffix = "_FR.csv";
   const fileKeys = [
-     // raro
-    "zemmour",
-    "melenchon",
-    "arthaud",
-    "sandrousseau",
-    "mlp",
-    "jadot", 
-    "taubira",
-    "roussel", // sin aristas
-    "asselineau",
     "macron",
-    "hidalgo", // raro
-    "philippot", // sin aristas
-    "kazib",
-    "lasalle", // raro
-    "dupontaignan",
-    "bertrand",
-    "pecresse",
-    "barnier",
+    "zemmour", 
+    "melenchon",
     "poutou",
+    "philippot",
+    "mlp",
+    "pecresse",
+    "jadot",
+    "hidalgo",
+    "roussel",
+    "asselineau",
+    "kazib",
+    "sandrousseau",
+    "taubira",
+    "bertrand",
     "montebourg",
+    "dupontaignan",
+    "lasalle",
+    "arthaud",
+    "barnier", // separar más los nodos o dibujarlos más chicos
   ];
 
   const nodesInfo = [];
@@ -132,8 +136,8 @@ async function loadFiles() {
     nodesInfo.push(nodesData);
     edgesInfo.push(edgesData);
   }
-
-  const crossingEdgesData = await loadCSV("/data/edges/df_crossed_edges_mlp_jadot.csv");
+  //"/data/edges/reduced_df_crossed_edges_all_but_none.csv"
+  const crossingEdgesData = await loadCSV("/data/edges/df_crossed_edges_all_but_none_reduced_2.csv");
   edgesInfo.push(crossingEdgesData);
 
   console.log("nodes", nodesInfo);

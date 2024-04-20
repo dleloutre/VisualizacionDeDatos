@@ -1,9 +1,33 @@
 import * as THREE from "three";
 
+const partyAnglesCircle = [
+    1.4,//1.2979333331076621,
+    2.1,//2.2259503628200936,
+    2.7,//3.2927412506760163,
+    3.6,//3.6228816074696093,
+    4.3,//4.694887563879969,
+    4.7,//4.861858148614399,
+    4.9,//5.07488044041428,
+    5.2,//5.255374846993267,
+    5.4,//5.428267628221719,
+    5.7,//5.682656904487304,
+    6,//5.840081262037342,
+    6.24,//5.992467333017838,
+    0.1,//6.073168309122938,
+    0.2,//6.146090877892607,
+    0.3,//6.179060718075742,
+    0.4,//6.195589833663534,
+    0.5,//6.208318136576058,
+    0.6,//6.266656191591793,
+    0.7,//6.274788162897017,
+    0.8//6.2831853071795845
+]
+
 export class Graph {
 	CLOUD_RADIUS = 200;
 	SATELLITES_RADIUS = 5;
 	SATELLITES_VERTICAL_OFFSET = 20;
+    RADIUS = 300;
 
 	totalParties = 0;
 	cumulus = [];
@@ -19,7 +43,7 @@ export class Graph {
         this.edges = edgesData;
         this.nodes = nodesData;
         this.totalParties = nodesData.length;
-        this.distributeNodes(nodesData);
+        this.distributeNodesCircle(nodesData);
         this.totalNodes = this.nodePositions.length;
         console.log("psitions", this.nodePositions)
 	}
@@ -28,21 +52,49 @@ export class Graph {
         return this.edges;
     }
 
-    distributeNodes(nodesData) {
-        const initialRadius = 60;  // Radio inicial para la espiral
-        const heightIncrement = 5; // Incremento en Z por cada grupo
-        const angleIncrement = Math.PI / 4; // Incremento del ángulo para la espiral
-        const expansionRate = 10;  // Tasa de expansión del radio de la espiral por cada paso
+    distributeNodesSemicircle(nodesData) {
+        const TOTAL_NODES = nodesData.flat().length
+        console.log("total nodes:", TOTAL_NODES)
+        let angle = 0
+        for (let i = 0; i < nodesData.length; i++) {
+            angle = partyAnglesCircle[i];
+            let currentRadius = 500;
+            const partyPosition = new THREE.Vector3(
+                currentRadius * Math.cos(angle/2),
+                currentRadius * Math.sin(angle/2) - 250,
+                0,
+            );
     
-        let currentHeight = 0;  // Altura inicial en Z
-        let currentRadius = initialRadius; // Radio inicial de la espiral
+            this.cumulus.push(partyPosition);
+            this.partySizes.push(nodesData[i].length);
+    
+            for (let j = 0; j < nodesData[i].length; j++) {
+                const position = new THREE.Vector3(
+                    (nodesData[i][j][1] + partyPosition.x) * this.SATELLITES_RADIUS,
+                    (nodesData[i][j][2] + partyPosition.y) * this.SATELLITES_RADIUS,
+                    (nodesData[i][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
+                );
+    
+                this.nodePositions.push(position);
+            }
+        }
+    }
+
+    // Falta ajustar la vista, probar que la espiral empiece con los grafos más grandes
+    distributeNodesSpiral(nodesData) {
+        const initialRadius = 200;
+        const TOTAL_NODES = nodesData.flat().length
+        console.log("total nodes:", TOTAL_NODES)
+        let currentRadius = initialRadius;
     
         // Distribute party groups
         for (let i = 0; i < nodesData.length; i++) {
-            const angle = i * angleIncrement;
+            const partyLen = nodesData[i].length;
+            const angle = partyLen/TOTAL_NODES*100*2*Math.PI;
+            currentRadius = 2500*partyLen/TOTAL_NODES
             const partyPosition = new THREE.Vector3(
-                currentHeight,
                 currentRadius * Math.sin(angle),
+                0,
                 currentRadius * Math.cos(angle),
             );
     
@@ -59,9 +111,37 @@ export class Graph {
     
                 this.nodePositions.push(position);
             }
+        }
+    }
+
+    distributeNodesCircle(nodesData) {
+        const TOTAL_NODES = nodesData.flat().length
+        console.log("total nodes:", TOTAL_NODES)
+        let angle = 0
+        // Distribute party groups
+        for (let i = 0; i < nodesData.length; i++) {
+            // const partyLen = nodesData[i].length;
+            angle = partyAnglesCircle[i]; // based on: (partyLen/TOTAL_NODES*2*Math.PI + angle);
+            const currentRadius = 650;
+            const partyPosition = new THREE.Vector3(
+                currentRadius * Math.sin(angle), // angle/2 for semicircle
+                0,
+                currentRadius * Math.cos(angle),
+            );
     
-            currentHeight += heightIncrement; // Incrementa la altura para el siguiente grupo
-            currentRadius += expansionRate; // Incrementa el radio para el siguiente grupo
+            this.cumulus.push(partyPosition);
+            this.partySizes.push(nodesData[i].length);
+    
+            // Distribute nodes inside each party
+            for (let j = 0; j < nodesData[i].length; j++) {
+                const position = new THREE.Vector3(
+                    (nodesData[i][j][1] + partyPosition.x) * this.SATELLITES_RADIUS,
+                    (nodesData[i][j][2] + partyPosition.y) * this.SATELLITES_RADIUS,
+                    (nodesData[i][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
+                );
+    
+                this.nodePositions.push(position);
+            }
         }
     }
 
@@ -97,7 +177,7 @@ export class Graph {
 	}
 
     getInnerEdge(partyPosition, userPosition) {
-        // edges: [[party1], [party2], [crossingEdges]]
+        // edges: [[party1], [party2], ..., [partyN], [crossingEdges]]
 		let origin, target;
 		let fromUser, toUser;
 		let gradientOffset = 0;
@@ -158,9 +238,10 @@ export class Graph {
         let origin, target;
 		let fromUser, toUser;
 		let gradientOffset = 0;
-
-        fromUser = this.edges[partyPosition][edgePosition][3]; // guarda el id del nodo
-        toUser = this.edges[partyPosition][edgePosition][4];
+//console.log("partyPosition", partyPosition)
+//console.log("edgePosition", edgePosition)
+        fromUser = this.edges[partyPosition][edgePosition][4]; // guarda el id del nodo
+        toUser = this.edges[partyPosition][edgePosition][3];
 
         const originPositions = this.getNodePositionAndPartyFromNodeId(fromUser);
         const originPartyPosition = originPositions.party;
@@ -168,19 +249,22 @@ export class Graph {
         for (let p = 0; p < originPartyPosition; p++) {
             offset += this.nodes[p].length
         }
-
+        //console.log("originPartyPosition", originPartyPosition)
+        //console.log("cumulus",this.cumulus[originPartyPosition])
+        //console.log("node", this.nodePositions[offset + originPositions.nodePosition])
         origin = new THREE.Vector3().addVectors(
             this.cumulus[originPartyPosition],
             this.nodePositions[offset + originPositions.nodePosition]
         );
-
+//console.log("fromUser:", fromUser)
+//console.log("toUser:", toUser)
         const targetPositions = this.getNodePositionAndPartyFromNodeId(toUser);
+        //console.log("targetPositions", targetPositions)
         const targetPartyPosition = targetPositions.party;
         offset = 0;
         for (let p = 0; p < targetPartyPosition; p++) {
             offset += this.nodes[p].length
         }
-
         target = new THREE.Vector3().addVectors(
             this.cumulus[targetPartyPosition],
             this.nodePositions[offset + targetPositions.nodePosition]

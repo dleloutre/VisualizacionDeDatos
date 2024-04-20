@@ -111,7 +111,7 @@ export class GraphMeshBuilder {
 		return mat;
 	}
 
-	_createNodesMaterial(nodeSize = 10) {
+	_createNodesMaterial(nodeSize = 20) {
 		let mat = new THREE.ShaderMaterial({
 			uniforms: {
 				color: { value: new THREE.Color(0xffffff) }, // color de los nodos
@@ -191,11 +191,6 @@ export class GraphMeshBuilder {
 				} else {
 					res = this.graph.getCrossingEdge(i, j);
 				}
-				//console.log("ORIGIN", res.origin)
-				//console.log("TARGET", res.target)
-				/*if (i == 0) {
-					console.log("arista", res)
-				}*/
 				translationMatrix.makeTranslation(res.origin);
 
 				// determina un direccion entre 0,0,0 y target
@@ -228,8 +223,6 @@ export class GraphMeshBuilder {
 		);
 
 		instancedEdgeGeometry.setAttribute("randomSeed", randomSeedAttribute);
-		console.log("geo aristas", instancedEdgeGeometry);
-		console.log("instaced edges", instancedEdges)
 		return instancedEdges;
 	}
 
