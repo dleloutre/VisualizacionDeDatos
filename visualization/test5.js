@@ -155,6 +155,7 @@ async function prepareData() {
 
 setup();
 createUI();
-const graph = await prepareData();
-drawGraph(graph);
-animate();
+prepareData().then((graph) => {
+	drawGraph(graph);
+	animate();
+}).catch((e) => console.log(e));
