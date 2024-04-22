@@ -5,9 +5,10 @@ export function loadCSV(url) {
     .then(
       (rawCSV) =>
         Papa.parse(rawCSV, {
-          header: true,
+          header: false,
           dynamicTyping: true,
           skipEmptyLines: true,
+          delimiter: ";",
         }).data
     );
 }
