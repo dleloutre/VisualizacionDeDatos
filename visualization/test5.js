@@ -98,8 +98,8 @@ const animate = function () {
 };
 
 async function loadFiles() {
-  const nodeFilePrefix = "/public/nodes/dataset_";
-  const edgeFilePrefix = "/public/edges/dataset_";
+  const nodeFilePrefix = "/nodes/dataset_";
+  const edgeFilePrefix = "/edges/dataset_";
   const edgeFileSuffix = ".csv";
   const nodeFileSuffix = "_FR.csv";
   const fileKeys = [
