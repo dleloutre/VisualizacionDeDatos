@@ -137,7 +137,7 @@ async function loadFiles() {
     edgesInfo.push(edgesData);
   }
   //"/data/edges/reduced_df_crossed_edges_all_but_none.csv"
-  const crossingEdgesData = await loadCSV("/data/edges/df_crossed_edges_all_but_none_reduced_2.csv");
+  const crossingEdgesData = await loadCSV("/edges/df_crossed_edges_all_but_none_reduced_2.csv");
   edgesInfo.push(crossingEdgesData);
 
   console.log("nodes", nodesInfo);
