@@ -45,7 +45,7 @@ export class Graph {
         this.totalParties = nodesData.length;
         this.distributeNodesCircle(nodesData);
         this.totalNodes = this.nodePositions.length;
-        console.log("psitions", this.nodePositions)
+        console.log("positions", this.nodePositions)
 	}
 
     getEdges() {
@@ -97,10 +97,10 @@ export class Graph {
                 0,
                 currentRadius * Math.cos(angle),
             );
-    
+
             this.cumulus.push(partyPosition);
             this.partySizes.push(nodesData[i].length);
-    
+
             // Distribute nodes inside each party
             for (let j = 0; j < nodesData[i].length; j++) {
                 const position = new THREE.Vector3(
@@ -108,7 +108,7 @@ export class Graph {
                     (nodesData[i][j][2] + partyPosition.y) * this.SATELLITES_RADIUS,
                     (nodesData[i][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
                 );
-    
+
                 this.nodePositions.push(position);
             }
         }
@@ -176,36 +176,42 @@ export class Graph {
 		return this.totalNodes;
 	}
 
-    getInnerEdge(partyPosition, userPosition) {
-        // edges: [[party1], [party2], ..., [partyN], [crossingEdges]]
-		let origin, target;
-		let fromUser, toUser;
-		let gradientOffset = 0;
+    getEdgeData(fromId, toId) {
+        const {originPos,targetPos} = this.getNodePositionAndPartyFromNodeId(fromId, toId);
+        const crossing = originPos.party !== targetPos.party;
 
-        fromUser = this.edges[partyPosition][userPosition][0]; // guarda el id del nodo
-        toUser = this.edges[partyPosition][userPosition][1];
+        return {
+            crossing,
+            originPosition: originPos,
+            targetPosition: targetPos
+        };
+    }
 
-        const fromUserPosition = this.nodes[partyPosition].findIndex((user) => user[0] == fromUser);
-        const toUserPosition = this.nodes[partyPosition].findIndex((user) => user[0] == toUser);
+    getEdge(fromId, toId) {
+        const edgeData = this.getEdgeData(fromId, toId);
+        return edgeData.crossing ? this.getCrossingEdge(edgeData) : this.getInnerEdge(edgeData);
+    }
 
+    calculateNodePosition(position) {
         let offset = 0;
-        for (let p = 0; p < partyPosition; p++) {
-            offset += this.nodes[p].length
+        for (let p = 0; p < position.party; p++) {
+            offset += this.partySizes[p];
         }
-        origin = new THREE.Vector3().addVectors(
-            this.cumulus[partyPosition],
-            this.nodePositions[offset + fromUserPosition]
+        return new THREE.Vector3().addVectors(
+            this.cumulus[position.party],
+            this.nodePositions[offset + position.nodePosition]
         );
-        target = new THREE.Vector3().addVectors(
-            this.cumulus[partyPosition],
-            this.nodePositions[offset + toUserPosition]
-        );
+    }
+    
+    calculateGradientOffset(originPosition, targetPosition) {
+        return (targetPosition.party + (1.0 + originPosition.party) / (1.0 + this.totalParties)) / this.totalParties;
+    }
 
-        gradientOffset =
-            (partyPosition +
-                (1.0 + partyPosition) / (1.0 + this.totalParties)) /
-            this.totalParties;
-
+    getInnerEdge(edgeData) {
+        const { originPosition, targetPosition } = edgeData;
+        const origin = this.calculateNodePosition(originPosition);
+        const target = this.calculateNodePosition(targetPosition);
+        const gradientOffset = this.calculateGradientOffset(originPosition, targetPosition);
         return { origin, target, gradientOffset };
     }
 
@@ -220,60 +226,29 @@ export class Graph {
         return null;
     }
 
-    getNodePositionAndPartyFromNodeId(id) {
-        let nodePosition;
-        let party;
+    getNodePositionAndPartyFromNodeId(src, tgt) {
+        const positions = { originPos: {}, targetPos: {} };
         for (let i = 0; i < this.totalParties; i++) {
-            nodePosition = this.nodes[i].findIndex((user) => user[0] == id);
-            if (nodePosition !== -1) {
-                party = i;
-                return { party, nodePosition }
+            const srcPosition = this.nodes[i].findIndex(user => user[0] === src);
+            const tgtPosition = this.nodes[i].findIndex(user => user[0] === tgt);
+            if (srcPosition !== -1) {
+                positions.originPos = { party: i, nodePosition: srcPosition };
+            }
+            if (tgtPosition !== -1) {
+                positions.targetPos = { party: i, nodePosition: tgtPosition };
+            }
+            if (positions.originPos.party !== undefined && positions.targetPos.party !== undefined) {
+                break;
             }
         }
-
-        return { party, nodePosition };
+        return positions;
     }
 
-    getCrossingEdge(partyPosition, edgePosition) {
-        let origin, target;
-		let fromUser, toUser;
-		let gradientOffset = 0;
-//console.log("partyPosition", partyPosition)
-//console.log("edgePosition", edgePosition)
-        fromUser = this.edges[partyPosition][edgePosition][4]; // guarda el id del nodo
-        toUser = this.edges[partyPosition][edgePosition][3];
-
-        const originPositions = this.getNodePositionAndPartyFromNodeId(fromUser);
-        const originPartyPosition = originPositions.party;
-        let offset = 0;
-        for (let p = 0; p < originPartyPosition; p++) {
-            offset += this.nodes[p].length
-        }
-        //console.log("originPartyPosition", originPartyPosition)
-        //console.log("cumulus",this.cumulus[originPartyPosition])
-        //console.log("node", this.nodePositions[offset + originPositions.nodePosition])
-        origin = new THREE.Vector3().addVectors(
-            this.cumulus[originPartyPosition],
-            this.nodePositions[offset + originPositions.nodePosition]
-        );
-//console.log("fromUser:", fromUser)
-//console.log("toUser:", toUser)
-        const targetPositions = this.getNodePositionAndPartyFromNodeId(toUser);
-        //console.log("targetPositions", targetPositions)
-        const targetPartyPosition = targetPositions.party;
-        offset = 0;
-        for (let p = 0; p < targetPartyPosition; p++) {
-            offset += this.nodes[p].length
-        }
-        target = new THREE.Vector3().addVectors(
-            this.cumulus[targetPartyPosition],
-            this.nodePositions[offset + targetPositions.nodePosition]
-        );
-
-        gradientOffset =
-            (targetPartyPosition + (1.0 + originPartyPosition) / (1.0 + this.totalParties)) /
-            this.totalParties;
-
+    getCrossingEdge(edgeData) {
+        const { originPosition, targetPosition } = edgeData;
+        const origin = this.calculateNodePosition(originPosition);
+        const target = this.calculateNodePosition(targetPosition);
+        const gradientOffset = this.calculateGradientOffset(originPosition, targetPosition);
         return { origin, target, gradientOffset };
     }
 }
