@@ -11,7 +11,7 @@ class ForceAlgorithm:
         return pos_df
 
     def apply_force_algorithm_3D(self, G):
-        pos = nx.spring_layout(G, dim=3, seed=42)
+        pos = nx.spring_layout(G, dim=3, seed=42, k=0.4)
         pos_df = pd.DataFrame(pos).T
         pos_df.columns = ['x', 'y', 'z'] 
         pos_df.reset_index(inplace=True)

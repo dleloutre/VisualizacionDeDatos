@@ -79,7 +79,6 @@ function drawGraph(graph) {
 	let gmb = new GraphMeshBuilder(graph);
     const e = graph.getEdges();
 	edges = gmb.createEdges(e);
-    console.log("instanced edges draw graph", edges)
 	scene.add(edges);
 
 	let texture = edges.material.uniforms.edgeColor.value;
@@ -100,12 +99,14 @@ const animate = function () {
 async function loadFiles() {
   const nodeFilePrefix = "/nodes/dataset_";
   const edgeFilePrefix = "/edges/dataset_";
+  
   const edgeFileSuffix = ".csv";
   const nodeFileSuffix = "_FR.csv";
   const fileKeys = [
     "macron",
     "zemmour", 
     "melenchon",
+    "crossing",
     "poutou",
     "philippot",
     "mlp",
@@ -129,16 +130,15 @@ async function loadFiles() {
   const edgesInfo = [];
 
   for (let i = 0; i < fileKeys.length; i++) {
-    const nodeFile = nodeFilePrefix + fileKeys[i] + nodeFileSuffix;
+    if (fileKeys[i] !== "crossing") {
+        const nodeFile = nodeFilePrefix + fileKeys[i] + nodeFileSuffix;
+        const nodesData = await loadCSV(nodeFile);
+        nodesInfo.push(nodesData);
+    }
     const edgeFile = edgeFilePrefix + fileKeys[i] + edgeFileSuffix;
-    const nodesData = await loadCSV(nodeFile);
     const edgesData = await loadCSV(edgeFile);
-    nodesInfo.push(nodesData);
     edgesInfo.push(edgesData);
   }
-  //"/data/edges/reduced_df_crossed_edges_all_but_none.csv"
-  const crossingEdgesData = await loadCSV("/edges/df_crossed_edges_all_but_none_reduced_2.csv");
-  edgesInfo.push(crossingEdgesData);
 
   console.log("nodes", nodesInfo);
   console.log("edges", edgesInfo);
@@ -156,6 +156,6 @@ async function prepareData() {
 setup();
 createUI();
 prepareData().then((graph) => {
-	drawGraph(graph);
-	animate();
+    drawGraph(graph);
+    animate();
 }).catch((e) => console.log(e));

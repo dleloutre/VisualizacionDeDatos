@@ -161,7 +161,7 @@ export class GraphMeshBuilder {
 		// atributo que representa un valor aleatorio para cada arista
 		// el valor va de 0.0 a 1.0
 		const instanceRandomSeedArray = new Float32Array(totalEdgesToDraw * 1);
-		const randomSeedAttribute = new THREE.InstancedBufferAttribute( // POR QUE
+		const randomSeedAttribute = new THREE.InstancedBufferAttribute(
 			instanceRandomSeedArray,
 			1,
 			true
@@ -182,39 +182,34 @@ export class GraphMeshBuilder {
 		const matrix = new THREE.Matrix4();
 
 		// recorro todas las instancias
-		for (let i = 0; i < edgesData.length; i++) {
-			for (let j = 0; j < edgesData[i].length; j++) {
-				// definimos la transformacion de cada instancia
-				let res;
-				if (i !== (edgesData.length - 1)) {
-					res = this.graph.getInnerEdge(i, j);
-				} else {
-					res = this.graph.getCrossingEdge(i, j);
-				}
-				translationMatrix.makeTranslation(res.origin);
+		const flatEdges = edgesData.flat();
+		for (let j = 0; j < flatEdges.length; j++) {
+			// definimos la transformacion de cada instancia
+			let res = this.graph.getEdge(flatEdges[j][0], flatEdges[j][1]);
+			translationMatrix.makeTranslation(res.origin);
 
-				// determina un direccion entre 0,0,0 y target
-				rotMatrix.lookAt(
-					res.origin,
-					res.target,
-					new THREE.Vector3(0, 1, 0)
-				);
+			// determina un direccion entre 0,0,0 y target
+			rotMatrix.lookAt(
+				res.origin,
+				res.target,
+				new THREE.Vector3(0, 1, 0)
+			);
 
-				// calculo distancia entre origin y target
-				length = res.target.sub(res.origin).length();
+			// calculo distancia entre origin y target
+			length = res.target.sub(res.origin).length();
 
-				matrix.identity();
-				matrix.makeScale(1, 1, length);
-				matrix.premultiply(rotMatrix);
-				matrix.premultiply(translationMatrix);
+			matrix.identity();
+			matrix.makeScale(1, 1, length);
+			matrix.premultiply(rotMatrix);
+			matrix.premultiply(translationMatrix);
 
-				instancedEdges.setMatrixAt(j, matrix);
+			instancedEdges.setMatrixAt(j, matrix);
 
-				// defino el valor de gradientOffset y randomSeed para cada instancia
-				instanceGradientOffsetArray[j] = res.gradientOffset;
-				instanceRandomSeedArray[j] = 4.0;
-			}
+			// defino el valor de gradientOffset y randomSeed para cada instancia
+			instanceGradientOffsetArray[j] = res.gradientOffset;
+			instanceRandomSeedArray[j] = 4.0;
 		}
+		
 
 		// agrego los atributos especiales a la geometria
 		instancedEdgeGeometry.setAttribute(
