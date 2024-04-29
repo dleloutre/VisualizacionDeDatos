@@ -20,7 +20,7 @@ function setup() {
     75,
     window.innerWidth / window.innerHeight,
     0.1,
-    10000
+    20000
   );
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -28,8 +28,9 @@ function setup() {
 
   controls = new OrbitControls(camera, renderer.domElement);
   // Semicircle layout: camera.position.set(0,500,2500)
-  // Circle layout: 
-  camera.position.set(0, 3000, 0);
+  // Circle layout: camera.position.set(0, 3000, 0);
+  // Spiral layout:
+  camera.position.set(0, -3000,0)
 
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);

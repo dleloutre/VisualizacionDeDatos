@@ -44,7 +44,7 @@ export class Graph {
         this.edges = edgesData;
         this.nodes = nodesData;
         this.totalParties = nodesData.length;
-        this.distributeNodesCircle(nodesData);
+        this.distributeNodesSpiral(nodesData);
         this.totalNodes = this.nodePositions.length;
         console.log("positions", this.nodePositions);
 	}
@@ -89,7 +89,6 @@ export class Graph {
         }
     }
 
-    // Falta ajustar la vista, probar que la espiral empiece con los grafos más grandes
     distributeNodesSpiral(nodesData) {
         const initialRadius = 200;
         const TOTAL_NODES = nodesData.flat().length
@@ -101,10 +100,10 @@ export class Graph {
         for (let i = 0; i < nodesData.length; i++) {
             const partyLen = nodesData[i].length;
             const angle = partyLen/TOTAL_NODES*100*2*Math.PI;
-            currentRadius = 2500*partyLen/TOTAL_NODES
+            currentRadius = 5000*partyLen/TOTAL_NODES
             const partyPosition = new THREE.Vector3(
                 currentRadius * Math.sin(angle),
-                0,
+                currentRadius,
                 currentRadius * Math.cos(angle),
             );
 
