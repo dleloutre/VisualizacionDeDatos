@@ -37,16 +37,16 @@ export class Graph {
     partySizes = [];
 
 	constructor(nodesData, edgesData) {
-		this.cumulus = [];
-        this.nodePositions = [];
+		//this.cumulus = [];
+        //this.nodePositions = [];
         this.partySizes = [];
         this.nodesMap = {};
         this.edges = edgesData;
         this.nodes = nodesData;
         this.totalParties = nodesData.length;
         this.distributeNodesSpiral(nodesData);
-        this.totalNodes = this.nodePositions.length;
-        console.log("positions", this.nodePositions);
+        this.totalNodes = Object.keys(this.nodesMap).length;
+        //console.log("positions", this.nodePositions);
 	}
 
     getEdges() {
@@ -67,7 +67,7 @@ export class Graph {
                 0,
             );
     
-            this.cumulus.push(partyPosition);
+            //this.cumulus.push(partyPosition);
             this.partySizes.push(nodesData[i].length);
             
             for (let j = 0; j < nodesData[i].length; j++) {
@@ -77,11 +77,12 @@ export class Graph {
                     (nodesData[i][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
                 );
     
-                this.nodePositions.push(position);
+                //this.nodePositions.push(position);
                 const nodeId = nodesData[i][j][0];
                 this.nodesMap[nodeId] = {
                     "partyIndex": i,
                     "nodesIndex": offset + j,
+                    "partyVector": partyPosition,
                     "positionVector": position
                 };
             }
@@ -90,43 +91,46 @@ export class Graph {
     }
 
     distributeNodesSpiral(nodesData) {
-        const initialRadius = 200;
+        //const initialRadius = 200;
         const TOTAL_NODES = nodesData.flat().length
         console.log("total nodes:", TOTAL_NODES)
-        let currentRadius = initialRadius;
+        //let currentRadius = initialRadius;
         let offset = 0;
-    
+        const sortedNodes = nodesData.sort(function (a, b) {
+            return b.length - a.length;
+          });
         // Distribute party groups
-        for (let i = 0; i < nodesData.length; i++) {
-            const partyLen = nodesData[i].length;
-            const angle = partyLen/TOTAL_NODES*100*2*Math.PI;
-            currentRadius = 5000*partyLen/TOTAL_NODES
+        for (let i = 0; i < sortedNodes.length; i++) {
+            const partyLen = sortedNodes[i].length;
+            let angle = partyAnglesCircle[i]; // const angle = partyLen/TOTAL_NODES*100*2*Math.PI;
+            const currentRadius = 650; // currentRadius = 5000*partyLen/TOTAL_NODES
             const partyPosition = new THREE.Vector3(
                 currentRadius * Math.sin(angle),
-                currentRadius,
+                5000*partyLen/TOTAL_NODES,
                 currentRadius * Math.cos(angle),
             );
 
-            this.cumulus.push(partyPosition);
-            this.partySizes.push(nodesData[i].length);
+            //this.cumulus.push(partyPosition);
+            this.partySizes.push(sortedNodes[i].length);
 
             // Distribute nodes inside each party
-            for (let j = 0; j < nodesData[i].length; j++) {
+            for (let j = 0; j < sortedNodes[i].length; j++) {
                 const position = new THREE.Vector3(
-                    (nodesData[i][j][1] + partyPosition.x) * this.SATELLITES_RADIUS,
-                    (nodesData[i][j][2] + partyPosition.y) * this.SATELLITES_RADIUS,
-                    (nodesData[i][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
+                    (sortedNodes[i][j][1] + partyPosition.x) * this.SATELLITES_RADIUS,
+                    (sortedNodes[i][j][2] + partyPosition.y) * this.SATELLITES_RADIUS,
+                    (sortedNodes[i][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
                 );
 
-                this.nodePositions.push(position);
-                const nodeId = nodesData[i][j][0];
+                //this.nodePositions.push(position);
+                const nodeId = sortedNodes[i][j][0];
                 this.nodesMap[nodeId] = {
                     "partyIndex": i,
                     "nodesIndex": offset + j,
+                    "partyVector": partyPosition,
                     "positionVector": position
                 };
             }
-            offset += nodesData[i].length;
+            offset += sortedNodes[i].length;
         }
     }
 
@@ -146,7 +150,7 @@ export class Graph {
                 currentRadius * Math.cos(angle),
             );
     
-            this.cumulus.push(partyPosition);
+            //this.cumulus.push(partyPosition);
             this.partySizes.push(nodesData[i].length);
     
             // Distribute nodes inside each party
@@ -157,10 +161,11 @@ export class Graph {
                     (nodesData[i][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
                 );
     
-                this.nodePositions.push(position);
+                //this.nodePositions.push(position);
                 const nodeId = nodesData[i][j][0];
                 this.nodesMap[nodeId] = {
                     "partyIndex": i,
+                    "partyVector": partyPosition,
                     "nodesIndex": offset + j,
                     "positionVector": position
                 };
@@ -177,22 +182,25 @@ export class Graph {
         return this.partySizes[partyPosition];
     }
 
-	getNode(number) {
-		// total=totalStars*totalSatellites
-        const cumulusNum = this.getPartyFromPosition(number);
-		let position = this.cumulus[cumulusNum].clone();
-		position.add(this.nodePositions[number]);
+    getNodes() {
+        return this.nodesMap;
+    }
+
+	getNode(id) {
+        const nodeVectorInfo = this.nodesMap[id]; // const cumulusNum = this.getPartyFromPosition(number);
+        let position = nodeVectorInfo.partyVector.clone(); // this.cumulus[cumulusNum].clone();
+		position.add(nodeVectorInfo.positionVector); // position.add(this.nodePositions[number]);
 
 		// la textura de bordes tiene un gradiente horizontal
 		// para cada combinacion de estrella con estrella
 		// en total son totalStars^2 gradientes
 		const blockHeight = 1.0 / Math.pow(this.totalParties, 2);
-		let vTextureCoord = blockHeight / 2 + cumulusNum / this.totalParties;
+		let vTextureCoord = blockHeight / 2 + nodeVectorInfo.partyIndex / this.totalParties;
 
 		return { position, vTextureCoord };
 	}
 
-    getPartyFromPosition(nodePosition) {
+    /*getPartyFromPosition(nodePosition) {
         let acc = 0;
         for (let i = 0; i < this.partySizes.length; i++) {
             acc += this.partySizes[i];
@@ -201,7 +209,7 @@ export class Graph {
             }
         }
         return null;
-    }
+    }*/
 
 	getTotalStars() {
 		return this.totalParties;
@@ -225,7 +233,9 @@ export class Graph {
     }
 
     getEdge(fromId, toId) {
-        const { originPosition, targetPosition } = this.getEdgeData(fromId, toId);
+        //const { originPosition, targetPosition } = this.getEdgeData(fromId, toId);
+        const originPosition = this.nodesMap[fromId];
+        const targetPosition = this.nodesMap[toId];
         const origin = this.calculateVectorPosition(originPosition);
         const target = this.calculateVectorPosition(targetPosition);
         const gradientOffset = this.calculateGradientOffset(originPosition, targetPosition);
@@ -234,14 +244,12 @@ export class Graph {
 
     calculateVectorPosition(position) {
         return new THREE.Vector3().addVectors(
-            this.cumulus[position.party],
-            this.nodePositions[position.nodePosition]
+            position.partyVector, //this.cumulus[position.partyIndex],
+            position.positionVector //this.nodePositions[position.nodesIndex]
         );
     }
     
     calculateGradientOffset(originPosition, targetPosition) {
-        return (targetPosition.party + (1.0 + originPosition.party) / (1.0 + this.totalParties)) / this.totalParties;
+        return (targetPosition.partyIndex + (1.0 + originPosition.partyIndex) / (1.0 + this.totalParties)) / this.totalParties;
     }
-
-
 }

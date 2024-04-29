@@ -29,8 +29,8 @@ function setup() {
   controls = new OrbitControls(camera, renderer.domElement);
   // Semicircle layout: camera.position.set(0,500,2500)
   // Circle layout: camera.position.set(0, 3000, 0);
-  // Spiral layout:
-  camera.position.set(0, -3000,0)
+  // Spiral layout: 
+  camera.position.set(0, 10000, 0)
 
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);
