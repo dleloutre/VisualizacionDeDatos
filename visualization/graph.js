@@ -40,12 +40,13 @@ export class Graph {
 		this.cumulus = [];
         this.nodePositions = [];
         this.partySizes = [];
+        this.nodesMap = {};
         this.edges = edgesData;
         this.nodes = nodesData;
         this.totalParties = nodesData.length;
         this.distributeNodesCircle(nodesData);
         this.totalNodes = this.nodePositions.length;
-        console.log("positions", this.nodePositions)
+        console.log("positions", this.nodePositions);
 	}
 
     getEdges() {
@@ -53,9 +54,10 @@ export class Graph {
     }
 
     distributeNodesSemicircle(nodesData) {
-        const TOTAL_NODES = nodesData.flat().length
+        const TOTAL_NODES = nodesData.flat().length;
         console.log("total nodes:", TOTAL_NODES)
-        let angle = 0
+        let angle = 0;
+        let offset = 0;
         for (let i = 0; i < nodesData.length; i++) {
             angle = partyAnglesCircle[i];
             let currentRadius = 500;
@@ -67,7 +69,7 @@ export class Graph {
     
             this.cumulus.push(partyPosition);
             this.partySizes.push(nodesData[i].length);
-    
+            
             for (let j = 0; j < nodesData[i].length; j++) {
                 const position = new THREE.Vector3(
                     (nodesData[i][j][1] + partyPosition.x) * this.SATELLITES_RADIUS,
@@ -76,7 +78,14 @@ export class Graph {
                 );
     
                 this.nodePositions.push(position);
+                const nodeId = nodesData[i][j][0];
+                this.nodesMap[nodeId] = {
+                    "partyIndex": i,
+                    "nodesIndex": offset + j,
+                    "positionVector": position
+                };
             }
+            offset += nodesData[i].length;
         }
     }
 
@@ -86,6 +95,7 @@ export class Graph {
         const TOTAL_NODES = nodesData.flat().length
         console.log("total nodes:", TOTAL_NODES)
         let currentRadius = initialRadius;
+        let offset = 0;
     
         // Distribute party groups
         for (let i = 0; i < nodesData.length; i++) {
@@ -110,7 +120,14 @@ export class Graph {
                 );
 
                 this.nodePositions.push(position);
+                const nodeId = nodesData[i][j][0];
+                this.nodesMap[nodeId] = {
+                    "partyIndex": i,
+                    "nodesIndex": offset + j,
+                    "positionVector": position
+                };
             }
+            offset += nodesData[i].length;
         }
     }
 
@@ -118,6 +135,7 @@ export class Graph {
         const TOTAL_NODES = nodesData.flat().length
         console.log("total nodes:", TOTAL_NODES)
         let angle = 0
+        let offset = 0;
         // Distribute party groups
         for (let i = 0; i < nodesData.length; i++) {
             // const partyLen = nodesData[i].length;
@@ -141,7 +159,14 @@ export class Graph {
                 );
     
                 this.nodePositions.push(position);
+                const nodeId = nodesData[i][j][0];
+                this.nodesMap[nodeId] = {
+                    "partyIndex": i,
+                    "nodesIndex": offset + j,
+                    "positionVector": position
+                };
             }
+            offset += nodesData[i].length;
         }
     }
 
@@ -168,53 +193,6 @@ export class Graph {
 		return { position, vTextureCoord };
 	}
 
-	getTotalStars() {
-		return this.totalParties;
-	}
-
-	getTotalSatellites() {
-		return this.totalNodes;
-	}
-
-    getEdgeData(fromId, toId) {
-        const {originPos,targetPos} = this.getNodePositionAndPartyFromNodeId(fromId, toId);
-        const crossing = originPos.party !== targetPos.party;
-
-        return {
-            crossing,
-            originPosition: originPos,
-            targetPosition: targetPos
-        };
-    }
-
-    getEdge(fromId, toId) {
-        const edgeData = this.getEdgeData(fromId, toId);
-        return edgeData.crossing ? this.getCrossingEdge(edgeData) : this.getInnerEdge(edgeData);
-    }
-
-    calculateNodePosition(position) {
-        let offset = 0;
-        for (let p = 0; p < position.party; p++) {
-            offset += this.partySizes[p];
-        }
-        return new THREE.Vector3().addVectors(
-            this.cumulus[position.party],
-            this.nodePositions[offset + position.nodePosition]
-        );
-    }
-    
-    calculateGradientOffset(originPosition, targetPosition) {
-        return (targetPosition.party + (1.0 + originPosition.party) / (1.0 + this.totalParties)) / this.totalParties;
-    }
-
-    getInnerEdge(edgeData) {
-        const { originPosition, targetPosition } = edgeData;
-        const origin = this.calculateNodePosition(originPosition);
-        const target = this.calculateNodePosition(targetPosition);
-        const gradientOffset = this.calculateGradientOffset(originPosition, targetPosition);
-        return { origin, target, gradientOffset };
-    }
-
     getPartyFromPosition(nodePosition) {
         let acc = 0;
         for (let i = 0; i < this.partySizes.length; i++) {
@@ -226,29 +204,45 @@ export class Graph {
         return null;
     }
 
-    getNodePositionAndPartyFromNodeId(src, tgt) {
-        const positions = { originPos: {}, targetPos: {} };
-        for (let i = 0; i < this.totalParties; i++) {
-            const srcPosition = this.nodes[i].findIndex(user => user[0] === src);
-            const tgtPosition = this.nodes[i].findIndex(user => user[0] === tgt);
-            if (srcPosition !== -1) {
-                positions.originPos = { party: i, nodePosition: srcPosition };
+	getTotalStars() {
+		return this.totalParties;
+	}
+
+	getTotalSatellites() {
+		return this.totalNodes;
+	}
+
+    getEdgeData(fromId, toId) {
+        return {
+            originPosition: {
+                party: this.nodesMap[fromId].partyIndex,
+                nodePosition: this.nodesMap[fromId].nodesIndex
+            },
+            targetPosition: {
+                party: this.nodesMap[toId].partyIndex,
+                nodePosition: this.nodesMap[toId].nodesIndex
             }
-            if (tgtPosition !== -1) {
-                positions.targetPos = { party: i, nodePosition: tgtPosition };
-            }
-            if (positions.originPos.party !== undefined && positions.targetPos.party !== undefined) {
-                break;
-            }
-        }
-        return positions;
+        };
     }
 
-    getCrossingEdge(edgeData) {
-        const { originPosition, targetPosition } = edgeData;
-        const origin = this.calculateNodePosition(originPosition);
-        const target = this.calculateNodePosition(targetPosition);
+    getEdge(fromId, toId) {
+        const { originPosition, targetPosition } = this.getEdgeData(fromId, toId);
+        const origin = this.calculateVectorPosition(originPosition);
+        const target = this.calculateVectorPosition(targetPosition);
         const gradientOffset = this.calculateGradientOffset(originPosition, targetPosition);
         return { origin, target, gradientOffset };
     }
+
+    calculateVectorPosition(position) {
+        return new THREE.Vector3().addVectors(
+            this.cumulus[position.party],
+            this.nodePositions[position.nodePosition]
+        );
+    }
+    
+    calculateGradientOffset(originPosition, targetPosition) {
+        return (targetPosition.party + (1.0 + originPosition.party) / (1.0 + this.totalParties)) / this.totalParties;
+    }
+
+
 }
