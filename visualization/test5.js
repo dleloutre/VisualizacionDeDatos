@@ -7,11 +7,14 @@ import { GraphMeshBuilder } from "./graphMeshBuilder.js";
 import { Graph } from "./graph.js";
 import { loadCSV } from "./utils.js";
 
-let scene, camera, renderer, stats, controls, plane, nodes, edges;
+let scene, camera, renderer, stats, controls, plane, nodes, edges, graph;
 
 const params = {
 	emissionFactor: 0.3,
 	waveOffset: -3,
+    spiralSteps: 1,
+    spiralRounds: 1,
+    spiralSwitch: true,
 };
 
 function setup() {
@@ -27,7 +30,7 @@ function setup() {
   document.body.appendChild(renderer.domElement);
 
   controls = new OrbitControls(camera, renderer.domElement);
-  // Semicircle layout: camera.position.set(0,500,2500)
+  // Semicircle layout: camera.position.set(0, 500, 2500)
   // Circle layout: camera.position.set(0, 3000, 0);
   // Spiral layout: 
   camera.position.set(0, 10000, 0)
@@ -35,21 +38,21 @@ function setup() {
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);
 
-  const gridHelper = new THREE.GridHelper(4000);
+  //const gridHelper = new THREE.GridHelper(4000);
   //scene.add(gridHelper);
 
   stats = new Stats();
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
 
-  plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(1000, 1000, 10, 10),
-    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
-  );
-  plane.rotation.y = Math.PI / 2;
-  plane.position.x = -1500;
-  plane.position.y = 500;
-  plane.name = "textureDebuggerPlane";
+  //plane = new THREE.Mesh(
+  //  new THREE.PlaneGeometry(1000, 1000, 10, 10),
+  //  new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+  //);
+  //plane.rotation.y = Math.PI / 2;
+  //plane.position.x = -1500;
+  //plane.position.y = 500;
+  //plane.name = "textureDebuggerPlane";
   //scene.add(plane);
   window.addEventListener("resize", onResize);
 }
@@ -74,17 +77,39 @@ function createUI() {
 		.onChange((v) => {
 			edges.material.uniforms.waveOffset.value = v;
 		});
+    gui.add(params, "spiralSteps", 0, 10)
+		.name("spiral steps")
+		.step(1)
+		.onChange((v) => {
+            graph.updateSteps(v);
+            updateGraph();
+		});
+    gui.add(params, "spiralRounds", 1, 10)
+		.name("spiral rounds")
+		.step(1)
+		.onChange((v) => {
+            graph.updateRounds(v);
+            updateGraph();
+		});
+    gui.add(params, "spiralSwitch")
+        .name("constant radius")
+        .onChange((v) => {
+            graph.updateConstantRadius(v);
+            updateGraph();
+        });
+
 }
 
-function drawGraph(graph) {
+function updateGraph() {
 	let gmb = new GraphMeshBuilder(graph);
     const e = graph.getEdges();
+    scene.remove(edges);
 	edges = gmb.createEdges(e);
 	scene.add(edges);
 
-	let texture = edges.material.uniforms.edgeColor.value;
-	plane.material.map = texture;
-
+	//let texture = edges.material.uniforms.edgeColor.value;
+	//plane.material.map = texture;
+    scene.remove(nodes);
 	nodes = gmb.createNodes();
 	scene.add(nodes);
 }
@@ -156,7 +181,8 @@ async function prepareData() {
 
 setup();
 createUI();
-prepareData().then((graph) => {
-    drawGraph(graph);
+prepareData().then((G) => {
+    graph = G
+    updateGraph(graph);
     animate();
 }).catch((e) => console.log(e));
