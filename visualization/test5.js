@@ -6,6 +6,8 @@ import Stats from "https://cdnjs.cloudflare.com/ajax/libs/stats.js/17/Stats.js";
 import { GraphMeshBuilder } from "./graphMeshBuilder.js";
 import { Graph } from "./graph.js";
 import { loadCSV } from "./utils.js";
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
 let scene, camera, renderer, stats, controls, plane, nodes, edges;
 
@@ -42,14 +44,14 @@ function setup() {
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
 
-  plane = new THREE.Mesh(
+  /*plane = new THREE.Mesh(
     new THREE.PlaneGeometry(1000, 1000, 10, 10),
     new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
   );
   plane.rotation.y = Math.PI / 2;
   plane.position.x = -1500;
   plane.position.y = 500;
-  plane.name = "textureDebuggerPlane";
+  plane.name = "textureDebuggerPlane";*/
   //scene.add(plane);
   window.addEventListener("resize", onResize);
 }
@@ -76,17 +78,53 @@ function createUI() {
 		});
 }
 
-function drawGraph(graph) {
+function drawGraph(graph, font) {
 	let gmb = new GraphMeshBuilder(graph);
     const e = graph.getEdges();
 	edges = gmb.createEdges(e);
 	scene.add(edges);
 
-	let texture = edges.material.uniforms.edgeColor.value;
-	plane.material.map = texture;
+	//let texture = edges.material.uniforms.edgeColor.value;
+	//plane.material.map = texture;
 
 	nodes = gmb.createNodes();
 	scene.add(nodes);
+
+    // LABEL PRUEBA
+    let light = new THREE.DirectionalLight(0xffffff);
+    light.position.set(0, 1, 1).normalize();
+    scene.add(light);
+
+    const labels = graph.getLabels();
+    console.log("labels:", labels);
+    const materialargs = {
+        color: 0xFFFFFF
+    };
+
+    for (let i=0; i < labels.length; i++) {
+        let labelgeo = new TextGeometry(labels[i].label, {
+            font: font,
+            size: 25000,
+            depth: 10000 / 2
+        });
+        
+        //labelgeo.translate(, 0, 0 );
+        const material = new THREE.MeshPhongMaterial( materialargs );
+        const textmesh = new THREE.Mesh( labelgeo, material );
+        textmesh.scale.set( 0.01, 0.01, 0.01 );
+        console.log("label: ", labels[i])
+        textmesh.position.x = (labels[i].radius + labels[i].size) * Math.sin(labels[i].angle);
+        textmesh.position.y = labels[i].position.y*7;
+        textmesh.position.z = (labels[i].radius + labels[i].size) * Math.cos(labels[i].angle);
+        console.log(`mesh ${labels[i].label}`,textmesh)
+    
+        //textmesh.lookAt(camera.position);
+        textmesh.quaternion.copy(camera.quaternion);
+        scene.add(textmesh);
+    }
+
+
+    // FIN LABEL PRUEBA
 }
 
 const animate = function () {
@@ -154,9 +192,12 @@ async function prepareData() {
     return new Graph(nodesInfo, edgesInfo);
 }
 
-setup();
-createUI();
-prepareData().then((graph) => {
-    drawGraph(graph);
-    animate();
-}).catch((e) => console.log(e));
+const loader = new FontLoader();
+loader.load('fonts/helvetiker_regular.typeface.json', function ( font ) {
+    setup();
+    createUI();
+    prepareData().then((graph) => {
+        drawGraph(graph, font);
+        animate();
+    }).catch((e) => console.log(e));
+});

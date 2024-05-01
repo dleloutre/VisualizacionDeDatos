@@ -23,6 +23,29 @@ const partyAnglesCircle = [
     0.8//6.2831853071795845
 ]
 
+const labels = [
+    "macron",
+    "zemmour", 
+    "melenchon",
+    "poutou",
+    "philippot",
+    "mlp",
+    "pecresse",
+    "jadot",
+    "hidalgo",
+    "roussel",
+    "asselineau",
+    "kazib",
+    "sandrousseau",
+    "taubira",
+    "bertrand",
+    "montebourg",
+    "dupontaignan",
+    "lasalle",
+    "arthaud",
+    "barnier"
+]
+
 export class Graph {
 	CLOUD_RADIUS = 200;
 	SATELLITES_RADIUS = 5;
@@ -30,14 +53,14 @@ export class Graph {
     RADIUS = 300;
 
 	totalParties = 0;
-	cumulus = [];
+	labelVectorPositions = [];
 	satellites = [];
     totalNodes = 0;
     edges = [];
     partySizes = [];
 
 	constructor(nodesData, edgesData) {
-		//this.cumulus = [];
+		this.labelVectorPositions = [];
         //this.nodePositions = [];
         this.partySizes = [];
         this.nodesMap = {};
@@ -67,7 +90,7 @@ export class Graph {
                 0,
             );
     
-            //this.cumulus.push(partyPosition);
+            //this.partyPositions.push(partyPosition);
             this.partySizes.push(nodesData[i].length);
             
             for (let j = 0; j < nodesData[i].length; j++) {
@@ -90,6 +113,10 @@ export class Graph {
         }
     }
 
+    getLabels() {
+        return this.labelVectorPositions;
+    }
+
     distributeNodesSpiral(nodesData) {
         //const initialRadius = 200;
         const TOTAL_NODES = nodesData.flat().length
@@ -109,8 +136,17 @@ export class Graph {
                 5000*partyLen/TOTAL_NODES,
                 currentRadius * Math.cos(angle),
             );
-
-            //this.cumulus.push(partyPosition);
+            console.log("partyPos:", partyPosition)
+            let labelPosition = partyPosition.clone();
+            //labelPosition.x = labelPosition.x+currentRadius
+            //labelPosition.z = labelPosition.z+currentRadius
+            this.labelVectorPositions[i] = {
+                "label": labels[i],
+                "position": labelPosition,
+                "radius": currentRadius,
+                "angle": angle,
+                "size": labels[i].length
+            };
             this.partySizes.push(sortedNodes[i].length);
 
             // Distribute nodes inside each party
@@ -132,6 +168,8 @@ export class Graph {
             }
             offset += sortedNodes[i].length;
         }
+        console.log("label positions:", this.labelVectorPositions)
+
     }
 
     distributeNodesCircle(nodesData) {
