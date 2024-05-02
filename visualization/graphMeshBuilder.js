@@ -229,8 +229,8 @@ export class GraphMeshBuilder {
 		let vTextureCoord = [];
 		let totalNodes = this.graph.getTotalNodes();
 		// recorro todos los nodos
-		for (let i = 0; i < totalNodes; i++) {
-			let res = this.graph.getNode(i);
+		for (const nodeId in this.graph.getNodes()) {//let i = 0; i < totalNodes; i++) {
+			let res = this.graph.getNode(nodeId);
 			offsets.push(res.position.x);
 			offsets.push(res.position.y);
 			offsets.push(res.position.z);
