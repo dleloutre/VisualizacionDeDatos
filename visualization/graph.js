@@ -13,15 +13,15 @@ const partyAnglesCircle = [
     5.7,//5.682656904487304,
     6,//5.840081262037342,
     6.24,//5.992467333017838,
-    0.1,//6.073168309122938,
+    /*0.1,//6.073168309122938,
     0.2,//6.146090877892607,
     0.3,//6.179060718075742,
     0.4,//6.195589833663534,
     0.5,//6.208318136576058,
     0.6,//6.266656191591793,
     0.7,//6.274788162897017,
-    0.8//6.2831853071795845
-]
+    0.8//6.2831853071795845*/
+];
 
 export class Graph {
 	CLOUD_RADIUS = 200;
@@ -30,6 +30,7 @@ export class Graph {
     RADIUS = 300;
 
 	totalParties = 0;
+    labelVectorPositions = [];
 	cumulus = [];
 	satellites = [];
     totalNodes = 0;
@@ -37,8 +38,13 @@ export class Graph {
     partySizes = [];
     steps = 1;
     rounds = 1;
+    metadata = {
+        parties: {},
+        media: {}
+    };
 
-	constructor(nodesData, edgesData) {
+	constructor(nodesData, edgesData, metadata) {
+        this.labelVectorPositions = [];
         this.partySizes = [];
         this.nodesMap = {};
         this.edges = edgesData;
@@ -47,6 +53,8 @@ export class Graph {
         this.distributeNodesSpiral(nodesData);
         this.totalNodes = Object.keys(this.nodesMap).length;
         this.constantRadius = true;
+        this.metadata = metadata;
+        this.partyKeys = Object.keys(metadata.parties)
 	}
 
     updateSteps(steps) {
@@ -66,6 +74,10 @@ export class Graph {
 
     getEdges() {
         return this.edges;
+    }
+
+    getLabels() {
+        return this.labelVectorPositions;
     }
 
     distributeNodesSemicircle(nodesData) {
@@ -108,13 +120,10 @@ export class Graph {
         console.log("total nodes:", TOTAL_NODES)
         let offset = 0;
         let angle;
-        const sortedNodes = nodesData.sort(function (a, b) {
-            return b.length - a.length;
-        });
 
         // Distribute party groups
-        for (let i = 0; i < sortedNodes.length; i++) {
-            const partyLen = sortedNodes[i].length;
+        for (let i = 0; i < nodesData.length; i++) {
+            const partyLen = nodesData[i].length;
             let currentRadius = 650;
             if (this.rounds > 1) {
                 if (!this.constantRadius) {
@@ -131,17 +140,28 @@ export class Graph {
                 this.rounds + currentRadius * Math.cos(angle),
             );
 
-            this.partySizes.push(sortedNodes[i].length);
+            let labelPosition = partyPosition.clone();
+            //const partyKey = this.partyKeys.
+            this.labelVectorPositions[i] = {
+                //label: this.metadata.parties[partyKey].label,
+                position: labelPosition,
+                radius: currentRadius,
+                angle: angle,
+                //size: lthis.metadata.parties[partyKey].label.length,
+                //color: this.metadata.parties[partyKey].color
+            };
+
+            this.partySizes.push(nodesData[i].length);
 
             // Distribute nodes inside each party
-            for (let j = 0; j < sortedNodes[i].length; j++) {
+            for (let j = 0; j < nodesData[i].length; j++) {
                 const position = new THREE.Vector3(
-                    (sortedNodes[i][j][1] + partyPosition.x) * this.SATELLITES_RADIUS,
-                    (sortedNodes[i][j][2] + partyPosition.y) * this.SATELLITES_RADIUS,
-                    (sortedNodes[i][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
+                    (nodesData[i][j][1] + partyPosition.x) * this.SATELLITES_RADIUS,
+                    (nodesData[i][j][2] + partyPosition.y) * this.SATELLITES_RADIUS,
+                    (nodesData[i][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
                 );
 
-                const nodeId = sortedNodes[i][j][0];
+                const nodeId = nodesData[i][j][0];
                 this.nodesMap[nodeId] = {
                     "partyIndex": i,
                     "nodesIndex": offset + j,
@@ -149,7 +169,7 @@ export class Graph {
                     "positionVector": position
                 };
             }
-            offset += sortedNodes[i].length;
+            offset += nodesData[i].length;
         }
     }
 
@@ -206,9 +226,9 @@ export class Graph {
     }
 
 	getNode(id) {
-        const nodeVectorInfo = this.nodesMap[id]; // const cumulusNum = this.getPartyFromPosition(number);
-        let position = nodeVectorInfo.partyVector.clone(); // this.cumulus[cumulusNum].clone();
-		position.add(nodeVectorInfo.positionVector); // position.add(this.nodePositions[number]);
+        const nodeVectorInfo = this.nodesMap[id];
+        let position = nodeVectorInfo.partyVector.clone();
+		position.add(nodeVectorInfo.positionVector);
 
 		// la textura de bordes tiene un gradiente horizontal
 		// para cada combinacion de estrella con estrella
@@ -218,17 +238,6 @@ export class Graph {
 
 		return { position, vTextureCoord };
 	}
-
-    /*getPartyFromPosition(nodePosition) {
-        let acc = 0;
-        for (let i = 0; i < this.partySizes.length; i++) {
-            acc += this.partySizes[i];
-            if (nodePosition < acc) {
-                return i;
-            }
-        }
-        return null;
-    }*/
 
 	getTotalStars() {
 		return this.totalParties;
@@ -252,22 +261,22 @@ export class Graph {
     }
 
     getEdge(fromId, toId) {
-        //const { originPosition, targetPosition } = this.getEdgeData(fromId, toId);
         const originPosition = this.nodesMap[fromId];
         const targetPosition = this.nodesMap[toId];
         const origin = this.calculateVectorPosition(originPosition);
         const target = this.calculateVectorPosition(targetPosition);
         const gradientOffset = this.calculateGradientOffset(originPosition, targetPosition);
+
         return { origin, target, gradientOffset };
     }
 
     calculateVectorPosition(position) {
         return new THREE.Vector3().addVectors(
-            position.partyVector, //this.cumulus[position.partyIndex],
-            position.positionVector //this.nodePositions[position.nodesIndex]
+            position.partyVector,
+            position.positionVector
         );
     }
-    
+
     calculateGradientOffset(originPosition, targetPosition) {
         return (targetPosition.partyIndex + (1.0 + originPosition.partyIndex) / (1.0 + this.totalParties)) / this.totalParties;
     }

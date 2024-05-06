@@ -6,15 +6,18 @@ import Stats from "https://cdnjs.cloudflare.com/ajax/libs/stats.js/17/Stats.js";
 import { GraphMeshBuilder } from "./graphMeshBuilder.js";
 import { Graph } from "./graph.js";
 import { loadCSV } from "./utils.js";
+import { generateTextSprite } from "./spriteText.js";
+import partiesData from "/data/parties.json" assert { type: 'json' };
 
-let scene, camera, renderer, stats, controls, plane, nodes, edges, graph;
+let scene, camera, renderer, stats, controls, plane, nodes, edges, graph, textlabels = [];
+let fileKeys;
 
 const params = {
 	emissionFactor: 0.3,
 	waveOffset: -3,
-    spiralSteps: 1,
-    spiralRounds: 1,
-    spiralSwitch: true,
+  spiralSteps: 1,
+  spiralRounds: 1,
+  spiralSwitch: true,
 };
 
 function setup() {
@@ -38,22 +41,10 @@ function setup() {
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);
 
-  //const gridHelper = new THREE.GridHelper(4000);
-  //scene.add(gridHelper);
-
   stats = new Stats();
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
 
-  //plane = new THREE.Mesh(
-  //  new THREE.PlaneGeometry(1000, 1000, 10, 10),
-  //  new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
-  //);
-  //plane.rotation.y = Math.PI / 2;
-  //plane.position.x = -1500;
-  //plane.position.y = 500;
-  //plane.name = "textureDebuggerPlane";
-  //scene.add(plane);
   window.addEventListener("resize", onResize);
 }
 
@@ -97,27 +88,54 @@ function createUI() {
             graph.updateConstantRadius(v);
             updateGraph();
         });
-
 }
 
 function updateGraph() {
 	let gmb = new GraphMeshBuilder(graph);
-    const e = graph.getEdges();
-    scene.remove(edges);
+  const e = graph.getEdges();
+  scene.remove(edges);
 	edges = gmb.createEdges(e);
 	scene.add(edges);
 
-	//let texture = edges.material.uniforms.edgeColor.value;
-	//plane.material.map = texture;
-    scene.remove(nodes);
+  scene.remove(nodes);
 	nodes = gmb.createNodes();
 	scene.add(nodes);
+
+  for (const label of textlabels) {
+    scene.remove(label)
+  }
+  textlabels = []
+  const labelPositions = graph.getLabels();
+
+  textlabels = positionLabels(labelPositions);
+
+  for (const label of textlabels) {
+    scene.add(label)
+  }
+}
+
+function positionLabels(labelPositions) {
+  for (let i = 0; i < labelPositions.length; i++) {
+    let partyKey = fileKeys[i];
+    let color = partiesData[partyKey].color || 0xffffff;
+    let label = partiesData[partyKey].label || "Unknown";
+    var textmesh = generateTextSprite(label, { borderColor: color });
+
+    textmesh.position.x = labelPositions[i].radius * 7 * Math.sin(labelPositions[i].angle);
+    textmesh.position.y = labelPositions[i].position.y * 5;
+    textmesh.position.z = labelPositions[i].radius * 6 * Math.cos(labelPositions[i].angle);
+    textmesh.rotation.z = Math.PI / 2;
+
+    textlabels.push(textmesh);
+  }
+
+  return textlabels;
 }
 
 const animate = function () {
 	stats.begin();
 	requestAnimationFrame(animate);
-    controls.update();
+  controls.update();
 	renderer.render(scene, camera);
 	stats.end();
 };
@@ -128,29 +146,8 @@ async function loadFiles() {
   
   const edgeFileSuffix = ".csv";
   const nodeFileSuffix = "_FR.csv";
-  const fileKeys = [
-    "macron",
-    "zemmour", 
-    "melenchon",
-    "crossing",
-    "poutou",
-    "philippot",
-    "mlp",
-    "pecresse",
-    "jadot",
-    "hidalgo",
-    "roussel",
-    "asselineau",
-    "kazib",
-    "sandrousseau",
-    "taubira",
-    "bertrand",
-    "montebourg",
-    "dupontaignan",
-    "lasalle",
-    "arthaud",
-    "barnier", // separar más los nodos o dibujarlos más chicos
-  ];
+  fileKeys = Object.keys(partiesData);
+  fileKeys.push("crossing");
 
   const nodesInfo = [];
   const edgesInfo = [];
@@ -172,17 +169,19 @@ async function loadFiles() {
 }
 
 async function prepareData() {
-    // cargar info de los archivos
     // para los nodos hay un array por partido politico
     // para las aristas hay un array por partido politico + uno para las aristas que cruzan
     const { nodesInfo, edgesInfo } = await loadFiles();
-    return new Graph(nodesInfo, edgesInfo);
+    const metadata = {
+      parties: partiesData
+    }
+    return new Graph(nodesInfo, edgesInfo, metadata);
 }
 
 setup();
 createUI();
 prepareData().then((G) => {
     graph = G
-    updateGraph(graph);
+    updateGraph();
     animate();
 }).catch((e) => console.log(e));
