@@ -1,4 +1,3 @@
-// Merge entre demo4 y test
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import * as dat from "dat.gui";
@@ -7,10 +6,14 @@ import { GraphMeshBuilder } from "./graphMeshBuilder.js";
 import { Graph } from "./graph.js";
 import { loadCSV } from "./utils.js";
 import { generateTextSprite } from "./spriteText.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { DroneCameraControl } from "./droneCamera.js";
 import partiesData from "/data/parties.json" assert { type: 'json' };
 
-let scene, camera, renderer, stats, controls, plane, nodes, edges, graph, textlabels = [];
-let fileKeys;
+let scene, camera, renderer, composer, stats, controls, plane, nodes, edges, graph, textlabels = [];
+let fileKeys, orbitalCamera, droneCamera, droneCameraControl;
 
 const params = {
 	emissionFactor: 0.3,
@@ -18,11 +21,18 @@ const params = {
   spiralSteps: 1,
   spiralRounds: 1,
   spiralSwitch: true,
+  droneCamera: true,
 };
 
 function setup() {
   scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(
+  orbitalCamera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    20000
+  );
+  droneCamera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
     0.1,
@@ -32,11 +42,25 @@ function setup() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  controls = new OrbitControls(camera, renderer.domElement);
+  const size = renderer.getDrawingBufferSize(new THREE.Vector2());
+  
+  const renderTarget = new THREE.WebGLRenderTarget(size.width, size.height, {
+    samples: 4,
+    type: THREE.HalfFloatType,
+  });
+  
+  const renderPass = new RenderPass(scene, droneCamera);
+  const outputPass = new OutputPass();
+  
+  composer = new EffectComposer(renderer, renderTarget);
+  composer.addPass(renderPass);
+  composer.addPass(outputPass);
+
+  controls = new OrbitControls(orbitalCamera, renderer.domElement);
   // Semicircle layout: camera.position.set(0, 500, 2500)
   // Circle layout: camera.position.set(0, 3000, 0);
   // Spiral layout: 
-  camera.position.set(0, 10000, 0)
+  orbitalCamera.position.set(0, 5000, 0)
 
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);
@@ -45,17 +69,34 @@ function setup() {
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
 
+  //window.addEventListener("resize", onResize);
+
+  droneCameraControl = new DroneCameraControl(droneCamera, [0, 0, 1000]);
+  camera = droneCamera;
   window.addEventListener("resize", onResize);
 }
 
 function onResize() {
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
-	renderer.setSize(window.innerWidth, window.innerHeight);
+  orbitalCamera.aspect = window.innerWidth / window.innerHeight;
+  orbitalCamera.updateProjectionMatrix();
+  droneCamera.aspect = window.innerWidth / window.innerHeight;
+  droneCamera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
 }
 
 function createUI() {
 	const gui = new dat.GUI();
+  gui
+    .add(params, "droneCamera")
+    .name("drone view")
+    .onChange((v) => {
+      if (v) {
+        camera = droneCamera;
+      } else {
+        camera = orbitalCamera;
+      }
+    });
 	gui.add(params, "emissionFactor", 0, 1)
 		.step(0.01)
 		.name("emission factor")
@@ -136,6 +177,15 @@ const animate = function () {
 	stats.begin();
 	requestAnimationFrame(animate);
   controls.update();
+  if (params.droneCamera) {
+    let cameraHasChanged = droneCameraControl.update();
+    if (cameraHasChanged) {
+      renderer.render(scene, camera);
+    } else {
+      // maxima calidad
+      composer.render();
+    }
+  }
 	renderer.render(scene, camera);
 	stats.end();
 };

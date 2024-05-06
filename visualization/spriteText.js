@@ -35,7 +35,7 @@ export function generateTextSprite(text, config) {
     canvas.width = _ceilPow2(textWidth);
     canvas.height = _ceilPow2(textHeight);
     var context = canvas.getContext('2d');
-  console.log("BG", backgroundColor, borderColor)
+
     // draw background
     context.font = ruler.font;
     context.fillStyle = backgroundColor;
@@ -68,7 +68,6 @@ export function generateTextSprite(text, config) {
       sizeAttenuation: false
     });
     var sprite = new THREE.Sprite(spriteMaterial);
-    console.log("text w", text, textWidth*0.0001)
     sprite.scale.set(0.3, 0.1, 0.1);
     
     return sprite;

@@ -278,7 +278,6 @@ export class GraphMeshBuilder {
 		);
 
 		instancedEdgeGeometry.setAttribute("randomSeed", randomSeedAttribute);
-		console.log("instanced edges", instancedEdges)
 		return instancedEdges;
 	}
 
@@ -317,7 +316,6 @@ export class GraphMeshBuilder {
 			)
 		);
 
-		console.log("nodes geometry", geo);
 		let material = this._createNodesMaterial();
 
 		const instancedNodes = new THREE.InstancedMesh(
@@ -327,7 +325,6 @@ export class GraphMeshBuilder {
 		);
 		instancedNodes.frustumCulled = false;
 
-		console.log("instanced nodes", instancedNodes);
 		return instancedNodes;
 	}
 }
