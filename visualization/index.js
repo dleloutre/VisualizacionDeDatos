@@ -21,7 +21,7 @@ const params = {
   spiralSteps: 1,
   spiralRounds: 1,
   spiralSwitch: true,
-  droneCamera: true,
+  droneCamera: false,
 };
 
 function setup() {
@@ -72,7 +72,7 @@ function setup() {
   //window.addEventListener("resize", onResize);
 
   droneCameraControl = new DroneCameraControl(droneCamera, [0, 0, 1000]);
-  camera = droneCamera;
+  camera = orbitalCamera;
   window.addEventListener("resize", onResize);
 }
 
