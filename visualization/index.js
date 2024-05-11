@@ -109,26 +109,26 @@ function createUI() {
 		.onChange((v) => {
 			edges.material.uniforms.waveOffset.value = v;
 		});
-    gui.add(params, "spiralSteps", 0, 10)
-		.name("spiral steps")
-		.step(1)
-		.onChange((v) => {
-            graph.updateSteps(v);
-            updateGraph();
-		});
-    gui.add(params, "spiralRounds", 1, 10)
-		.name("spiral rounds")
-		.step(1)
-		.onChange((v) => {
-            graph.updateRounds(v);
-            updateGraph();
-		});
-    gui.add(params, "spiralSwitch")
-        .name("constant radius")
-        .onChange((v) => {
-            graph.updateConstantRadius(v);
-            updateGraph();
-        });
+  gui.add(params, "spiralSteps", 0, 10)
+  .name("spiral steps")
+  .step(1)
+  .onChange((v) => {
+          graph.updateSteps(v);
+          updateGraph();
+  });
+  gui.add(params, "spiralRounds", 1, 10)
+  .name("spiral rounds")
+  .step(1)
+  .onChange((v) => {
+          graph.updateRounds(v);
+          updateGraph();
+  });
+  gui.add(params, "spiralSwitch")
+      .name("constant radius")
+      .onChange((v) => {
+          graph.updateConstantRadius(v);
+          updateGraph();
+      });
 }
 
 function updateGraph() {
@@ -147,6 +147,7 @@ function updateGraph() {
   }
   textlabels = []
   const labelPositions = graph.getLabels();
+  console.log("labels", labelPositions)
 
   textlabels = positionLabels(labelPositions);
 
@@ -156,15 +157,14 @@ function updateGraph() {
 }
 
 function positionLabels(labelPositions) {
-  for (let i = 0; i < labelPositions.length; i++) {
-    let partyKey = fileKeys[i];
+  for (const partyKey of Object.keys(labelPositions)) {
     let color = partiesData[partyKey].color || 0xffffff;
     let label = partiesData[partyKey].label || "Unknown";
     var textmesh = generateTextSprite(label, { borderColor: color });
 
-    textmesh.position.x = labelPositions[i].radius * 7 * Math.sin(labelPositions[i].angle);
-    textmesh.position.y = labelPositions[i].position.y * 5;
-    textmesh.position.z = labelPositions[i].radius * 6 * Math.cos(labelPositions[i].angle);
+    textmesh.position.x = labelPositions[partyKey].radius * 7 * Math.sin(labelPositions[partyKey].angle);
+    textmesh.position.y = labelPositions[partyKey].position.y * 5;
+    textmesh.position.z = labelPositions[partyKey].radius * 6 * Math.cos(labelPositions[partyKey].angle);
     textmesh.rotation.z = Math.PI / 2;
 
     textlabels.push(textmesh);
@@ -205,8 +205,11 @@ async function loadFiles() {
   for (let i = 0; i < fileKeys.length; i++) {
     if (fileKeys[i] !== "crossing") {
         const nodeFile = nodeFilePrefix + fileKeys[i] + nodeFileSuffix;
-        const nodesData = await loadCSV(nodeFile);
-        nodesInfo.push(nodesData);
+        const nodesList = await loadCSV(nodeFile);
+        nodesInfo.push({
+          "key": fileKeys[i],
+          "data": nodesList
+        });
     }
     const edgeFile = edgeFilePrefix + fileKeys[i] + edgeFileSuffix;
     const edgesData = await loadCSV(edgeFile);

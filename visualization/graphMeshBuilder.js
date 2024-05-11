@@ -96,7 +96,7 @@ export class GraphMeshBuilder {
 		const size = width * height;
 		const data = new Uint8Array(4 * size);
 
-		let numColors = this.graph.getTotalStars();
+		let numColors = this.graph.getTotalParties();
 
 		let i = 0;
 		const color1 = new THREE.Color();

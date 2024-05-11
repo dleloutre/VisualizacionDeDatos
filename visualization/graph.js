@@ -1,7 +1,19 @@
 import * as THREE from "three";
 
 const partyAnglesCircle = [
-    1.4,//1.2979333331076621,
+    0.6,
+    1.0,
+    1.2,
+    1.8,
+    2.4,
+    3.0,
+    3.4,
+    4.0,
+    4.5,
+    5,
+    5.8,
+    6.5,
+    /*1.4,//1.2979333331076621,
     2.1,//2.2259503628200936,
     2.7,//3.2927412506760163,
     3.6,//3.6228816074696093,
@@ -13,7 +25,7 @@ const partyAnglesCircle = [
     5.7,//5.682656904487304,
     6,//5.840081262037342,
     6.24,//5.992467333017838,
-    /*0.1,//6.073168309122938,
+    0.1,//6.073168309122938,
     0.2,//6.146090877892607,
     0.3,//6.179060718075742,
     0.4,//6.195589833663534,
@@ -30,12 +42,11 @@ export class Graph {
     RADIUS = 300;
 
 	totalParties = 0;
-    labelVectorPositions = [];
+    labelVectorPositions = {};
 	cumulus = [];
 	satellites = [];
     totalNodes = 0;
     edges = [];
-    partySizes = [];
     steps = 1;
     rounds = 1;
     metadata = {
@@ -44,12 +55,11 @@ export class Graph {
     };
 
 	constructor(nodesData, edgesData, metadata) {
-        this.labelVectorPositions = [];
-        this.partySizes = [];
+        this.labelVectorPositions = {};
         this.nodesMap = {};
         this.edges = edgesData;
         this.nodes = nodesData;
-        this.totalParties = nodesData.length;
+        this.totalParties = Object.keys(nodesData).length;
         this.distributeNodesSpiral(nodesData);
         this.totalNodes = Object.keys(this.nodesMap).length;
         this.constantRadius = true;
@@ -116,14 +126,20 @@ export class Graph {
     }
 
     distributeNodesSpiral(nodesData) {
-        const TOTAL_NODES = nodesData.flat().length
+        const TOTAL_NODES = nodesData.reduce(function (acc, obj) { return acc + obj.data.length; }, 0); //nodesData.flat().length
         console.log("total nodes:", TOTAL_NODES)
         let offset = 0;
-        let angle;
+        let angle = 0;
 
+        const sortedNodes = [...nodesData].sort(function (a, b) {
+            return a.data.length - b.data.length;
+        });
+
+        let i = 0;
         // Distribute party groups
-        for (let i = 0; i < nodesData.length; i++) {
-            const partyLen = nodesData[i].length;
+        for (const party of sortedNodes) {
+            const partyLen = party.data.length;
+            const originalIndex = nodesData.findIndex((a) => a.key === party.key);
             let currentRadius = 650;
             if (this.rounds > 1) {
                 if (!this.constantRadius) {
@@ -141,35 +157,30 @@ export class Graph {
             );
 
             let labelPosition = partyPosition.clone();
-            //const partyKey = this.partyKeys.
-            this.labelVectorPositions[i] = {
-                //label: this.metadata.parties[partyKey].label,
+            this.labelVectorPositions[party.key] = {
                 position: labelPosition,
                 radius: currentRadius,
                 angle: angle,
-                //size: lthis.metadata.parties[partyKey].label.length,
-                //color: this.metadata.parties[partyKey].color
             };
 
-            this.partySizes.push(nodesData[i].length);
-
             // Distribute nodes inside each party
-            for (let j = 0; j < nodesData[i].length; j++) {
+            for (let j = 0; j < partyLen; j++) {
                 const position = new THREE.Vector3(
-                    (nodesData[i][j][1] + partyPosition.x) * this.SATELLITES_RADIUS,
-                    (nodesData[i][j][2] + partyPosition.y) * this.SATELLITES_RADIUS,
-                    (nodesData[i][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
+                    (party["data"][j][1] + partyPosition.x) * this.SATELLITES_RADIUS,
+                    (party["data"][j][2] + partyPosition.y) * this.SATELLITES_RADIUS,
+                    (party["data"][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
                 );
 
-                const nodeId = nodesData[i][j][0];
+                const nodeId = party["data"][j][0];
                 this.nodesMap[nodeId] = {
-                    "partyIndex": i,
+                    "partyIndex": originalIndex,
                     "nodesIndex": offset + j,
                     "partyVector": partyPosition,
                     "positionVector": position
                 };
             }
-            offset += nodesData[i].length;
+            offset += partyLen;
+            i++;
         }
     }
 
@@ -217,10 +228,6 @@ export class Graph {
 		return this.totalNodes;
 	}
 
-    getTotalNodesForParty(partyPosition) {
-        return this.partySizes[partyPosition];
-    }
-
     getNodes() {
         return this.nodesMap;
     }
@@ -239,12 +246,8 @@ export class Graph {
 		return { position, vTextureCoord };
 	}
 
-	getTotalStars() {
+	getTotalParties() {
 		return this.totalParties;
-	}
-
-	getTotalSatellites() {
-		return this.totalNodes;
 	}
 
     getEdgeData(fromId, toId) {
