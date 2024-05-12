@@ -3,15 +3,17 @@ import * as THREE from "three";
 export function DroneCameraControl(camera, initialPos) {
   const MIN_Y = 1;
 
-  const DELTA_TRASLACION = 7; // velocidad de traslacion
-  const DELTA_ROTACION = 0.04; // velocidad de rotacion
+  const DELTA_TRASLACION_DEFAULT = 7; // velocidad de traslacion
+  const DELTA_ROTACION_DEFAULT = 0.04; // velocidad de rotacion
+  let DELTA_TRASLACION = 7; // velocidad de traslacion
+  let DELTA_ROTACION = 0.04; // velocidad de rotacion
   const FACTOR_INERCIA = 0.05;
   const MIN_TRANSLATION_THRESHOLD = 0.01;
 
   let yawRig = new THREE.Group();
   let pitchRig = new THREE.Group();
 
-  if (!initialPos) initialPos = [0, 0, 0];
+  if (!initialPos) initialPos = [1000, 6000, 0];
 
   camera.position.set(initialPos[0], initialPos[1], initialPos[2]);
 
@@ -85,6 +87,22 @@ export function DroneCameraControl(camera, initialPos) {
         break;
       case "e":
         camState.zRotVelTarget = -DELTA_ROTACION;
+        break;
+      case "1":
+        DELTA_TRASLACION = DELTA_TRASLACION_DEFAULT;
+        DELTA_ROTACION = DELTA_ROTACION_DEFAULT;
+        break;
+      case "2":
+        DELTA_TRASLACION = DELTA_TRASLACION_DEFAULT * 2;
+        DELTA_ROTACION = DELTA_ROTACION_DEFAULT * 2;
+        break;
+      case "3":
+        DELTA_TRASLACION = DELTA_TRASLACION_DEFAULT * 4;
+        DELTA_ROTACION = DELTA_ROTACION_DEFAULT * 4;
+        break;
+      case "4":
+        DELTA_TRASLACION = DELTA_TRASLACION_DEFAULT * 6;
+        DELTA_ROTACION = DELTA_ROTACION_DEFAULT * 6;
         break;
     }
   });
