@@ -55,7 +55,7 @@ export function DroneCameraControl(camera, initialPos) {
   });
 
   document.getElementById("translation-buttons").addEventListener("touchend", function(e) {
-    switch(e.targetTouches[0].target.className) {
+    switch(e.touches[0].target.className) {
       case "arrow-btn right":
         console.log("right end")
         camState.xVelTarget = 0;
@@ -91,7 +91,7 @@ export function DroneCameraControl(camera, initialPos) {
   });
 
   document.getElementById("rotation-buttons").addEventListener("touchend", function(e) {
-    switch(e.targetTouches[0].target.className) {
+    switch(e.touches[0].target.className) {
       case "arrow-btn right":
         console.log("right2 end")
         camState.xVelTarget = 0;

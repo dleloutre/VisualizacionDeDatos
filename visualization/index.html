@@ -19,6 +19,14 @@
     <script type="module" src="index.js"></script>
     <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>eruda.init();</script>
+    <script>
+      function hideBoth()  {
+        if (isMobile.apple.phone || isMobile.android.phone) {
+          document.getElementById("translation-buttons").style.visibility="visible";   
+          document.getElementById("rotation-buttons").style.visibility="visible";   
+        }
+      }
+    </script>
     <style>
       body {
         overflow: hidden;
@@ -68,7 +76,7 @@
     </style>
   </head>
   <body>
-    <div id="translation-buttons" class="l-btn-container">
+    <div id="translation-buttons" class="l-btn-container" style='visibility:hidden'>
       <div class="column">
         <div class="row">
             <button class="arrow-btn up">&#8593;</button>
@@ -82,7 +90,7 @@
         </div>
       </div>
     </div>
-    <div id="rotation-buttons" class="r-btn-container">
+    <div id="rotation-buttons" class="r-btn-container" style='visibility:hidden'>
       <div class="column">
         <div class="row">
             <button class="arrow-btn up">&#8593;</button>
