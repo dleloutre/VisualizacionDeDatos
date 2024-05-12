@@ -37,9 +37,9 @@ export function DroneCameraControl(camera, initialPos) {
 
   // Eventos botones mobile
   document.getElementById("translation-buttons").addEventListener("touchstart", function(e) {
-    switch(e.originalEvent.targetTouches[0].target.className) {
+    switch(e.targetTouches[0].target.className) {
       case "arrow-btn right":
-        console.log("right")
+        console.log("right start")
         camState.xVelTarget = -DELTA_TRASLACION;
         break;
       case "arrow-btn.left":
@@ -55,20 +55,18 @@ export function DroneCameraControl(camera, initialPos) {
   });
 
   document.getElementById("translation-buttons").addEventListener("touchend", function(e) {
-    console.log("EVENT TRANSLATION:", e)
-    console.log("lk", e.targetTouches[0])
     switch(e.targetTouches[0].target.className) {
       case "arrow-btn right":
-        console.log("right")
+        console.log("right end")
         camState.xVelTarget = 0;
         break;
-      case "arrow-btn.left":
+      case "arrow-btn left":
         camState.xVelTarget = 0;
         break;
-      case "arrow-btn.up":
+      case "arrow-btn up":
         camState.zVelTarget = 0;
         break;
-      case "arrow-btn.down":
+      case "arrow-btn down":
         camState.zVelTarget = 0;
         break;
     }
@@ -82,13 +80,13 @@ export function DroneCameraControl(camera, initialPos) {
         console.log("right")
         camState.xVelTarget = -DELTA_ROTACION;
         break;
-      case "arrow-btn.left":
+      case "arrow-btn left":
         camState.xVelTarget = DELTA_ROTACION;
         break;
-      case "arrow-btn.up":
+      case "arrow-btn up":
         camState.zVelTarget = -DELTA_ROTACION;
         break;
-      case "arrow-btn.down":
+      case "arrow-btn down":
         camState.zVelTarget = DELTA_ROTACION;
         break;
     }
