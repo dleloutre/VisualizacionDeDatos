@@ -3,19 +3,17 @@ import * as THREE from "three";
 export function DroneCameraControl(camera, initialPos) {
   const MIN_Y = 1;
 
-  const DELTA_TRASLACION_DEFAULT = 7; // velocidad de traslacion
+  const DELTA_TRASLACION_DEFAULT = 10; // velocidad de traslacion
   const DELTA_ROTACION_DEFAULT = 0.04; // velocidad de rotacion
-  let DELTA_TRASLACION = 7; // velocidad de traslacion
+  let DELTA_TRASLACION = 10; // velocidad de traslacion
   let DELTA_ROTACION = 0.04; // velocidad de rotacion
   const FACTOR_INERCIA = 0.05;
-  const MIN_TRANSLATION_THRESHOLD = 0.01;
+  const MIN_TRANSLATION_THRESHOLD = 0.02;
 
-  let yawRig = new THREE.Group();
-  let pitchRig = new THREE.Group();
-
-  if (!initialPos) initialPos = [1000, 6000, 0];
+  if (!initialPos) initialPos = [0, 19000, 0];
 
   camera.position.set(initialPos[0], initialPos[1], initialPos[2]);
+  camera.rotation.set(-Math.PI, 0, 0);
 
   let camInitialState = {
     xVel: 0,
@@ -29,7 +27,7 @@ export function DroneCameraControl(camera, initialPos) {
     yRotVel: 0,
     zRotVelTarget: 0,
     zRotVel: 0,
-    xRotVelTarget: 0,
+    xRotVelTarget: -0.7*15,
     xRotVel: 0,
 
     rightAxisMode: "move",
@@ -37,8 +35,80 @@ export function DroneCameraControl(camera, initialPos) {
 
   let camState = Object.assign({}, camInitialState);
 
-  // Eventos de teclado **********************************************
+  // Eventos botones mobile
+  document.getElementById("translation-buttons").addEventListener("touchstart", function(e) {
+    switch(e.originalEvent.targetTouches[0].target.className) {
+      case "arrow-btn right":
+        console.log("right")
+        camState.xVelTarget = -DELTA_TRASLACION;
+        break;
+      case "arrow-btn.left":
+        camState.xVelTarget = DELTA_TRASLACION;
+        break;
+      case "arrow-btn.up":
+        camState.zVelTarget = -DELTA_TRASLACION;
+        break;
+      case "arrow-btn.down":
+        camState.zVelTarget = DELTA_TRASLACION;
+        break;
+    }
+  });
 
+  document.getElementById("translation-buttons").addEventListener("touchend", function(e) {
+    switch(e.originalEvent.targetTouches[0].target.className) {
+      case "arrow-btn right":
+        console.log("right")
+        camState.xVelTarget = 0;
+        break;
+      case "arrow-btn.left":
+        camState.xVelTarget = 0;
+        break;
+      case "arrow-btn.up":
+        camState.zVelTarget = 0;
+        break;
+      case "arrow-btn.down":
+        camState.zVelTarget = 0;
+        break;
+    }
+  });
+
+  document.getElementById("rotation-buttons").addEventListener("touchstart", function(e) {
+    switch(e.originalEvent.targetTouches[0].target.className) {
+      case "arrow-btn right":
+        console.log("right")
+        camState.xVelTarget = -DELTA_ROTACION;
+        break;
+      case "arrow-btn.left":
+        camState.xVelTarget = DELTA_ROTACION;
+        break;
+      case "arrow-btn.up":
+        camState.zVelTarget = -DELTA_ROTACION;
+        break;
+      case "arrow-btn.down":
+        camState.zVelTarget = DELTA_ROTACION;
+        break;
+    }
+  });
+
+  document.getElementById("rotation-buttons").addEventListener("touchend", function(e) {
+    switch(e.originalEvent.targetTouches[0].target.className) {
+      case "arrow-btn right":
+        console.log("right")
+        camState.xVelTarget = 0;
+        break;
+      case "arrow-btn.left":
+        camState.xVelTarget = 0;
+        break;
+      case "arrow-btn.up":
+        camState.zVelTarget = 0;
+        break;
+      case "arrow-btn.down":
+        camState.zVelTarget = 0;
+        break;
+    }
+  });
+
+  // Eventos de teclado
   document.addEventListener("keydown", function (e) {
     switch (e.key) {
       case "ArrowUp":
@@ -94,15 +164,15 @@ export function DroneCameraControl(camera, initialPos) {
         break;
       case "2":
         DELTA_TRASLACION = DELTA_TRASLACION_DEFAULT * 2;
-        DELTA_ROTACION = DELTA_ROTACION_DEFAULT * 2;
+        //DELTA_ROTACION = DELTA_ROTACION_DEFAULT * 2;
         break;
       case "3":
         DELTA_TRASLACION = DELTA_TRASLACION_DEFAULT * 4;
-        DELTA_ROTACION = DELTA_ROTACION_DEFAULT * 4;
+        //DELTA_ROTACION = DELTA_ROTACION_DEFAULT * 3;
         break;
       case "4":
         DELTA_TRASLACION = DELTA_TRASLACION_DEFAULT * 6;
-        DELTA_ROTACION = DELTA_ROTACION_DEFAULT * 6;
+        //DELTA_ROTACION = DELTA_ROTACION_DEFAULT * 3;
         break;
     }
   });

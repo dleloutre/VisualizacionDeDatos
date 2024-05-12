@@ -33,10 +33,10 @@ function setup() {
     200000
   );
   droneCamera = new THREE.PerspectiveCamera(
-    75,
+    35,
     window.innerWidth / window.innerHeight,
     0.1,
-    20000
+    200000
   );
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -74,7 +74,6 @@ function setup() {
   document.body.appendChild(stats.dom);
 
   //window.addEventListener("resize", onResize);
-
   droneCameraControl = new DroneCameraControl(droneCamera);
   camera = orbitalCamera;
   window.addEventListener("resize", onResize);
@@ -86,7 +85,8 @@ function onResize() {
   droneCamera.aspect = window.innerWidth / window.innerHeight;
   droneCamera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  composer.setSize(window.innerWidth, window.innerHeight);
+  composerDrone.setSize(window.innerWidth, window.innerHeight);
+  composerOrbital.setSize(window.innerWidth, window.innerHeight);
 }
 
 function createUI() {
