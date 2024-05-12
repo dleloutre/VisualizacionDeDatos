@@ -92,7 +92,7 @@ export function generateTextSprite(text, config) {
     //blending: THREE.AdditiveBlending,
   });
   var sprite = new THREE.Sprite(spriteMaterial);
-  sprite.scale.set(0.3, 0.1, 0.1);
+  sprite.scale.set(0.1, 0.05, 0.05);
 
   return sprite;
 
