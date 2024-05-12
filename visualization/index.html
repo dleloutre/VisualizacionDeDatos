@@ -19,13 +19,13 @@
     <script type="module" src="index.js"></script>
     <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>eruda.init();</script>
+    <script src="https://cdn.jsdelivr.net/npm/ismobilejs@1/dist/isMobile.min.js"></script>
     <script>
-      function hideBoth()  {
+        console.log(isMobile)
         if (isMobile.apple.phone || isMobile.android.phone) {
           document.getElementById("translation-buttons").style.visibility="visible";   
           document.getElementById("rotation-buttons").style.visibility="visible";   
         }
-      }
     </script>
     <style>
       body {
