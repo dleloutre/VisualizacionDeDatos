@@ -56,6 +56,7 @@ export function DroneCameraControl(camera, initialPos) {
 
   document.getElementById("translation-buttons").addEventListener("touchend", function(e) {
     console.log("EVENT TRANSLATION:", e)
+    console.log("lk", e.targetTouches)
     switch(e.originalEvent.targetTouches[0].target.className) {
       case "arrow-btn right":
         console.log("right")
@@ -74,6 +75,8 @@ export function DroneCameraControl(camera, initialPos) {
   });
 
   document.getElementById("rotation-buttons").addEventListener("touchstart", function(e) {
+    console.log("EVENT ROTATION:", e)
+    console.log("rot", e.targetTouches)
     switch(e.originalEvent.targetTouches[0].target.className) {
       case "arrow-btn right":
         console.log("right")
