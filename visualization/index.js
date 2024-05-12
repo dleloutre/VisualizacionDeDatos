@@ -12,7 +12,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { DroneCameraControl } from "./droneCamera.js";
 import partiesData from "/data/parties.json" assert { type: 'json' };
 
-let scene, camera, renderer, composer, stats, controls, plane, nodes, edges, graph, textlabels = [];
+let scene, camera, renderer, composerDrone, composerOrbital, stats, controls, plane, nodes, edges, graph, textlabels = [];
 let fileKeys, orbitalCamera, droneCamera, droneCameraControl, timeBefore = Date.now();
 
 const params = {
@@ -27,10 +27,10 @@ const params = {
 function setup() {
   scene = new THREE.Scene();
   orbitalCamera = new THREE.PerspectiveCamera(
-    75,
+    35,
     window.innerWidth / window.innerHeight,
     0.1,
-    20000
+    200000
   );
   droneCamera = new THREE.PerspectiveCamera(
     75,
@@ -38,7 +38,7 @@ function setup() {
     0.1,
     20000
   );
-  renderer = new THREE.WebGLRenderer(({ antialias: true }));
+  renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
@@ -49,18 +49,22 @@ function setup() {
     type: THREE.HalfFloatType,
   });
   
-  const renderPass = new RenderPass(scene, droneCamera);
-  const outputPass = new OutputPass();
+  const renderPassOrbital = new RenderPass(scene, orbitalCamera);
+  const renderPassDrone = new RenderPass(scene, droneCamera);
   
-  composer = new EffectComposer(renderer, renderTarget);
-  composer.addPass(renderPass);
-  composer.addPass(outputPass);
+  composerOrbital = new EffectComposer(renderer, renderTarget);
+  composerOrbital.addPass(renderPassOrbital);
+  //composerOrbital.addPass(new OutputPass());
+
+  composerDrone = new EffectComposer(renderer, renderTarget);
+  composerDrone.addPass(renderPassDrone);
+  //composerDrone.addPass(new OutputPass());
 
   controls = new OrbitControls(orbitalCamera, renderer.domElement);
   // Semicircle layout: camera.position.set(0, 500, 2500)
   // Circle layout: camera.position.set(0, 3000, 0);
   // Spiral layout: 
-  orbitalCamera.position.set(0, 6000, 0)
+  orbitalCamera.position.set(0, 19000, 0)
 
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);
@@ -176,19 +180,27 @@ function positionLabels(labelPositions) {
 const animate = function () {
 	stats.begin();
 	requestAnimationFrame(animate);
+  let cameraHasChanged;
   let timeNow = Date.now();
-  controls.update(timeBefore - timeNow);
+  cameraHasChanged = controls.update(timeBefore - timeNow);
   timeBefore = Date.now();
   if (params.droneCamera) {
-    let cameraHasChanged = droneCameraControl.update();
+    cameraHasChanged = droneCameraControl.update();
     if (cameraHasChanged) {
       renderer.render(scene, camera);
     } else {
       // maxima calidad
-      composer.render();
+      composerDrone.render();
+    }
+  } else {
+    if (cameraHasChanged) {
+      renderer.render(scene, camera);
+    } else {
+      composerOrbital.render();
     }
   }
-	renderer.render(scene, camera);
+
+	//renderer.render(scene, camera);
 	stats.end();
 };
 

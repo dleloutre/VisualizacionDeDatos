@@ -8,7 +8,7 @@ export function generateTextSprite(text, config) {
     config || (config = { });
 
     var fontFace = config.hasOwnProperty('fontFace') ? config['fontFace'] : 'Verdana';
-    var fontSize = config.hasOwnProperty('fontSize') ? config['fontSize'] : 60;
+    var fontSize = config.hasOwnProperty('fontSize') ? config['fontSize'] : 30;
     var fontColor = config.hasOwnProperty('fontColor') ? config['fontColor'] : 'rgba(255, 255, 255, 1)';
     var fontBold = config.hasOwnProperty('fontBold') ? config['fontBold'] : false;
     var textAlign = config.hasOwnProperty('textAlign') ? config['textAlign'] : 'center';
@@ -68,7 +68,7 @@ export function generateTextSprite(text, config) {
       sizeAttenuation: false
     });
     var sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(0.3, 0.1, 0.1);
+    sprite.scale.set(0.1, 0.05, 0.05);
     
     return sprite;
   
