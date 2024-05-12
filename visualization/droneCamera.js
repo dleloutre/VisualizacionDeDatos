@@ -55,6 +55,7 @@ export function DroneCameraControl(camera, initialPos) {
   });
 
   document.getElementById("translation-buttons").addEventListener("touchend", function(e) {
+    console.log("EVENT TRANSLATION:", e)
     switch(e.originalEvent.targetTouches[0].target.className) {
       case "arrow-btn right":
         console.log("right")
