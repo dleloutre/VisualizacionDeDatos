@@ -6,8 +6,9 @@ from sphere_constraint import SphereConstraint
 #from scalate import Scalator
 
 TOTAL_NODES = 1242243
+TOTAL_NODES_POLITICS = 46209
 RADIUS = 300
-
+MIN_RADIUS = 30
 def main():
     inputFile = sys.argv[1]
     outputFile = sys.argv[2]
@@ -17,6 +18,9 @@ def main():
     df_nodes_position = force_alg.apply_force_algorithm_3D(G)
     ## check
     sphere_radius = len(df_nodes_position)/TOTAL_NODES*100*RADIUS
+    if(sphere_radius < MIN_RADIUS):
+        sphere_radius = MIN_RADIUS
+    print("Sphere radius: ", sphere_radius)
     ##
     sphere_constraint = SphereConstraint(sphere_radius=sphere_radius)
     df_nodes_position_constrained = sphere_constraint.constrain_to_sphere(df_nodes_position)
