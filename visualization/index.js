@@ -112,8 +112,16 @@ function createUI() {
     .onChange((v) => {
       if (v) {
         camera = droneCamera;
+        if (isMobile.apple.phone || isMobile.android.phone) {
+          document.getElementById("translation-buttons").style.visibility="visible";   
+          document.getElementById("rotation-buttons").style.visibility="visible";   
+        }
       } else {
         camera = orbitalCamera;
+        if (isMobile.apple.phone || isMobile.android.phone) {
+          document.getElementById("translation-buttons").style.visibility="hidden";   
+          document.getElementById("rotation-buttons").style.visibility="hidden";   
+        }
       }
     });
   gui
