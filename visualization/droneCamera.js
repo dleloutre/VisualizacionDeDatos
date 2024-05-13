@@ -91,6 +91,12 @@ export function DroneCameraControl(camera, initialPos) {
   });
 
   document.getElementById("rotation-buttons").addEventListener("touchend", function(e) {
+    console.log(e)
+    console.log("touches",e.touches)
+    console.log("target",e.target)
+    console.log("changedTouches", e.changedTouches)
+    console.log("targetTouches",e.targetTouches)
+    console.log("", e.changedTouches[e.changedTouches.length-1])
     switch(e.touches[0].target.className) {
       case "arrow-btn right":
         console.log("right2 end")
