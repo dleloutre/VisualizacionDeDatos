@@ -39,16 +39,16 @@ export function DroneCameraControl(camera, initialPos) {
   document.getElementById("translation-buttons").addEventListener("touchstart", function(e) {
     switch(e.targetTouches[0].target.className) {
       case "arrow-btn right":
-        camState.xVelTarget = -DELTA_TRASLACION;
+        camState.xVelTarget = -DELTA_TRASLACION*2;
         break;
       case "arrow-btn left":
-        camState.xVelTarget = DELTA_TRASLACION;
+        camState.xVelTarget = DELTA_TRASLACION*2;
         break;
       case "arrow-btn up":
-        camState.zVelTarget = -DELTA_TRASLACION;
+        camState.zVelTarget = -DELTA_TRASLACION*4;
         break;
       case "arrow-btn down":
-        camState.zVelTarget = DELTA_TRASLACION;
+        camState.zVelTarget = DELTA_TRASLACION*4;
         break;
     }
   });
