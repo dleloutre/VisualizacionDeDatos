@@ -89,7 +89,7 @@ export class GraphMeshBuilder {
 		return texture;
 	}
 
-	_getEdgesTexture2() {
+	/*_getEdgesTexture2() {
 		const width = 256;
 		const height = 4096;
 
@@ -141,7 +141,7 @@ export class GraphMeshBuilder {
 		texture.wrapS = THREE.ClampToEdgeWrapping;
 		texture.wrapT = THREE.ClampToEdgeWrapping;
 		return texture;
-	}
+	}*/
 
 	_createEdgesMaterial() {
 		let texture = this.edgesTexture;

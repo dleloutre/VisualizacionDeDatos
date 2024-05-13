@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 const partyAnglesCircle = [
-    0.6,
+    0.7,
     1.0,
     1.2,
     1.8,

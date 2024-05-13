@@ -1,56 +1,50 @@
 {
-    "arthaud": {
-        "label": "Arthaud",
-        "color": "rgba(1, 0, 0, 1)"
-    },
-    "poutou": {
-        "label": "Poutou",
-        "color": "rgba(1, 0.38, 0, 1)"
-    },
-    "roussel": {
-        "label": "Roussel",
-        "color": "rgba(1, 0.76, 1, 1)"
-    },
-    "melenchon": {
-        "label": "Mélenchon",
-        "color": "rgba(0.85, 1, 0, 1)"
-    },
-    "jadot": {
-        "label": "Jadot",
-        "color": "rgba(0.47, 1, 0, 1)"
-    },
-    "hidalgo": {
-        "label": "Hidalgo",
-        "color": "rgba(0.09, 0, 1, 1)"
-    },
-    "macron": {
-        "label": "Macron",
-        "color": "rgba(0, 1, 0.29, 1)"
-    },
-    "pecresse": {
-        "label": "Pécresse",
-        "color": "rgba(0, 1, 0.67, 1)"
-    },
-    "lasalle": {
-        "label": "Lassalle",
-        "color": "rgba(0, 0.94, 1, 1)"
-    },
-    "mlp": {
-        "label": "Le Pen",
-        "color": "rgba(0, 0.5636, 1, 1)"
-    },
-    "dupontaignan": {
-        "label": "Dupont-Aignan",
-        "color": "rgba(0, 0.1818, 1, 1)"
-    },
-    "zemmour": {
-        "label": "Zemmour",
-        "color": "rgba(0, 0, 1, 1)"
-    }
+  "arthaud": {
+    "label": "Arthaud",
+    "color": "rgba(255, 0, 0, 0.4)"
+  },
+  "poutou": {
+    "label": "Poutou",
+    "color": "rgba(255, 102, 0, 0.4)"
+  },
+  "roussel": {
+    "label": "Roussel",
+    "color": "rgba(255, 226, 0, 0.4)"
+  },
+  "melenchon": {
+    "label": "Mélenchon",
+    "color": "rgba(238, 255, 0, 0.4)"
+  },
+  "jadot": {
+    "label": "Jadot",
+    "color": "rgba(183, 255, 0, 0.4)"
+  },
+  "hidalgo": {
+    "label": "Hidalgo",
+    "color": "rgba(85, 255, 0, 0.4)"
+  },
+  "macron": {
+    "label": "Macron",
+    "color": "rgba(0, 255, 147, 0.4)"
+  },
+  "pecresse": {
+    "label": "Pécresse",
+    "color": "rgba(0, 255, 214, 0.4)"
+  },
+  "lasalle": {
+    "label": "Lassalle",
+    "color": "rgba(0, 249, 255, 0.4)"
+  },
+  "mlp": {
+    "label": "Le Pen",
+    "color": "rgba(0, 198, 255, 0.4)"
+  },
+  "dupontaignan": {
+    "label": "Dupont-Aignan",
+    "color": "rgba(0, 118, 255, 0.4)"
+  },
+  "zemmour": {
+    "label": "Zemmour",
+    "color": "rgba(0, 0, 255, 0.4)"
+  }
 }
-
-
-
-
-
-
