@@ -5,7 +5,7 @@ export function DroneCameraControl(camera, initialPos) {
 
   const DELTA_TRASLACION_DEFAULT = 30; // velocidad de traslacion
   const DELTA_ROTACION_DEFAULT = 0.04; // velocidad de rotacion
-  let DELTA_TRASLACION = 10; // velocidad de traslacion
+  let DELTA_TRASLACION = 30; // velocidad de traslacion
   let DELTA_ROTACION = 0.04; // velocidad de rotacion
   const FACTOR_INERCIA = 0.05;
   const MIN_TRANSLATION_THRESHOLD = 0.02;
@@ -39,7 +39,6 @@ export function DroneCameraControl(camera, initialPos) {
   document.getElementById("translation-buttons").addEventListener("touchstart", function(e) {
     switch(e.targetTouches[0].target.className) {
       case "arrow-btn right":
-        console.log("right start")
         camState.xVelTarget = -DELTA_TRASLACION;
         break;
       case "arrow-btn left":
@@ -57,7 +56,6 @@ export function DroneCameraControl(camera, initialPos) {
   document.getElementById("translation-buttons").addEventListener("touchend", function(e) {
     switch(e.changedTouches[e.changedTouches.length-1].target.className) {
       case "arrow-btn right":
-        console.log("right end")
         camState.xVelTarget = 0;
         break;
       case "arrow-btn left":
@@ -75,17 +73,16 @@ export function DroneCameraControl(camera, initialPos) {
   document.getElementById("rotation-buttons").addEventListener("touchstart", function(e) {
     switch(e.targetTouches[0].target.className) {
       case "arrow-btn right":
-        console.log("right2 start")
-        camState.xVelTarget = -5;
+        camState.xRotVelTarget = -DELTA_ROTACION;
         break;
       case "arrow-btn left":
-        camState.xVelTarget = DELTA_ROTACION;
+        camState.xRotVelTarget = DELTA_ROTACION;
         break;
       case "arrow-btn up":
-        camState.zVelTarget = -2;
+        camState.zRotVelTarget = -DELTA_ROTACION;
         break;
       case "arrow-btn down":
-        camState.zVelTarget = DELTA_ROTACION;
+        camState.zRotVelTarget = DELTA_ROTACION;
         break;
     }
   });
@@ -93,17 +90,16 @@ export function DroneCameraControl(camera, initialPos) {
   document.getElementById("rotation-buttons").addEventListener("touchend", function(e) {
     switch(e.changedTouches[e.changedTouches.length-1].target.className) {
       case "arrow-btn right":
-        console.log("righ2 end")
-        camState.xVelTarget = 0;
+        camState.xRotVelTarget = 0;
         break;
       case "arrow-btn left":
-        camState.xVelTarget = 0;
+        camState.xRotVelTarget = 0;
         break;
       case "arrow-btn up":
-        camState.zVelTarget = 0;
+        camState.zRotVelTarget = 0;
         break;
       case "arrow-btn down":
-        camState.zVelTarget = 0;
+        camState.zRotVelTarget = 0;
         break;
     }
   });
