@@ -73,16 +73,16 @@ export function DroneCameraControl(camera, initialPos) {
   document.getElementById("rotation-buttons").addEventListener("touchstart", function(e) {
     switch(e.targetTouches[0].target.className) {
       case "arrow-btn right":
-        camState.xRotVelTarget = -DELTA_ROTACION;
+        camState.yRotVelTarget = -DELTA_ROTACION;
         break;
       case "arrow-btn left":
-        camState.xRotVelTarget = DELTA_ROTACION;
+        camState.yRotVelTarget = DELTA_ROTACION;
         break;
       case "arrow-btn up":
-        camState.zRotVelTarget = -DELTA_ROTACION;
+        camState.xRotVelTarget = -DELTA_ROTACION;
         break;
       case "arrow-btn down":
-        camState.zRotVelTarget = DELTA_ROTACION;
+        camState.xRotVelTarget = DELTA_ROTACION;
         break;
     }
   });
@@ -90,16 +90,16 @@ export function DroneCameraControl(camera, initialPos) {
   document.getElementById("rotation-buttons").addEventListener("touchend", function(e) {
     switch(e.changedTouches[e.changedTouches.length-1].target.className) {
       case "arrow-btn right":
-        camState.xRotVelTarget = 0;
+        camState.yRotVelTarget = 0;
         break;
       case "arrow-btn left":
-        camState.xRotVelTarget = 0;
+        camState.yRotVelTarget = 0;
         break;
       case "arrow-btn up":
-        camState.zRotVelTarget = 0;
+        camState.xRotVelTarget = 0;
         break;
       case "arrow-btn down":
-        camState.zRotVelTarget = 0;
+        camState.xRotVelTarget = 0;
         break;
     }
   });
