@@ -76,13 +76,13 @@ export function DroneCameraControl(camera, initialPos) {
     switch(e.targetTouches[0].target.className) {
       case "arrow-btn right":
         console.log("right2 start")
-        camState.xVelTarget = -1;
+        camState.xVelTarget = -5;
         break;
       case "arrow-btn left":
         camState.xVelTarget = DELTA_ROTACION;
         break;
       case "arrow-btn up":
-        camState.zVelTarget = -0.3;
+        camState.zVelTarget = -2;
         break;
       case "arrow-btn down":
         camState.zVelTarget = DELTA_ROTACION;
