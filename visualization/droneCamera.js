@@ -42,13 +42,13 @@ export function DroneCameraControl(camera, initialPos) {
         console.log("right start")
         camState.xVelTarget = -DELTA_TRASLACION;
         break;
-      case "arrow-btn.left":
+      case "arrow-btn left":
         camState.xVelTarget = DELTA_TRASLACION;
         break;
-      case "arrow-btn.up":
+      case "arrow-btn up":
         camState.zVelTarget = -DELTA_TRASLACION;
         break;
-      case "arrow-btn.down":
+      case "arrow-btn down":
         camState.zVelTarget = DELTA_TRASLACION;
         break;
     }
@@ -96,13 +96,13 @@ export function DroneCameraControl(camera, initialPos) {
         console.log("righ2 end")
         camState.xVelTarget = 0;
         break;
-      case "arrow-btn.left":
+      case "arrow-btn left":
         camState.xVelTarget = 0;
         break;
-      case "arrow-btn.up":
+      case "arrow-btn up":
         camState.zVelTarget = 0;
         break;
-      case "arrow-btn.down":
+      case "arrow-btn down":
         camState.zVelTarget = 0;
         break;
     }
