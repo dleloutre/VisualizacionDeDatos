@@ -3,7 +3,7 @@ import * as THREE from "three";
 export function DroneCameraControl(camera, initialPos) {
   const MIN_Y = 1;
 
-  const DELTA_TRASLACION_DEFAULT = 10; // velocidad de traslacion
+  const DELTA_TRASLACION_DEFAULT = 30; // velocidad de traslacion
   const DELTA_ROTACION_DEFAULT = 0.04; // velocidad de rotacion
   let DELTA_TRASLACION = 10; // velocidad de traslacion
   let DELTA_ROTACION = 0.04; // velocidad de rotacion
@@ -55,7 +55,7 @@ export function DroneCameraControl(camera, initialPos) {
   });
 
   document.getElementById("translation-buttons").addEventListener("touchend", function(e) {
-    switch(e.touches[0].target.className) {
+    switch(e.changedTouches[e.changedTouches.length-1].target.className) {
       case "arrow-btn right":
         console.log("right end")
         camState.xVelTarget = 0;
@@ -76,13 +76,13 @@ export function DroneCameraControl(camera, initialPos) {
     switch(e.targetTouches[0].target.className) {
       case "arrow-btn right":
         console.log("right2 start")
-        camState.xVelTarget = -DELTA_ROTACION;
+        camState.xVelTarget = -1;
         break;
       case "arrow-btn left":
         camState.xVelTarget = DELTA_ROTACION;
         break;
       case "arrow-btn up":
-        camState.zVelTarget = -DELTA_ROTACION;
+        camState.zVelTarget = -0.3;
         break;
       case "arrow-btn down":
         camState.zVelTarget = DELTA_ROTACION;
@@ -91,11 +91,9 @@ export function DroneCameraControl(camera, initialPos) {
   });
 
   document.getElementById("rotation-buttons").addEventListener("touchend", function(e) {
-    console.log("className", e.changedTouches[e.changedTouches.length-1].target.className)
-    console.log("name", e.changedTouches[e.changedTouches.length-1].target.name)
     switch(e.changedTouches[e.changedTouches.length-1].target.className) {
       case "arrow-btn right":
-        console.log("right2 end")
+        console.log("righ2 end")
         camState.xVelTarget = 0;
         break;
       case "arrow-btn.left":
