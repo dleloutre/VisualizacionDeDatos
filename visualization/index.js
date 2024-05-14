@@ -15,20 +15,20 @@ import partiesData from "/data/parties.json" assert { type: "json" };
 let scene,
   camera,
   renderer,
-  composerDrone,
-  composerOrbital,
+  composer,
   stats,
   controls,
-  plane,
   nodes,
   edges,
   graph,
-  textlabels = [];
-let fileKeys,
+  textlabels = [],
+  fileKeys,
   orbitalCamera,
   droneCamera,
   droneCameraControl,
-  timeBefore = Date.now();
+  composerDrone,
+  composerOrbital,
+  clock;
 
 const params = {
   emissionFactor: 0.3,
@@ -88,20 +88,25 @@ function setup() {
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
 
-  //window.addEventListener("resize", onResize);
   droneCameraControl = new DroneCameraControl(droneCamera);
   camera = orbitalCamera;
+  composer = composerOrbital;
   window.addEventListener("resize", onResize);
+
+  clock = new THREE.Clock();
 }
 
 function onResize() {
-  orbitalCamera.aspect = window.innerWidth / window.innerHeight;
-  orbitalCamera.updateProjectionMatrix();
-  droneCamera.aspect = window.innerWidth / window.innerHeight;
-  droneCamera.updateProjectionMatrix();
+  camera.aspect = window.innerWidth / window.innerHeight;
   renderer.setSize(window.innerWidth, window.innerHeight);
-  composerDrone.setSize(window.innerWidth, window.innerHeight);
-  composerOrbital.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function changeButtonsVisibility(visibility) {
+  if (isMobile.apple.phone || isMobile.android.phone) {
+    document.getElementById("translation-buttons").style.visibility=visibility;
+    document.getElementById("rotation-buttons").style.visibility=visibility;
+  }
 }
 
 function createUI() {
@@ -112,16 +117,12 @@ function createUI() {
     .onChange((v) => {
       if (v) {
         camera = droneCamera;
-        if (isMobile.apple.phone || isMobile.android.phone) {
-          document.getElementById("translation-buttons").style.visibility="visible";   
-          document.getElementById("rotation-buttons").style.visibility="visible";   
-        }
+        composer = composerDrone;
+        changeButtonsVisibility("visible");
       } else {
         camera = orbitalCamera;
-        if (isMobile.apple.phone || isMobile.android.phone) {
-          document.getElementById("translation-buttons").style.visibility="hidden";   
-          document.getElementById("rotation-buttons").style.visibility="hidden";   
-        }
+        composer = composerOrbital;
+        changeButtonsVisibility("hidden");
       }
     });
   gui
@@ -214,27 +215,21 @@ function positionLabels(labelPositions) {
 const animate = function () {
   stats.begin();
   requestAnimationFrame(animate);
+
   let cameraHasChanged;
-  let timeNow = Date.now();
-  cameraHasChanged = controls.update(timeBefore - timeNow);
-  timeBefore = Date.now();
+  let time = clock.getDelta();
   if (params.droneCamera) {
-    cameraHasChanged = droneCameraControl.update();
-    if (cameraHasChanged) {
-      renderer.render(scene, camera);
-    } else {
-      // maxima calidad
-      composerDrone.render();
-    }
+    cameraHasChanged = droneCameraControl.update(time);
   } else {
-    if (cameraHasChanged) {
-      renderer.render(scene, camera);
-    } else {
-      composerOrbital.render();
-    }
+    cameraHasChanged = controls.update(time);
+  }
+  
+  if (cameraHasChanged) {
+    renderer.render(scene, camera);
+  } else {
+    composer.render();
   }
 
-  //renderer.render(scene, camera);
   stats.end();
 };
 
