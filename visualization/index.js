@@ -28,6 +28,11 @@ let scene,
   droneCamera,
   droneCameraControl,
   renderPass,
+  renderPassOrbital,
+  renderPassDrone,
+  composerOrbital,
+  composerDrone,
+  cameraMatrixOldValues = [],
   clock;
 
 const params = {
@@ -37,7 +42,7 @@ const params = {
   spiralRounds: 1,
   spiralSwitch: true,
   droneCamera: false,
-  //antialias: false,
+  antialias: false,
 };
 
 function setup() {
@@ -54,31 +59,48 @@ function setup() {
     0.1,
     200000
   );
+  camera = orbitalCamera;
+  
   renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.toneMapping = THREE.NoToneMapping;
+  THREE.ColorManagement.enabled = true;
+  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+  //renderer.toneMapping = THREE.NoToneMapping;
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
   const size = renderer.getDrawingBufferSize(new THREE.Vector2());
 
   const renderTarget = new THREE.WebGLRenderTarget(size.width, size.height, {
-    samples: 8,
+    samples: 5,
     type: THREE.FloatType,
   });
 
-  renderPass = new RenderPass(scene, orbitalCamera);
-  const outputPass = new OutputPass();
-  composer = new EffectComposer(renderer, renderTarget);
-  composer.addPass(renderPass);
-  composer.addPass(outputPass);
+  renderPassOrbital = new SSAARenderPass(scene, orbitalCamera);
+  renderPassOrbital.clearColor = new THREE.Color(0x000000); 
+  renderPassOrbital.clearAlpha = 1; 
+  renderPassOrbital.sampleLevel = 4; 
+  renderPassOrbital.unbiased = true;
 
-  //composerOrbital = new EffectComposer(renderer, renderTarget);
-  //composerOrbital.addPass(renderPassOrbital);
-  //composerOrbital.addPass(new OutputPass());
+  renderPassDrone = new SSAARenderPass(scene, droneCamera);
+  renderPassDrone.clearColor = new THREE.Color(0x000000); 
+  renderPassDrone.clearAlpha = 1; 
+  renderPassDrone.sampleLevel = 4; 
+  renderPassDrone.unbiased = true;
 
-  //composerDrone = new EffectComposer(renderer, renderTarget);
-  //composerDrone.addPass(renderPassDrone);
-  //composerDrone.addPass(new OutputPass());
+  //const outputPass = new OutputPass();
+  //composer = new EffectComposer(renderer, renderTarget);
+  //composer.addPass(renderPassOrbital);
+  //composer.addPass(outputPass);
+
+  composerOrbital = new EffectComposer(renderer, renderTarget);
+  composerOrbital.addPass(renderPassOrbital);
+  composerOrbital.addPass(new OutputPass());
+
+  composerDrone = new EffectComposer(renderer, renderTarget);
+  composerDrone.addPass(renderPassDrone);
+  composerDrone.addPass(new OutputPass());
+
+  composer = composerOrbital;
 
   controls = new OrbitControls(orbitalCamera, renderer.domElement);
   droneCameraControl = new DroneCameraControl(droneCamera);
@@ -98,7 +120,6 @@ function setup() {
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
 
-  camera = orbitalCamera;
   window.addEventListener("resize", onResize);
 
   clock = new THREE.Clock();
@@ -119,15 +140,19 @@ function changeButtonsVisibility(visibility) {
 
 function createUI() {
   const gui = new dat.GUI();
+  gui.add(params, "antialias")
+    .name("antialias")
   gui
     .add(params, "droneCamera")
     .name("drone view")
     .onChange((v) => {
       if (v) {
         camera = droneCamera;
+        composer = composerDrone;
         changeButtonsVisibility("visible");
       } else {
         camera = orbitalCamera;
+        composer = composerOrbital;
         changeButtonsVisibility("hidden");
       }
     });
@@ -220,10 +245,33 @@ function positionLabels(labelPositions) {
 
 const animate = function () {
   stats.begin();
-  renderPass.camera = camera;
+  //renderPass.camera = camera;
   requestAnimationFrame(animate);
 
-  //if (params.antialias) {
+  let cameraHasChanged = false;  
+  camera.matrixWorld.elements.forEach((v, i) => {
+    if (cameraMatrixOldValues.length > 0 && v != cameraMatrixOldValues[i]) {
+      cameraHasChanged = true;
+    }
+  });
+
+  if (params.droneCamera) {
+    cameraHasChanged = droneCameraControl.update();
+    //droneCameraControl.update();
+  }
+
+  if (cameraHasChanged || !params.antialias) {
+    renderer.render(scene, camera);
+  } else {
+    composer.render();
+  }
+  
+  cameraMatrixOldValues = [];
+  camera.matrixWorld.elements.forEach((element) => {
+    cameraMatrixOldValues.push(element);
+  });
+
+  /*if (params.antialias) {
     let cameraHasChanged;
     let time = clock.getDelta();
     if (params.droneCamera) {
@@ -238,7 +286,7 @@ const animate = function () {
       composer.render();
     }
     //composer.render();
-  /*} else {
+  } else {
     renderer.render(scene, camera);
   }*/
 
