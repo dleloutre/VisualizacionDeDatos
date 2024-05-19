@@ -8,6 +8,7 @@ import { loadCSV } from "./utils.js";
 import { generateTextSprite } from "./spriteText.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { SSAARenderPass } from 'three/addons/postprocessing/SSAARenderPass.js';
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { DroneCameraControl } from "./droneCamera.js";
 import partiesData from "/data/parties.json" assert { type: "json" };
@@ -26,8 +27,7 @@ let scene,
   orbitalCamera,
   droneCamera,
   droneCameraControl,
-  composerDrone,
-  composerOrbital,
+  renderPass,
   clock;
 
 const params = {
@@ -37,6 +37,7 @@ const params = {
   spiralRounds: 1,
   spiralSwitch: true,
   droneCamera: false,
+  //antialias: false,
 };
 
 function setup() {
@@ -54,28 +55,34 @@ function setup() {
     200000
   );
   renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.toneMapping = THREE.NoToneMapping;
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
   const size = renderer.getDrawingBufferSize(new THREE.Vector2());
 
   const renderTarget = new THREE.WebGLRenderTarget(size.width, size.height, {
-    samples: 4,
-    type: THREE.HalfFloatType,
+    samples: 8,
+    type: THREE.FloatType,
   });
 
-  const renderPassOrbital = new RenderPass(scene, orbitalCamera);
-  const renderPassDrone = new RenderPass(scene, droneCamera);
+  renderPass = new RenderPass(scene, orbitalCamera);
+  const outputPass = new OutputPass();
+  composer = new EffectComposer(renderer, renderTarget);
+  composer.addPass(renderPass);
+  composer.addPass(outputPass);
 
-  composerOrbital = new EffectComposer(renderer, renderTarget);
-  composerOrbital.addPass(renderPassOrbital);
+  //composerOrbital = new EffectComposer(renderer, renderTarget);
+  //composerOrbital.addPass(renderPassOrbital);
   //composerOrbital.addPass(new OutputPass());
 
-  composerDrone = new EffectComposer(renderer, renderTarget);
-  composerDrone.addPass(renderPassDrone);
+  //composerDrone = new EffectComposer(renderer, renderTarget);
+  //composerDrone.addPass(renderPassDrone);
   //composerDrone.addPass(new OutputPass());
 
   controls = new OrbitControls(orbitalCamera, renderer.domElement);
+  droneCameraControl = new DroneCameraControl(droneCamera);
+
   // Semicircle layout: camera.position.set(0, 500, 2500)
   // Circle layout: camera.position.set(0, 3000, 0);
   // Spiral layout:
@@ -84,13 +91,14 @@ function setup() {
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);
 
+  const gridHelper = new THREE.GridHelper(100000, 100);
+  scene.add(gridHelper)
+
   stats = new Stats();
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
 
-  droneCameraControl = new DroneCameraControl(droneCamera);
   camera = orbitalCamera;
-  composer = composerOrbital;
   window.addEventListener("resize", onResize);
 
   clock = new THREE.Clock();
@@ -117,11 +125,9 @@ function createUI() {
     .onChange((v) => {
       if (v) {
         camera = droneCamera;
-        composer = composerDrone;
         changeButtonsVisibility("visible");
       } else {
         camera = orbitalCamera;
-        composer = composerOrbital;
         changeButtonsVisibility("hidden");
       }
     });
@@ -214,21 +220,27 @@ function positionLabels(labelPositions) {
 
 const animate = function () {
   stats.begin();
+  renderPass.camera = camera;
   requestAnimationFrame(animate);
 
-  let cameraHasChanged;
-  let time = clock.getDelta();
-  if (params.droneCamera) {
-    cameraHasChanged = droneCameraControl.update(time);
-  } else {
-    cameraHasChanged = controls.update(time);
-  }
-  
-  if (cameraHasChanged) {
+  //if (params.antialias) {
+    let cameraHasChanged;
+    let time = clock.getDelta();
+    if (params.droneCamera) {
+      cameraHasChanged = droneCameraControl.update(time);
+    } else {
+      cameraHasChanged = controls.update(time);
+    }
+    
+    if (cameraHasChanged) {
+      renderer.render(scene, camera);
+    } else {
+      composer.render();
+    }
+    //composer.render();
+  /*} else {
     renderer.render(scene, camera);
-  } else {
-    composer.render();
-  }
+  }*/
 
   stats.end();
 };

@@ -10,10 +10,10 @@ export function DroneCameraControl(camera, initialPos) {
   const FACTOR_INERCIA = 0.05;
   const MIN_TRANSLATION_THRESHOLD = 0.02;
 
-  if (!initialPos) initialPos = [0, 19000, 0];
+  if (!initialPos) initialPos = [0, 2500, 15000];
 
   camera.position.set(initialPos[0], initialPos[1], initialPos[2]);
-  camera.rotation.set(-Math.PI, 0, 0);
+  //camera.rotation.set(-Math.PI, 0, 0);
 
   let camInitialState = {
     xVel: 0,
@@ -27,7 +27,7 @@ export function DroneCameraControl(camera, initialPos) {
     yRotVel: 0,
     zRotVelTarget: 0,
     zRotVel: 0,
-    xRotVelTarget: -0.7*15,
+    xRotVelTarget: 0,//-0.7*15,
     xRotVel: 0,
 
     rightAxisMode: "move",

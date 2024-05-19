@@ -166,6 +166,7 @@ export class GraphMeshBuilder {
 			},
 			vertexShader: edgeShader.vertexShader,
 			fragmentShader: edgeShader.fragmentShader,
+			//wireframe: true
 		});
 
 		return mat;
