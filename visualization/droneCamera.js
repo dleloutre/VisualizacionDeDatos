@@ -297,4 +297,9 @@ export function DroneCameraControl(camera, initialPos) {
     }
     return hasChanged;
   };
+
+  this.setGraphPosition = function(graph) {
+    console.log(graph)
+    graph.rotation.x = -Math.PI/2;
+  }
 }

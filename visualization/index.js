@@ -108,7 +108,7 @@ function setup() {
   // Semicircle layout: camera.position.set(0, 500, 2500)
   // Circle layout: camera.position.set(0, 3000, 0);
   // Spiral layout:
-  orbitalCamera.position.set(0, 19000, 0);
+  orbitalCamera.position.set(0, 22000, 0);
 
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);
@@ -150,6 +150,7 @@ function createUI() {
         camera = droneCamera;
         composer = composerDrone;
         changeButtonsVisibility("visible");
+        //droneCameraControl.setGraphPosition(graph)
       } else {
         camera = orbitalCamera;
         composer = composerOrbital;
@@ -228,12 +229,12 @@ function positionLabels(labelPositions) {
 
     textmesh.position.x =
       labelPositions[partyKey].radius *
-      8 *
+      9 * 
       Math.sin(labelPositions[partyKey].angle);
-    textmesh.position.y = labelPositions[partyKey].position.y * 7;
+    textmesh.position.y = labelPositions[partyKey].position.y * 7; 
     textmesh.position.z =
       labelPositions[partyKey].radius *
-      6 *
+      8 * 
       Math.cos(labelPositions[partyKey].angle);
     textmesh.rotation.z = Math.PI / 2;
 
@@ -255,9 +256,11 @@ const animate = function () {
     }
   });
 
+  //let time = clock.getDelta();
   if (params.droneCamera) {
     cameraHasChanged = droneCameraControl.update();
-    //droneCameraControl.update();
+  } else {
+    controls.update();
   }
 
   if (cameraHasChanged || !params.antialias) {
