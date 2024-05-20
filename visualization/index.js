@@ -203,6 +203,9 @@ function createUI() {
 
 function updateGraph() {
   scene.remove(sceneElements);
+  sceneElements.remove(edges);
+  sceneElements.remove(nodes);
+  textlabels.forEach((label) => sceneElements.remove(label));
   let gmb = new GraphMeshBuilder(graph);
   const e = graph.getEdges();
   edges = gmb.createEdges(e);
@@ -210,13 +213,11 @@ function updateGraph() {
 
   textlabels = [];
   const labelPositions = graph.getLabels();
-  console.log("labels", labelPositions);
-
   textlabels = positionLabels(labelPositions);
   sceneElements.add(edges);
   sceneElements.add(nodes);
-  textlabels.forEach((label) => sceneElements.add(label))
-  scene.add(sceneElements)
+  textlabels.forEach((label) => sceneElements.add(label));
+  scene.add(sceneElements);
 }
 
 function positionLabels(labelPositions) {
