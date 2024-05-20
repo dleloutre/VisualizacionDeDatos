@@ -76,7 +76,7 @@ function setup() {
     type: THREE.FloatType,
   });
 
-  renderPassOrbital = new SSAARenderPass(scene, orbitalCamera);
+  /*renderPassOrbital = new SSAARenderPass(scene, orbitalCamera);
   renderPassOrbital.clearColor = new THREE.Color(0x000000); 
   renderPassOrbital.clearAlpha = 1; 
   renderPassOrbital.sampleLevel = 4; 
@@ -86,14 +86,20 @@ function setup() {
   renderPassDrone.clearColor = new THREE.Color(0x000000); 
   renderPassDrone.clearAlpha = 1; 
   renderPassDrone.sampleLevel = 4; 
-  renderPassDrone.unbiased = true;
+  renderPassDrone.unbiased = true;*/
 
-  //const outputPass = new OutputPass();
-  //composer = new EffectComposer(renderer, renderTarget);
-  //composer.addPass(renderPassOrbital);
-  //composer.addPass(outputPass);
+  renderPass = new SSAARenderPass(scene, camera);
+  renderPass.clearColor = new THREE.Color(0x000000); 
+  renderPass.clearAlpha = 1; 
+  renderPass.sampleLevel = 4; 
+  renderPass.unbiased = true;
 
-  composerOrbital = new EffectComposer(renderer, renderTarget);
+  const outputPass = new OutputPass();
+  composer = new EffectComposer(renderer, renderTarget);
+  composer.addPass(renderPass);
+  composer.addPass(outputPass);
+
+  /*composerOrbital = new EffectComposer(renderer, renderTarget);
   composerOrbital.addPass(renderPassOrbital);
   composerOrbital.addPass(new OutputPass());
 
@@ -101,7 +107,7 @@ function setup() {
   composerDrone.addPass(renderPassDrone);
   composerDrone.addPass(new OutputPass());
 
-  composer = composerOrbital;
+  composer = composerOrbital;*/
 
   controls = new OrbitControls(orbitalCamera, renderer.domElement);
   droneCameraControl = new DroneCameraControl(droneCamera);
@@ -146,12 +152,10 @@ function createUI() {
     .onChange((v) => {
       if (v) {
         camera = droneCamera;
-        composer = composerDrone;
         changeButtonsVisibility("visible");
         droneCameraControl.adjustGraphPosition(sceneElements);
       } else {
         camera = orbitalCamera;
-        composer = composerOrbital;
         changeButtonsVisibility("hidden");
         sceneElements.rotation.y = -Math.PI;
         sceneElements.rotation.x = Math.PI;
@@ -240,7 +244,7 @@ function positionLabels(labelPositions) {
 
 const animate = function () {
   stats.begin();
-  //renderPass.camera = camera;
+  renderPass.camera = camera;
   requestAnimationFrame(animate);
 
   let cameraHasChanged = false;  
@@ -250,7 +254,6 @@ const animate = function () {
     }
   });
 
-  //let time = clock.getDelta();
   if (params.droneCamera) {
     cameraHasChanged = droneCameraControl.update();
   } else {
