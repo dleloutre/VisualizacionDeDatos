@@ -14,6 +14,7 @@ import { DroneCameraControl } from "./droneCamera.js";
 import partiesData from "/data/parties.json" assert { type: "json" };
 
 let scene,
+  sceneElements = new THREE.Group(),
   camera,
   renderer,
   composer,
@@ -113,9 +114,6 @@ function setup() {
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);
 
-  const gridHelper = new THREE.GridHelper(100000, 100);
-  scene.add(gridHelper)
-
   stats = new Stats();
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
@@ -150,11 +148,14 @@ function createUI() {
         camera = droneCamera;
         composer = composerDrone;
         changeButtonsVisibility("visible");
-        //droneCameraControl.setGraphPosition(graph)
+        droneCameraControl.adjustGraphPosition(sceneElements);
       } else {
         camera = orbitalCamera;
         composer = composerOrbital;
         changeButtonsVisibility("hidden");
+        sceneElements.rotation.y = -Math.PI;
+        sceneElements.rotation.x = Math.PI;
+        sceneElements.rotation.z = -Math.PI;
       }
     });
   gui
@@ -197,28 +198,21 @@ function createUI() {
 }
 
 function updateGraph() {
+  scene.remove(sceneElements);
   let gmb = new GraphMeshBuilder(graph);
   const e = graph.getEdges();
-  scene.remove(edges);
   edges = gmb.createEdges(e);
-  scene.add(edges);
-
-  scene.remove(nodes);
   nodes = gmb.createNodes();
-  scene.add(nodes);
 
-  for (const label of textlabels) {
-    scene.remove(label);
-  }
   textlabels = [];
   const labelPositions = graph.getLabels();
   console.log("labels", labelPositions);
 
   textlabels = positionLabels(labelPositions);
-
-  for (const label of textlabels) {
-    scene.add(label);
-  }
+  sceneElements.add(edges);
+  sceneElements.add(nodes);
+  textlabels.forEach((label) => sceneElements.add(label))
+  scene.add(sceneElements)
 }
 
 function positionLabels(labelPositions) {

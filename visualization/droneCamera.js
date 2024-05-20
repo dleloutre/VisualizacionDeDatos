@@ -10,10 +10,9 @@ export function DroneCameraControl(camera, initialPos) {
   const FACTOR_INERCIA = 0.05;
   const MIN_TRANSLATION_THRESHOLD = 0.02;
 
-  if (!initialPos) initialPos = [0, 2500, 15000];
+  if (!initialPos) initialPos = [0, 0, 22000];
 
   camera.position.set(initialPos[0], initialPos[1], initialPos[2]);
-  //camera.rotation.set(-Math.PI, 0, 0);
 
   let camInitialState = {
     xVel: 0,
@@ -27,7 +26,7 @@ export function DroneCameraControl(camera, initialPos) {
     yRotVel: 0,
     zRotVelTarget: 0,
     zRotVel: 0,
-    xRotVelTarget: 0,//-0.7*15,
+    xRotVelTarget: 0,
     xRotVel: 0,
 
     rightAxisMode: "move",
@@ -298,8 +297,9 @@ export function DroneCameraControl(camera, initialPos) {
     return hasChanged;
   };
 
-  this.setGraphPosition = function(graph) {
-    console.log(graph)
+  this.adjustGraphPosition = function(graph) {
+    graph.rotation.y = Math.PI;
     graph.rotation.x = -Math.PI/2;
+    graph.rotation.z = Math.PI;
   }
 }
