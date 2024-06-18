@@ -1,0 +1,50 @@
+{
+  "arthaud": {
+    "label": "Arthaud",
+    "color": "rgba(255, 0, 0, 0.4)"
+  },
+  "poutou": {
+    "label": "Poutou",
+    "color": "rgba(255, 102, 0, 0.4)"
+  },
+  "roussel": {
+    "label": "Roussel",
+    "color": "rgba(255, 226, 0, 0.4)"
+  },
+  "melenchon": {
+    "label": "Mélenchon",
+    "color": "rgba(238, 255, 0, 0.4)"
+  },
+  "jadot": {
+    "label": "Jadot",
+    "color": "rgba(183, 255, 0, 0.4)"
+  },
+  "hidalgo": {
+    "label": "Hidalgo",
+    "color": "rgba(85, 255, 0, 0.4)"
+  },
+  "macron": {
+    "label": "Macron",
+    "color": "rgba(0, 255, 147, 0.4)"
+  },
+  "pecresse": {
+    "label": "Pécresse",
+    "color": "rgba(0, 255, 214, 0.4)"
+  },
+  "lasalle": {
+    "label": "Lassalle",
+    "color": "rgba(0, 249, 255, 0.4)"
+  },
+  "mlp": {
+    "label": "Le Pen",
+    "color": "rgba(0, 198, 255, 0.4)"
+  },
+  "dupontaignan": {
+    "label": "Dupont-Aignan",
+    "color": "rgba(0, 118, 255, 0.4)"
+  },
+  "zemmour": {
+    "label": "Zemmour",
+    "color": "rgba(0, 0, 255, 0.4)"
+  }
+}

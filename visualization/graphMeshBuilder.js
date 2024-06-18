@@ -29,32 +29,92 @@ export class GraphMeshBuilder {
 	_getEdgesTexture() {
 		const width = 256;
 		const height = 4096;
+	
+		const size = width * height;
+		const data = new Uint8Array(4 * size);
+	
+		let i = 0;
+		const color1 = new THREE.Color();
+		const color2 = new THREE.Color();
+	
+		const red = new THREE.Color("#FF0000");
+		const blue = new THREE.Color("#0000FF");
+	
+		const numColors = 12;
+		const colors = [];
+		
+		colors.push(red);
+		for (let j = 1; j <= numColors - 2; j++) {
+			const hue = (j / (numColors - 1)) * 0.7; // Adjusted to avoid very light greens
+			const saturation = 1.0;
+			const lightness = 0.5;
+			colors.push(new THREE.Color().setHSL(hue, saturation, lightness));
+		}
+		colors.push(blue);
+
+		let secondIndex = 0;
+	
+		for (let r = 0; r < height; r++) {
+			for (let c = 0; c < width; c++) {
+				i++;
+				const colorIndex = Math.floor((r / height) * (numColors));
+				color1.copy(colors[colorIndex]);
+				secondIndex = Math.floor(((r / height) * (numColors) * (numColors))) 
+				if (secondIndex > 11) {
+					secondIndex = secondIndex % numColors;
+				}
+				color2.copy(colors[secondIndex]);
+				const lerpFactor = c / width;
+				let color = color1.lerp(color2, THREE.MathUtils.smoothstep(lerpFactor, 0.1, 0.9));
+
+				const red = Math.floor(color.r * 255);
+				const green = Math.floor(color.g * 255);
+				const blue = Math.floor(color.b * 255);
+	
+				const stride = i * 4;
+				data[stride] = red;
+				data[stride + 1] = green;
+				data[stride + 2] = blue;
+				data[stride + 3] = 255;
+			}
+		}
+	
+		const texture = new THREE.DataTexture(data, width, height);
+		texture.needsUpdate = true;
+		texture.minFilter = THREE.NearestFilter;
+		texture.magFilter = THREE.NearestFilter;
+	
+		texture.wrapS = THREE.ClampToEdgeWrapping;
+		texture.wrapT = THREE.ClampToEdgeWrapping;
+		return texture;
+	}
+
+	/*_getEdgesTexture2() {
+		const width = 256;
+		const height = 4096;
 
 		const size = width * height;
 		const data = new Uint8Array(4 * size);
 
-		let totalStars = this.graph.getTotalStars();
+		let numColors = this.graph.getTotalParties();
 
 		let i = 0;
 		const color1 = new THREE.Color();
 		const color2 = new THREE.Color();
-		const color = new THREE.Color();
+
 		for (let r = 0; r < height; r++) {
 			for (let c = 0; c < width; c++) {
 				i++;
-
-				let verticalOffset = r / height;
-
+				let verticalOffset = (r / height) // 1.35;
 				// tono del grupo de origen
-				let hue1 = Math.floor(verticalOffset * totalStars) / totalStars;
-				let hue2 =
+				let hue1 = Math.floor(verticalOffset * numColors) / numColors; // 0
+				let hue2 = 
 					Math.floor(
-						(verticalOffset - hue1) * totalStars * totalStars
-					) / totalStars;
+						(verticalOffset - hue1) * numColors * numColors
+					) / numColors; // 0.66
 
 				color1.setHSL(hue1, 1.0, 0.5);
 				color2.setHSL(hue2, 1.0, 0.5);
-
 				let color = color1.lerp(
 					color2,
 					THREE.MathUtils.smoothstep(c / width, 0.1, 0.9)
@@ -81,7 +141,7 @@ export class GraphMeshBuilder {
 		texture.wrapS = THREE.ClampToEdgeWrapping;
 		texture.wrapT = THREE.ClampToEdgeWrapping;
 		return texture;
-	}
+	}*/
 
 	_createEdgesMaterial() {
 		let texture = this.edgesTexture;
@@ -106,12 +166,13 @@ export class GraphMeshBuilder {
 			},
 			vertexShader: edgeShader.vertexShader,
 			fragmentShader: edgeShader.fragmentShader,
+			//wireframe: true
 		});
 
 		return mat;
 	}
 
-	_createNodesMaterial(nodeSize = 20) {
+	_createNodesMaterial(nodeSize = 30) {
 		let mat = new THREE.ShaderMaterial({
 			uniforms: {
 				color: { value: new THREE.Color(0xffffff) }, // color de los nodos
@@ -256,7 +317,6 @@ export class GraphMeshBuilder {
 			)
 		);
 
-		console.log("nodes geometry", geo);
 		let material = this._createNodesMaterial();
 
 		const instancedNodes = new THREE.InstancedMesh(
@@ -266,7 +326,6 @@ export class GraphMeshBuilder {
 		);
 		instancedNodes.frustumCulled = false;
 
-		console.log("instanced nodes", instancedNodes);
 		return instancedNodes;
 	}
 }

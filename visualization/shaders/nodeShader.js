@@ -43,7 +43,7 @@ export const nodeShader = {
 					discard;
 				}
                 vec3 color=texture(diffuseMap, vec2(0.01,vVtextureCoord)).rgb;
-				fragColor = vec4(color*decay,  1.0);
+				fragColor = vec4(color*decay,  0.8);
 				
                 
 				//gl_FragColor = vec4(1.0,0.0,0.0,  1.0);
