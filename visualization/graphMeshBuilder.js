@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { nodeShader } from "./shaders/nodeShader.js";
 import { edgeShader } from "./shaders/edgeShader.js";
-// creacion de la geometria de las aristas
 
 export class GraphMeshBuilder {
 	constructor(graph) {
@@ -36,7 +35,7 @@ export class GraphMeshBuilder {
 		let i = 0;
 		const color1 = new THREE.Color();
 		const color2 = new THREE.Color();
-	
+/*	CREACION DE COLORES SI NO VIENEN DEFINIDOS
 		const red = new THREE.Color("#FF0000");
 		const blue = new THREE.Color("#0000FF");
 	
@@ -51,6 +50,9 @@ export class GraphMeshBuilder {
 			colors.push(new THREE.Color().setHSL(hue, saturation, lightness));
 		}
 		colors.push(blue);
+*/
+		const colors = this.graph.getColorList();
+		const numColors = colors.length;
 
 		let secondIndex = 0;
 	
@@ -88,60 +90,6 @@ export class GraphMeshBuilder {
 		texture.wrapT = THREE.ClampToEdgeWrapping;
 		return texture;
 	}
-
-	/*_getEdgesTexture2() {
-		const width = 256;
-		const height = 4096;
-
-		const size = width * height;
-		const data = new Uint8Array(4 * size);
-
-		let numColors = this.graph.getTotalParties();
-
-		let i = 0;
-		const color1 = new THREE.Color();
-		const color2 = new THREE.Color();
-
-		for (let r = 0; r < height; r++) {
-			for (let c = 0; c < width; c++) {
-				i++;
-				let verticalOffset = (r / height) // 1.35;
-				// tono del grupo de origen
-				let hue1 = Math.floor(verticalOffset * numColors) / numColors; // 0
-				let hue2 = 
-					Math.floor(
-						(verticalOffset - hue1) * numColors * numColors
-					) / numColors; // 0.66
-
-				color1.setHSL(hue1, 1.0, 0.5);
-				color2.setHSL(hue2, 1.0, 0.5);
-				let color = color1.lerp(
-					color2,
-					THREE.MathUtils.smoothstep(c / width, 0.1, 0.9)
-				);
-
-				const red = Math.floor(color.r * 255);
-				const g = Math.floor(color.g * 255);
-				const b = Math.floor(color.b * 255);
-
-				const stride = i * 4;
-				data[stride] = red;
-				data[stride + 1] = g;
-				data[stride + 2] = b;
-				data[stride + 3] = 255;
-			}
-		}
-
-		// used the buffer to create a DataTexture
-		const texture = new THREE.DataTexture(data, width, height);
-		texture.needsUpdate = true;
-		texture.minFilter = THREE.NearestFilter;
-		texture.magFilter = THREE.NearestFilter;
-
-		texture.wrapS = THREE.ClampToEdgeWrapping;
-		texture.wrapT = THREE.ClampToEdgeWrapping;
-		return texture;
-	}*/
 
 	_createEdgesMaterial() {
 		let texture = this.edgesTexture;
@@ -290,7 +238,7 @@ export class GraphMeshBuilder {
 		let vTextureCoord = [];
 		let totalNodes = this.graph.getTotalNodes();
 		// recorro todos los nodos
-		for (const nodeId in this.graph.getNodes()) {//let i = 0; i < totalNodes; i++) {
+		for (const nodeId in this.graph.getNodes()) {
 			let res = this.graph.getNode(nodeId);
 			offsets.push(res.position.x);
 			offsets.push(res.position.y);

@@ -36,23 +36,16 @@ const partyAnglesCircle = [
 ];
 
 export class Graph {
-	CLOUD_RADIUS = 200;
 	SATELLITES_RADIUS = 5;
-	SATELLITES_VERTICAL_OFFSET = 20;
     RADIUS = 300;
 
 	totalParties = 0;
     labelVectorPositions = {};
-	cumulus = [];
-	satellites = [];
     totalNodes = 0;
     edges = [];
     steps = 1;
     rounds = 1;
-    metadata = {
-        parties: {},
-        media: {}
-    };
+    metadata = {};
 
 	constructor(nodesData, edgesData, metadata) {
         this.labelVectorPositions = {};
@@ -64,7 +57,6 @@ export class Graph {
         this.totalNodes = Object.keys(this.nodesMap).length;
         this.constantRadius = true;
         this.metadata = metadata;
-        this.partyKeys = Object.keys(metadata.parties)
 	}
 
     updateSteps(steps) {
@@ -282,5 +274,10 @@ export class Graph {
 
     calculateGradientOffset(originPosition, targetPosition) {
         return (targetPosition.partyIndex + (1.0 + originPosition.partyIndex) / (1.0 + this.totalParties)) / this.totalParties;
+    }
+
+    getColorList() {
+        const colors = Object.values(this.metadata).map(data => new THREE.Color(data.color));
+        return colors;
     }
 }

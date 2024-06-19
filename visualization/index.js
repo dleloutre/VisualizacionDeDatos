@@ -7,11 +7,10 @@ import { Graph } from "./graph.js";
 import { loadCSV } from "./utils.js";
 import { generateTextSprite } from "./spriteText.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { SSAARenderPass } from 'three/addons/postprocessing/SSAARenderPass.js';
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { DroneCameraControl } from "./droneCamera.js";
-import partiesData from "/data/parties.json" assert { type: "json" };
+import metadata from "/data/data.json" assert { type: "json" };
 
 let scene,
   sceneElements = new THREE.Group(),
@@ -29,16 +28,10 @@ let scene,
   droneCamera,
   droneCameraControl,
   renderPass,
-  renderPassOrbital,
-  renderPassDrone,
-  composerOrbital,
-  composerDrone,
-  cameraMatrixOldValues = [],
-  clock;
+  cameraMatrixOldValues = [];
 
 const params = {
   emissionFactor: 0.3,
-  waveOffset: -3,
   spiralSteps: 1,
   spiralRounds: 1,
   spiralSwitch: true,
@@ -65,7 +58,6 @@ function setup() {
   renderer = new THREE.WebGLRenderer({ antialias: true });
   THREE.ColorManagement.enabled = true;
   renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
-  //renderer.toneMapping = THREE.NoToneMapping;
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
@@ -75,18 +67,6 @@ function setup() {
     samples: 5,
     type: THREE.FloatType,
   });
-
-  /*renderPassOrbital = new SSAARenderPass(scene, orbitalCamera);
-  renderPassOrbital.clearColor = new THREE.Color(0x000000); 
-  renderPassOrbital.clearAlpha = 1; 
-  renderPassOrbital.sampleLevel = 4; 
-  renderPassOrbital.unbiased = true;
-
-  renderPassDrone = new SSAARenderPass(scene, droneCamera);
-  renderPassDrone.clearColor = new THREE.Color(0x000000); 
-  renderPassDrone.clearAlpha = 1; 
-  renderPassDrone.sampleLevel = 4; 
-  renderPassDrone.unbiased = true;*/
 
   renderPass = new SSAARenderPass(scene, camera);
   renderPass.clearColor = new THREE.Color(0x000000); 
@@ -98,16 +78,6 @@ function setup() {
   composer = new EffectComposer(renderer, renderTarget);
   composer.addPass(renderPass);
   composer.addPass(outputPass);
-
-  /*composerOrbital = new EffectComposer(renderer, renderTarget);
-  composerOrbital.addPass(renderPassOrbital);
-  composerOrbital.addPass(new OutputPass());
-
-  composerDrone = new EffectComposer(renderer, renderTarget);
-  composerDrone.addPass(renderPassDrone);
-  composerDrone.addPass(new OutputPass());
-
-  composer = composerOrbital;*/
 
   controls = new OrbitControls(orbitalCamera, renderer.domElement);
   droneCameraControl = new DroneCameraControl(droneCamera);
@@ -125,8 +95,6 @@ function setup() {
   document.body.appendChild(stats.dom);
 
   window.addEventListener("resize", onResize);
-
-  clock = new THREE.Clock();
 }
 
 function onResize() {
@@ -168,13 +136,6 @@ function createUI() {
     .name("emission factor")
     .onChange((v) => {
       edges.material.uniforms.emissionFactor.value = v;
-    });
-  gui
-    .add(params, "waveOffset", -3, 3)
-    .name("wave offset")
-    .step(0.01)
-    .onChange((v) => {
-      edges.material.uniforms.waveOffset.value = v;
     });
   gui
     .add(params, "spiralSteps", 0, 10)
@@ -222,8 +183,8 @@ function updateGraph() {
 
 function positionLabels(labelPositions) {
   for (const partyKey of Object.keys(labelPositions)) {
-    let color = partiesData[partyKey].color || 0xffffff;
-    let label = partiesData[partyKey].label || "Unknown";
+    let color = metadata[partyKey].color || 0xffffff;
+    let label = metadata[partyKey].label || partyKey;
     var textmesh = generateTextSprite(label, { borderColor: color });
 
     textmesh.position.x =
@@ -272,25 +233,6 @@ const animate = function () {
     cameraMatrixOldValues.push(element);
   });
 
-  /*if (params.antialias) {
-    let cameraHasChanged;
-    let time = clock.getDelta();
-    if (params.droneCamera) {
-      cameraHasChanged = droneCameraControl.update(time);
-    } else {
-      cameraHasChanged = controls.update(time);
-    }
-    
-    if (cameraHasChanged) {
-      renderer.render(scene, camera);
-    } else {
-      composer.render();
-    }
-    //composer.render();
-  } else {
-    renderer.render(scene, camera);
-  }*/
-
   stats.end();
 };
 
@@ -300,7 +242,7 @@ async function loadFiles() {
 
   const edgeFileSuffix = ".csv";
   const nodeFileSuffix = "_FR.csv";
-  fileKeys = Object.keys(partiesData);
+  fileKeys = Object.keys(metadata);
   fileKeys.push("crossing");
 
   const nodesInfo = [];
@@ -329,14 +271,39 @@ async function prepareData() {
   // para los nodos hay un array por partido politico
   // para las aristas hay un array por partido politico + uno para las aristas que cruzan
   const { nodesInfo, edgesInfo } = await loadFiles();
-  const metadata = {
-    parties: partiesData,
-  };
   return new Graph(nodesInfo, edgesInfo, metadata);
+}
+
+function validateData() {
+  // if all keys are missing a color definition, it assigns randomly
+  // if some keys are missing a color definition, it assigns white
+  const missingKeyColor = Object.values(metadata).every(property => !property.color);
+  if (missingKeyColor) {
+    const numColors = Object.keys(metadata).length;
+    const red = new THREE.Color("#FF0000");
+		const blue = new THREE.Color("#0000FF");
+		const colors = [];
+		
+		colors.push(red);
+		for (let j = 1; j <= numColors - 2; j++) {
+			const hue = (j / (numColors - 1)) * 0.7;
+			const saturation = 1.0;
+			const lightness = 0.5;
+			colors.push(new THREE.Color().setHSL(hue, saturation, lightness));
+		}
+		colors.push(blue);
+    let i = 0;
+    for (const key in metadata) {
+      metadata[key].color = `#${colors[i].getHexString()}`;
+      i += 1;
+    }
+  }
+  // TODO: if missing data.json, obtain keys from dataset filenames
 }
 
 setup();
 createUI();
+validateData();
 prepareData()
   .then((G) => {
     graph = G;
