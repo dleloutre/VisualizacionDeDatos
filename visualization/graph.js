@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { Edge } from "./edge.js";
 
 const partyAnglesCircle = [
     0.7,
@@ -36,50 +37,109 @@ const partyAnglesCircle = [
 ];
 
 export class Graph {
-	SATELLITES_RADIUS = 5;
-    RADIUS = 300;
+    INITIAL_RADIUS = 650;
 
-	totalParties = 0;
-    labelVectorPositions = {};
+	totalSubgraphs = 0;
     totalNodes = 0;
-    edges = [];
+    totalEdges = 0;
     steps = 1;
     rounds = 1;
+    separation = 2;
     metadata = {};
 
-	constructor(nodesData, edgesData, metadata) {
-        this.labelVectorPositions = {};
-        this.nodesMap = {};
-        this.edges = edgesData;
-        this.nodes = nodesData;
-        this.totalParties = Object.keys(nodesData).length;
-        this.distributeNodesSpiral(nodesData);
-        this.totalNodes = Object.keys(this.nodesMap).length;
+	constructor(subgraphs, crossingEdges, metadata) {
+        this.subgraphs = this.sortSubgraphsBySize(subgraphs);
+        this.allNodes = this.getAllNodes();
+        this.crossingEdges = this.createEdges(crossingEdges);
+        this.totalSubgraphs = subgraphs.length;
+        this.totalNodes = this.calculateTotalNodes();
+        this.totalEdges = this.calculateTotalEdges();
         this.constantRadius = true;
         this.metadata = metadata;
+        this.distributeNodesSpiral();
 	}
+
+    getAllNodes() {
+        let nodes = [];
+        for (const subgraph of this.subgraphs) {
+            nodes = nodes.concat(subgraph.getNodes());
+        }
+        return nodes;
+    }
+
+    createEdges(rawEdges) {
+        const edges = [];
+        for (const edgeData of rawEdges) {
+            const originId = edgeData[0];
+            const targetId = edgeData[1];
+            const originNode = this.allNodes.find((node) => node.getId() === originId);
+            const targetNode = this.allNodes.find((node) => node.getId() === targetId);
+            const edge = new Edge(originNode, targetNode);
+            edges.push(edge);
+        }
+        return edges;
+    }
+
+    getSubgraphs() {
+        return this.subgraphs;
+    }
+
+    getTotalSubgraphs() {
+        return this.totalSubgraphs;
+    }
+
+    sortSubgraphsBySize(subgraphs) {
+        const sortedSubgraphs = subgraphs.sort(function (a, b) {
+            return a.getSize() - b.getSize(); 
+        });
+        return sortedSubgraphs;
+    }
+
+    calculateTotalNodes() {
+        let total = 0;
+        for (const subgraph of this.subgraphs) {
+            total += subgraph.getOrder();
+        }
+
+        return total;
+    }
+
+    calculateTotalEdges() {
+        let total = 0;
+        for (const subgraph of this.subgraphs) {
+            total += subgraph.getSize();
+        }
+
+        return total;
+    }
 
     updateSteps(steps) {
         this.steps = steps;
-        this.distributeNodesSpiral(this.nodes);
+        this.distributeNodesSpiral();
     }
 
     updateRounds(rounds) {
         this.rounds = rounds;
-        this.distributeNodesSpiral(this.nodes);
+        this.distributeNodesSpiral();
     }
 
     updateConstantRadius(radius) {
         this.constantRadius = radius;
-        this.distributeNodesSpiral(this.nodes);
+        this.distributeNodesSpiral();
     }
 
-    getEdges() {
-        return this.edges;
+    updateSeparation(factor) {
+        this.separation = factor;
+        this.distributeNodesSpiral();
     }
 
     getLabels() {
-        return this.labelVectorPositions;
+        const labels = {};
+        for (const subgraph of this.subgraphs) {
+            labels[subgraph.getKey()] = subgraph.getLabelPosition();
+        }
+
+        return labels;
     }
 
     distributeNodesSemicircle(nodesData) {
@@ -117,62 +177,36 @@ export class Graph {
         }
     }
 
-    distributeNodesSpiral(nodesData) {
-        const TOTAL_NODES = nodesData.reduce(function (acc, obj) { return acc + obj.data.length; }, 0); //nodesData.flat().length
-        console.log("total nodes:", TOTAL_NODES)
-        let offset = 0;
+    distributeNodesSpiral() {
         let angle = 0;
-
-        const sortedNodes = [...nodesData].sort(function (a, b) {
-            return a.data.length - b.data.length;
-        });
-
-        let i = 0;
-        // Distribute party groups
-        for (const party of sortedNodes) {
-            const partyLen = party.data.length;
-            const originalIndex = nodesData.findIndex((a) => a.key === party.key);
-            let currentRadius = 650;
+        for (const subgraph of this.subgraphs) {
+            const size = subgraph.getOrder();
+            let currentRadius = this.INITIAL_RADIUS;
             if (this.rounds > 1) {
                 if (!this.constantRadius) {
-                    currentRadius = 5000*partyLen/TOTAL_NODES;
+                    currentRadius = 5000 * size/this.totalNodes;
                 }
-                angle = this.rounds*partyAnglesCircle[i];//partyLen/TOTAL_NODES*100*2*Math.PI;
+                angle = this.rounds * subgraph.getAngle(currentRadius, angle);
             } else {
-                angle = partyAnglesCircle[i];
+                angle = subgraph.getAngle(currentRadius, angle) + this.separation/this.totalSubgraphs;
             }
 
-            const partyPosition = new THREE.Vector3(
+            const subgraphPosition = new THREE.Vector3(
                 this.rounds + currentRadius * Math.sin(angle),
-                this.steps*3000*partyLen/TOTAL_NODES,
+                this.steps * 3000 * size/this.totalNodes,
                 this.rounds + currentRadius * Math.cos(angle),
             );
 
-            let labelPosition = partyPosition.clone();
-            this.labelVectorPositions[party.key] = {
+            const labelPosition = subgraphPosition.clone();
+            const labelVectorPositions = {
                 position: labelPosition,
                 radius: currentRadius,
                 angle: angle,
             };
 
-            // Distribute nodes inside each party
-            for (let j = 0; j < partyLen; j++) {
-                const position = new THREE.Vector3(
-                    (party["data"][j][1] + partyPosition.x) * this.SATELLITES_RADIUS,
-                    (party["data"][j][2] + partyPosition.y) * this.SATELLITES_RADIUS,
-                    (party["data"][j][3] + partyPosition.z) * this.SATELLITES_RADIUS
-                );
-
-                const nodeId = party["data"][j][0];
-                this.nodesMap[nodeId] = {
-                    "partyIndex": originalIndex,
-                    "nodesIndex": offset + j,
-                    "partyVector": partyPosition,
-                    "positionVector": position
-                };
-            }
-            offset += partyLen;
-            i++;
+            subgraph.setLabelPosition(labelVectorPositions);
+            subgraph.setPosition(subgraphPosition);
+            console.log("SUBGRAPH", subgraph)
         }
     }
 
@@ -220,60 +254,12 @@ export class Graph {
 		return this.totalNodes;
 	}
 
-    getNodes() {
-        return this.nodesMap;
+    getTotalEdges() {
+        return this.totalEdges;
     }
 
-	getNode(id) {
-        const nodeVectorInfo = this.nodesMap[id];
-        let position = nodeVectorInfo.partyVector.clone();
-		position.add(nodeVectorInfo.positionVector);
-
-		// la textura de bordes tiene un gradiente horizontal
-		// para cada combinacion de estrella con estrella
-		// en total son totalStars^2 gradientes
-		const blockHeight = 1.0 / Math.pow(this.totalParties, 2);
-		let vTextureCoord = blockHeight / 2 + nodeVectorInfo.partyIndex / this.totalParties;
-
-		return { position, vTextureCoord };
-	}
-
-	getTotalParties() {
-		return this.totalParties;
-	}
-
-    getEdgeData(fromId, toId) {
-        return {
-            originPosition: {
-                party: this.nodesMap[fromId].partyIndex,
-                nodePosition: this.nodesMap[fromId].nodesIndex
-            },
-            targetPosition: {
-                party: this.nodesMap[toId].partyIndex,
-                nodePosition: this.nodesMap[toId].nodesIndex
-            }
-        };
-    }
-
-    getEdge(fromId, toId) {
-        const originPosition = this.nodesMap[fromId];
-        const targetPosition = this.nodesMap[toId];
-        const origin = this.calculateVectorPosition(originPosition);
-        const target = this.calculateVectorPosition(targetPosition);
-        const gradientOffset = this.calculateGradientOffset(originPosition, targetPosition);
-
-        return { origin, target, gradientOffset };
-    }
-
-    calculateVectorPosition(position) {
-        return new THREE.Vector3().addVectors(
-            position.partyVector,
-            position.positionVector
-        );
-    }
-
-    calculateGradientOffset(originPosition, targetPosition) {
-        return (targetPosition.partyIndex + (1.0 + originPosition.partyIndex) / (1.0 + this.totalParties)) / this.totalParties;
+    getCrossingEdges() {
+        return this.crossingEdges;
     }
 
     getColorList() {

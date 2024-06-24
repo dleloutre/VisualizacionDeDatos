@@ -10,6 +10,7 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { SSAARenderPass } from 'three/addons/postprocessing/SSAARenderPass.js';
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { DroneCameraControl } from "./droneCamera.js";
+import { Subgraph } from "./subgraph.js";
 import metadata from "/data/data.json" assert { type: "json" };
 
 let scene,
@@ -34,6 +35,7 @@ const params = {
   emissionFactor: 0.3,
   spiralSteps: 1,
   spiralRounds: 1,
+  subgraphSeparation: 2,
   spiralSwitch: true,
   droneCamera: false,
   antialias: false,
@@ -160,6 +162,14 @@ function createUI() {
       graph.updateConstantRadius(v);
       updateGraph();
     });
+  gui
+    .add(params, "subgraphSeparation", 0, 3)
+    .name("separation between subgraphs")
+    .step(0.1)
+    .onChange((v) => {
+      graph.updateSeparation(v);
+      updateGraph();
+    });
 }
 
 function updateGraph() {
@@ -168,8 +178,7 @@ function updateGraph() {
   sceneElements.remove(nodes);
   textlabels.forEach((label) => sceneElements.remove(label));
   let gmb = new GraphMeshBuilder(graph);
-  const e = graph.getEdges();
-  edges = gmb.createEdges(e);
+  edges = gmb.createEdges();
   nodes = gmb.createNodes();
 
   textlabels = [];
@@ -179,10 +188,12 @@ function updateGraph() {
   sceneElements.add(nodes);
   textlabels.forEach((label) => sceneElements.add(label));
   scene.add(sceneElements);
+
+  console.log("ESCENA", scene)
 }
 
 function positionLabels(labelPositions) {
-  for (const partyKey of Object.keys(labelPositions)) {
+  for (const partyKey in labelPositions) {
     let color = metadata[partyKey].color || 0xffffff;
     let label = metadata[partyKey].label || partyKey;
     var textmesh = generateTextSprite(label, { borderColor: color });
@@ -243,35 +254,33 @@ async function loadFiles() {
   const edgeFileSuffix = ".csv";
   const nodeFileSuffix = "_FR.csv";
   fileKeys = Object.keys(metadata);
-  fileKeys.push("crossing");
+  const subgraphs = [];
+  let i = 0;
 
-  const nodesInfo = [];
-  const edgesInfo = [];
-
-  for (let i = 0; i < fileKeys.length; i++) {
-    if (fileKeys[i] !== "crossing") {
-      const nodeFile = nodeFilePrefix + fileKeys[i] + nodeFileSuffix;
-      const nodesList = await loadCSV(nodeFile);
-      nodesInfo.push({
-        key: fileKeys[i],
-        data: nodesList,
-      });
-    }
-    const edgeFile = edgeFilePrefix + fileKeys[i] + edgeFileSuffix;
-    const edgesData = await loadCSV(edgeFile);
-    edgesInfo.push(edgesData);
+  for (const key of fileKeys) {
+    const subgraph = new Subgraph(i, key);
+    const nodeFile = nodeFilePrefix + key + nodeFileSuffix;
+    const nodes = await loadCSV(nodeFile);
+    subgraph.setNodes(nodes);
+    const edgeFile = edgeFilePrefix + key + edgeFileSuffix;
+    const edges = await loadCSV(edgeFile);
+    subgraph.setEdges(edges);
+    
+    subgraphs.push(subgraph);
+    i++;
   }
 
-  console.log("nodes", nodesInfo);
-  console.log("edges", edgesInfo);
-  return { nodesInfo, edgesInfo };
+  const crossingEdges = await loadCSV(edgeFilePrefix + "crossing" + edgeFileSuffix);
+
+  return { subgraphs, crossingEdges };
 }
 
 async function prepareData() {
   // para los nodos hay un array por partido politico
   // para las aristas hay un array por partido politico + uno para las aristas que cruzan
-  const { nodesInfo, edgesInfo } = await loadFiles();
-  return new Graph(nodesInfo, edgesInfo, metadata);
+  const { subgraphs, crossingEdges } = await loadFiles();
+  // TODO: set angles to each subgraph depending on its size
+  return new Graph(subgraphs, crossingEdges, metadata);
 }
 
 function validateData() {

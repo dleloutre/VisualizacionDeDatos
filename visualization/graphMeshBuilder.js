@@ -35,22 +35,6 @@ export class GraphMeshBuilder {
 		let i = 0;
 		const color1 = new THREE.Color();
 		const color2 = new THREE.Color();
-/*	CREACION DE COLORES SI NO VIENEN DEFINIDOS
-		const red = new THREE.Color("#FF0000");
-		const blue = new THREE.Color("#0000FF");
-	
-		const numColors = 12;
-		const colors = [];
-		
-		colors.push(red);
-		for (let j = 1; j <= numColors - 2; j++) {
-			const hue = (j / (numColors - 1)) * 0.7; // Adjusted to avoid very light greens
-			const saturation = 1.0;
-			const lightness = 0.5;
-			colors.push(new THREE.Color().setHSL(hue, saturation, lightness));
-		}
-		colors.push(blue);
-*/
 		const colors = this.graph.getColorList();
 		const numColors = colors.length;
 
@@ -114,7 +98,6 @@ export class GraphMeshBuilder {
 			},
 			vertexShader: edgeShader.vertexShader,
 			fragmentShader: edgeShader.fragmentShader,
-			//wireframe: true
 		});
 
 		return mat;
@@ -134,15 +117,15 @@ export class GraphMeshBuilder {
 		return mat;
 	}
 
-	createEdges(edgesData) {
+	createEdges() {
 		// customShaders e InstancedBufferGeometry
 		// https://medium.com/@pailhead011/instancing-with-three-js-36b4b62bc127
 		// https://medium.com/@pailhead011/instancing-with-three-js-part-2-3be34ae83c57
 		// https://medium.com/@pailhead011/instancing-with-three-js-part-3-a3fe15bcee3a
 
-		const totalEdgesToDraw = edgesData.flat().length;
+		const totalEdgesToDraw = this.graph.getTotalEdges();
 		console.log(
-			"createEdgesGeometry() totalEdgedToDraw:" + totalEdgesToDraw
+			"createEdgesGeometry() totalEdgesToDraw:" + totalEdgesToDraw
 		);
 
 		const instancedEdgeGeometry = new THREE.InstancedBufferGeometry();
@@ -190,22 +173,30 @@ export class GraphMeshBuilder {
 		const translationMatrix = new THREE.Matrix4();
 		const matrix = new THREE.Matrix4();
 
-		// recorro todas las instancias
-		const flatEdges = edgesData.flat();
-		for (let j = 0; j < flatEdges.length; j++) {
-			// definimos la transformacion de cada instancia
-			let res = this.graph.getEdge(flatEdges[j][0], flatEdges[j][1]);
-			translationMatrix.makeTranslation(res.origin);
+		// recorro todas las instancias de subgrafos
+		const subgraphs = this.graph.getSubgraphs();
+		let edges = this.graph.getCrossingEdges();
+		let j = 0;
+		for (const subgraph of subgraphs) {
+			edges = edges.concat(subgraph.getEdges());
+		}
 
+		for (const edge of edges) {
+			const originNode = edge.getOrigin();
+			const originVectorPosition = originNode.getVectorPosition();
+			const targetNode = edge.getTarget();
+			const targetVectorPosition = targetNode.getVectorPosition();
+			const gradientOffset = (targetNode.getSubgraphId() + (1.0 + originNode.getSubgraphId()) / (1.0 + this.graph.getTotalSubgraphs())) / this.graph.getTotalSubgraphs();
+			translationMatrix.makeTranslation(originVectorPosition);
 			// determina un direccion entre 0,0,0 y target
 			rotMatrix.lookAt(
-				res.origin,
-				res.target,
+				originVectorPosition,
+				targetVectorPosition,
 				new THREE.Vector3(0, 1, 0)
 			);
 
 			// calculo distancia entre origin y target
-			length = res.target.sub(res.origin).length();
+			length = targetVectorPosition.sub(originVectorPosition).length();
 
 			matrix.identity();
 			matrix.makeScale(1, 1, length);
@@ -215,10 +206,10 @@ export class GraphMeshBuilder {
 			instancedEdges.setMatrixAt(j, matrix);
 
 			// defino el valor de gradientOffset y randomSeed para cada instancia
-			instanceGradientOffsetArray[j] = res.gradientOffset;
+			instanceGradientOffsetArray[j] = gradientOffset;
 			instanceRandomSeedArray[j] = 4.0;
+			j++;
 		}
-		
 
 		// agrego los atributos especiales a la geometria
 		instancedEdgeGeometry.setAttribute(
@@ -238,13 +229,15 @@ export class GraphMeshBuilder {
 		let vTextureCoord = [];
 		let totalNodes = this.graph.getTotalNodes();
 		// recorro todos los nodos
-		for (const nodeId in this.graph.getNodes()) {
-			let res = this.graph.getNode(nodeId);
-			offsets.push(res.position.x);
-			offsets.push(res.position.y);
-			offsets.push(res.position.z);
-
-			vTextureCoord.push(res.vTextureCoord);
+		for (const subgraph of this.graph.getSubgraphs()) {
+			const nodes = subgraph.getNodes();
+			for (const node of nodes) {
+				offsets.push(node.getVectorPosition().x);
+				offsets.push(node.getVectorPosition().y);
+				offsets.push(node.getVectorPosition().z);
+	
+				vTextureCoord.push(node.getVTextureCoord(this.graph.getTotalSubgraphs()));
+			}
 		}
 
 		const geo = new THREE.InstancedBufferGeometry();
