@@ -1,56 +1,26 @@
-/**
- * https://github.com/SouthpawGoblin
- */
-
 import * as THREE from "three";
 
-export function generateTextSprite(text, config) {
-  config || (config = {});
+export function generateTextSprite(text, color) {
+  const borderColor = color;
+  const fontFace = "Verdana";
+  const fontSize = 60;
+  const fontColor = "rgba(255, 255, 255, 0.8)";
+  const textAlign = "center";
+  const borderThickness = 10;
+  const borderRadius = 10;
+  const backgroundColor = "rgba(0, 0, 0, 0.3)";
+  let ruler = document.createElement("canvas").getContext("2d");
+  ruler.font = fontSize + "px " + fontFace;
 
-  var fontFace = config.hasOwnProperty("fontFace")
-    ? config["fontFace"]
-    : "Verdana";
-  var fontSize = config.hasOwnProperty("fontSize") ? config["fontSize"] : 60;
-  var fontColor = config.hasOwnProperty("fontColor")
-    ? config["fontColor"]
-    : "rgba(255, 255, 255, 0.8)";
-  var fontBold = config.hasOwnProperty("fontBold") ? config["fontBold"] : false;
-  var textAlign = config.hasOwnProperty("textAlign")
-    ? config["textAlign"]
-    : "center";
-  var borderThickness = config.hasOwnProperty("borderThickness")
-    ? config["borderThickness"]
-    : 10;
-  var borderColor = config.hasOwnProperty("borderColor")
-    ? config["borderColor"]
-    : "rgba(0, 255, 255, 0.9)";
-  var borderRadius = config.hasOwnProperty("borderRadius")
-    ? config["borderRadius"]
-    : 10;
-  var backgroundColor = config.hasOwnProperty("backgroundColor")
-    ? config["backgroundColor"]
-    : "rgba(0, 0, 0, 0.3)";
+  const metrics = ruler.measureText(text);
+  const textWidth =  metrics.width;
+  const textHeight = fontSize * 1.4;
 
-  var ruler = document.createElement("canvas").getContext("2d");
-  ruler.font = (fontBold ? "Bold " : "") + fontSize + "px " + fontFace;
-
-  var textLines = text.split("\n");
-  var textWidth = 0;
-  // canvas width shall be based on the longest width of text lines
-  textLines.forEach(function (line) {
-    var metrics = ruler.measureText(line);
-    textWidth = metrics.width > textWidth ? metrics.width : textWidth;
-  });
-  // 1.4 is extra height factor for text below baseline: g,j,p,q.
-  var textHeight = fontSize * 1.4 * textLines.length;
-
-  // texture canvas
-  var canvas = document.createElement("canvas");
+  let canvas = document.createElement("canvas");
   canvas.width = _ceilPow2(textWidth + borderThickness * 2);
   canvas.height = _ceilPow2(textHeight + borderThickness * 2);
-  var context = canvas.getContext("2d");
+  let context = canvas.getContext("2d");
 
-  // draw background
   context.font = ruler.font;
   context.fillStyle = backgroundColor;
   context.strokeStyle = borderColor;
@@ -64,7 +34,6 @@ export function generateTextSprite(text, config) {
     borderRadius
   );
 
-  // draw text
   context.fillStyle = fontColor;
   context.textAlign = textAlign;
   var fillTextX = {
@@ -75,28 +44,22 @@ export function generateTextSprite(text, config) {
     end: textWidth + borderThickness,
   };
   var curY = fontSize + borderThickness;
-  textLines.forEach(function (line) {
-    context.fillText(line, fillTextX[textAlign], curY);
-    curY += fontSize * 1.4;
-  });
+  context.fillText(text, fillTextX[textAlign], curY);
+  curY += fontSize * 1.4;
 
-  // generate sprite
   var texture = new THREE.Texture(canvas);
   texture.needsUpdate = true;
   var spriteMaterial = new THREE.SpriteMaterial({
     map: texture,
     transparent: true,
-    // depthTest: false,
-    // depthWrite: false,
     sizeAttenuation: false,
-    //blending: THREE.AdditiveBlending,
   });
+
   var sprite = new THREE.Sprite(spriteMaterial);
-  sprite.scale.set(0.1, 0.05, 0.05);
+  sprite.scale.set(canvas.width/3000, canvas.height/3000, 1);
 
   return sprite;
 
-  // ceil the input number to the nearest powers of 2
   function _ceilPow2(num) {
     var i = 0;
     while (num > Math.pow(2, i)) {
@@ -105,7 +68,6 @@ export function generateTextSprite(text, config) {
     return Math.pow(2, i);
   }
 
-  // draw round rect
   function _roundRect(ctx, x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);

@@ -163,7 +163,7 @@ function createUI() {
       updateGraph();
     });
   gui
-    .add(params, "subgraphSeparation", 0, 3)
+    .add(params, "subgraphSeparation", 0, 5)
     .name("separation between subgraphs")
     .step(0.1)
     .onChange((v) => {
@@ -188,15 +188,13 @@ function updateGraph() {
   sceneElements.add(nodes);
   textlabels.forEach((label) => sceneElements.add(label));
   scene.add(sceneElements);
-
-  console.log("ESCENA", scene)
 }
 
 function positionLabels(labelPositions) {
   for (const partyKey in labelPositions) {
     let color = metadata[partyKey].color || 0xffffff;
     let label = metadata[partyKey].label || partyKey;
-    var textmesh = generateTextSprite(label, { borderColor: color });
+    var textmesh = generateTextSprite(label, color);
 
     textmesh.position.x =
       labelPositions[partyKey].radius *

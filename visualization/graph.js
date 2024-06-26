@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Edge } from "./edge.js";
+import { Edge } from "./edgeT.js";
 
 const partyAnglesCircle = [
     0.7,
@@ -206,7 +206,6 @@ export class Graph {
 
             subgraph.setLabelPosition(labelVectorPositions);
             subgraph.setPosition(subgraphPosition);
-            console.log("SUBGRAPH", subgraph)
         }
     }
 

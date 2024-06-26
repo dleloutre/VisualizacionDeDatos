@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { Node } from "./node.js";
-import { Edge } from "./edge.js";
+import { Node } from "./nodeT.js";
+import { Edge } from "./edgeT.js";
 
 export class Subgraph {
     constructor(id, key) {
