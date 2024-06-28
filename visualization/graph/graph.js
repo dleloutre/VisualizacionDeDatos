@@ -1,40 +1,6 @@
 import * as THREE from "three";
 import { Edge } from "./edgeT.js";
-
-const partyAnglesCircle = [
-    0.7,
-    1.0,
-    1.2,
-    1.8,
-    2.4,
-    3.0,
-    3.4,
-    4.0,
-    4.5,
-    5,
-    5.8,
-    6.5,
-    /*1.4,//1.2979333331076621,
-    2.1,//2.2259503628200936,
-    2.7,//3.2927412506760163,
-    3.6,//3.6228816074696093,
-    4.3,//4.694887563879969,
-    4.7,//4.861858148614399,
-    4.9,//5.07488044041428,
-    5.2,//5.255374846993267,
-    5.4,//5.428267628221719,
-    5.7,//5.682656904487304,
-    6,//5.840081262037342,
-    6.24,//5.992467333017838,
-    0.1,//6.073168309122938,
-    0.2,//6.146090877892607,
-    0.3,//6.179060718075742,
-    0.4,//6.195589833663534,
-    0.5,//6.208318136576058,
-    0.6,//6.266656191591793,
-    0.7,//6.274788162897017,
-    0.8//6.2831853071795845*/
-];
+import { generateTextSprite } from "../utils/spriteText.js";
 
 export class Graph {
     INITIAL_RADIUS = 650;
@@ -182,13 +148,12 @@ export class Graph {
         for (const subgraph of this.subgraphs) {
             const size = subgraph.getOrder();
             let currentRadius = this.INITIAL_RADIUS;
+            angle = subgraph.getAngle(currentRadius, angle) + this.separation/this.totalSubgraphs;
             if (this.rounds > 1) {
                 if (!this.constantRadius) {
                     currentRadius = 5000 * size/this.totalNodes;
                 }
-                angle = this.rounds * subgraph.getAngle(currentRadius, angle);
-            } else {
-                angle = subgraph.getAngle(currentRadius, angle) + this.separation/this.totalSubgraphs;
+                angle = this.rounds * angle;
             }
 
             const subgraphPosition = new THREE.Vector3(
@@ -265,4 +230,28 @@ export class Graph {
         const colors = Object.values(this.metadata).map(data => new THREE.Color(data.color));
         return colors;
     }
+
+    getPositionLabels(metadata) {
+        const textlabels = [];
+        const labelPositions = this.getLabels();
+        for (const partyKey in labelPositions) {
+          let color = metadata[partyKey].color || 0xffffff;
+          let label = metadata[partyKey].label || partyKey;
+          var textmesh = generateTextSprite(label, color);
+      
+          textmesh.position.x =
+            labelPositions[partyKey].radius *
+            9 * 
+            Math.sin(labelPositions[partyKey].angle);
+          textmesh.position.y = labelPositions[partyKey].position.y * 7; 
+          textmesh.position.z =
+            labelPositions[partyKey].radius *
+            8 * 
+            Math.cos(labelPositions[partyKey].angle);
+          textmesh.rotation.z = Math.PI / 2;
+          textlabels.push(textmesh);
+        }
+      
+        return textlabels;
+      }
 }

@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { nodeShader } from "./shaders/nodeShader.js";
-import { edgeShader } from "./shaders/edgeShader.js";
+import { nodeShader } from "../shaders/nodeShader.js";
+import { edgeShader } from "../shaders/edgeShader.js";
 
 export class GraphMeshBuilder {
 	constructor(graph) {
