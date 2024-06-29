@@ -3,7 +3,7 @@ import * as THREE from "three";
 export function generateTextSprite(text, color) {
   const borderColor = color;
   const fontFace = "Verdana";
-  const fontSize = 60;
+  const fontSize = 45;
   const fontColor = "rgba(255, 255, 255, 0.8)";
   const textAlign = "center";
   const borderThickness = 10;
@@ -57,6 +57,7 @@ export function generateTextSprite(text, color) {
 
   var sprite = new THREE.Sprite(spriteMaterial);
   sprite.scale.set(canvas.width/3000, canvas.height/3000, 1);
+  //sprite.material.rotation = -Math.PI/5
 
   return sprite;
 

@@ -18,6 +18,7 @@ export class AnimationController {
 
     initialize(scene) {
         this.renderController.setSize(window.innerWidth, window.innerHeight);
+        this.composer.setSize(window.innerWidth, window.innerHeight);
         const rendererDomElement = this.renderController.getDomElement();
         document.body.appendChild(rendererDomElement);
         this.cameraController.createControls(rendererDomElement);
