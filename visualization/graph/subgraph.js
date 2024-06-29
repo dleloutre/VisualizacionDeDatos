@@ -25,36 +25,25 @@ export class Subgraph {
     }
 
     setEdges(edgesData) {
-        const edges = [];
-        for (const edgeData of edgesData) {
-            const originId = edgeData[0];
-            const targetId = edgeData[1];
+        this.edges = edgesData.map(([originId, targetId]) => {
             const originNode = this.searchNodeById(originId);
             const targetNode = this.searchNodeById(targetId);
-            const edge = new Edge(originNode, targetNode);
-            edges.push(edge);
-        }
-        this.edges = edges;
+            return new Edge(originNode, targetNode);
+        });
     }
 
     setNodes(nodesData) {
-        const nodes = [];
-        for (const nodeData of nodesData) {
-            const id = nodeData[0];
-            const position = new THREE.Vector3(
-                nodeData[1],
-                nodeData[2],
-                nodeData[3]
-            );
+        this.nodes = nodesData.map(([id, x, y, z]) => {
+            const position = new THREE.Vector3(x, y, z);
             const node = new Node(id, position);
             node.setSubgraphId(this.id);
-            nodes.push(node);
-            const radius = Math.sqrt(Math.pow(nodeData[1], 2) + Math.pow(nodeData[2], 2) + Math.pow(nodeData[3], 2));
+            const radius = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
             if (radius > this.radius) {
                 this.radius = radius;
             }
-        }
-        this.nodes = nodes;
+
+            return node;
+        });
     }
 
     searchNodeById(id) {
@@ -81,18 +70,8 @@ export class Subgraph {
         return this.edges.length;
     }
 
-    //getSubgraphDistanceToCenter() {
-    //    return Math.sqrt(Math.pow(this.position.x,2) + Math.pow(this.position.y,2) + Math.pow(this.position.z,2))
-    //}
-
     getAngle(distanceToCenter, prevAngle) {
-        //const a = prevAngle + (this.nodes.length/totalNodes)*0.9*2*Math.PI;
-        const subgraphDistanceToCenter = distanceToCenter;
-        const subgraphRadius = this.radius*3;
-        const angleBetweenGraphs = Math.atan(subgraphRadius/subgraphDistanceToCenter);
-        //console.log("ANGLE BETWEEN", angleBetweenGraphs)
-        //const a = prevAngle + (this.getOrder()/totalNodes)*2*Math.PI;
-        //console.log(a)
+        const angleBetweenGraphs = Math.atan((this.radius * 3) / distanceToCenter);
         return prevAngle + angleBetweenGraphs;
     }
 
@@ -102,13 +81,9 @@ export class Subgraph {
 
     setPosition(position) {
         this.position = position;
-        this.nodes.forEach((node) => {
+        this.nodes.forEach(node => {
             node.setSubgraphPosition(position);
-            const newPosition = new THREE.Vector3(
-                (node.getOriginalPosition().x + position.x) * 5,
-                (node.getOriginalPosition().y + position.y) * 5,
-                (node.getOriginalPosition().z + position.z) * 5
-            );
+            const newPosition = node.getOriginalPosition().clone().add(position).multiplyScalar(5);
             node.setPosition(newPosition);
         });
     }

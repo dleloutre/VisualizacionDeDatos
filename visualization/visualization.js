@@ -118,7 +118,7 @@ function updateGraph() {
   let gmb = new GraphMeshBuilder(graph);
   edges = gmb.createEdges();
   nodes = gmb.createNodes();
-  textlabels = graph.getPositionLabels(metadata);
+  textlabels = graph.getPositionLabels();
   addAllToScene();
 }
 

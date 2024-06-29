@@ -1,0 +1,10 @@
+{
+    "rep_party": {
+      "label": "Republican",
+      "color": "#ff0000"
+    },
+    "dem_party": {
+      "label": "Democrat",
+      "color": "#0000ff"
+    }
+}  
