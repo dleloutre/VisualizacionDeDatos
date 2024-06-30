@@ -14,7 +14,7 @@ export class CameraController {
 
     createControls(domElement) {
         this.orbitalControl = new OrbitalCameraControl(this.orbitalCamera, domElement);
-        this.droneControl = new DroneCameraControl(this.droneCamera);
+        this.droneControl = new DroneCameraControl(this.droneCamera, [0, -1000, 22000]);
         this.currentControl = this.orbitalControl;
     }
 

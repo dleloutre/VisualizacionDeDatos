@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { Edge } from "./edgeT.js";
 import { generateTextSprite } from "../utils/spriteText.js";
 import { SpiralLayout } from "./layouts/spiralLayout.js";
+import { SemicircleLayout } from "./layouts/semicircleLayout.js";
 
 export class Graph {
 	totalSubgraphs = 0;
@@ -9,34 +10,34 @@ export class Graph {
     totalEdges = 0;
     metadata = {};
 
-	constructor(subgraphs, crossingEdges, metadata) {
+	constructor(subgraphs, crossingEdges, metadata  ) {
         this.subgraphs = this.sortSubgraphsBySize(subgraphs);
-        this.allNodes = this.getAllNodes();
-        this.crossingEdges = this.createEdges(crossingEdges);
+        this.allNodes = this.subgraphs.flatMap(subgraph => subgraph.getNodes());
+        //this.crossingEdges = this.createEdges(crossingEdges);
         this.totalSubgraphs = subgraphs.length;
         this.totalNodes = this.calculateTotalNodes();
-        this.totalEdges = this.calculateTotalEdges();
+        //this.totalEdges = this.calculateTotalEdges();
         this.metadata = metadata;
         this.layout = new SpiralLayout(this.subgraphs, this.totalNodes, {
-            steps: 1,
+            steps: 0.5,
             rounds: 1,
-            separation: 2,
+            separation: 1,
             constantRadius: true
         });
-        this.layout.distributeNodes();
+        this.layout.distributeNodes(metadata);
 	}
 
     getAllNodes() {
-        return this.subgraphs.flatMap(subgraph => subgraph.getNodes());
+        return this.allNodes;
     }
 
-    createEdges(rawEdges) {
+    /*createEdges(rawEdges) {
         return rawEdges.map(([originId, targetId]) => {
             const originNode = this.allNodes.find(node => node.getId() === originId);
             const targetNode = this.allNodes.find(node => node.getId() === targetId);
             return new Edge(originNode, targetNode);
         });
-    }
+    }*/
 
     getSubgraphs() {
         return this.subgraphs;
@@ -47,16 +48,16 @@ export class Graph {
     }
 
     sortSubgraphsBySize(subgraphs) {
-        return subgraphs.sort((a, b) => a.getSize() - b.getSize());
+        return subgraphs.sort((a, b) => a.getOrder() - b.getOrder());
     }
 
     calculateTotalNodes() {
         return this.subgraphs.reduce((total, subgraph) => total += subgraph.getOrder(), 0);
     }
 
-    calculateTotalEdges() {
+    /*calculateTotalEdges() {
         return this.subgraphs.reduce((total, subgraph) => total += subgraph.getSize(), 0);
-    }
+    }*/
 
     updateSteps(steps) {
         this.layout.setSteps(steps);
@@ -80,7 +81,7 @@ export class Graph {
 
     getLabels() {
         return this.subgraphs.reduce((labels, subgraph) => {
-            labels[subgraph.getKey()] = subgraph.getLabelPosition();
+            labels[subgraph.getKey()] = subgraph.getPosition();
             return labels;
         }, {});
     }
@@ -89,13 +90,13 @@ export class Graph {
 		return this.totalNodes;
 	}
 
-    getTotalEdges() {
+    /*getTotalEdges() {
         return this.totalEdges;
-    }
+    }*/
 
-    getCrossingEdges() {
+    /*getCrossingEdges() {
         return this.crossingEdges;
-    }
+    }*/
 
     getColorList() {
         const colors = Object.values(this.metadata).map(data => new THREE.Color(data.color));
@@ -106,15 +107,8 @@ export class Graph {
         const labelPositions = this.getLabels();
         return Object.keys(labelPositions).map(partyKey => {
             const { color = 0xffffff, label = partyKey } = this.metadata[partyKey];
-            const { radius, angle, position } = labelPositions[partyKey];
-            const textmesh = generateTextSprite(label, color);
-
-            textmesh.position.set(
-                radius * 9 * Math.sin(angle),
-                position.y * 7,
-                radius * 8 * Math.cos(angle)
-            );
-            textmesh.rotation.z = Math.PI / 2;
+            const position = labelPositions[partyKey];
+            const textmesh = generateTextSprite(label, color, position);
 
             return textmesh;
         });

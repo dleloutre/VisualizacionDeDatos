@@ -5,9 +5,10 @@ export const cameraPosition = [0, 500, 2500];
 export class SemicircleLayout {
     INITIAL_RADIUS = 650;
 
-    constructor(subgraphs, totalNodes) {
+    constructor(subgraphs, totalNodes, config) {
         this.subgraphs = subgraphs;
         this.totalNodes = totalNodes;
+        this.separation = config.separation;
     }
 
     distributeNodes() {
@@ -20,7 +21,6 @@ export class SemicircleLayout {
                 radius * Math.sin(angle/2) - 250,
                 0,
             );
-    
             const labelPosition = subgraphPosition.clone();
             const labelVectorPositions = {
                 position: labelPosition,

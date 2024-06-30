@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { Subgraph } from "./graph/subgraph";
 
 export function loadCSV(url) {
@@ -14,9 +15,9 @@ export function loadCSV(url) {
       );
 }
 
-export async function loadFiles(keys) {
-    const nodeFilePrefix = "/nodes/dataset_";
-    const edgeFilePrefix = "/edges/dataset_";
+export async function loadFiles(keys, bgraphkey) {
+    const nodeFilePrefix = `/nodes${bgraphkey}/dataset_`;
+    const edgeFilePrefix = `/edges${bgraphkey}/dataset_`;
   
     const edgeFileSuffix = ".csv";
     const nodeFileSuffix = "_FR.csv";
@@ -28,16 +29,15 @@ export async function loadFiles(keys) {
       const nodeFile = nodeFilePrefix + key + nodeFileSuffix;
       const nodes = await loadCSV(nodeFile);
       subgraph.setNodes(nodes);
-      const edgeFile = edgeFilePrefix + key + edgeFileSuffix;
-      const edges = await loadCSV(edgeFile);
-      subgraph.setEdges(edges);
+      //const edgeFile = edgeFilePrefix + key + edgeFileSuffix;
+      //const edges = await loadCSV(edgeFile);
+      //subgraph.setEdges(edges);
       
       subgraphs.push(subgraph);
       i++;
     }
-  
     const crossingEdges = await loadCSV(edgeFilePrefix + "crossing" + edgeFileSuffix);
-  
+
     return { subgraphs, crossingEdges };
 }
 

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-export const cameraPosition = [0, 22000, 0];
+export const cameraPosition = [0, 12000, 15000];
 
 export class SpiralLayout {
     INITIAL_RADIUS = 650;
@@ -14,7 +14,7 @@ export class SpiralLayout {
         this.totalNodes = totalNodes;
     }
 
-    distributeNodes() {
+    distributeNodes(metadata) {
         let angle = 0;
         for (const subgraph of this.subgraphs) {
             const size = subgraph.getOrder();
@@ -33,9 +33,8 @@ export class SpiralLayout {
                 this.rounds + currentRadius * Math.cos(angle),
             );
 
-            const labelPosition = subgraphPosition.clone();
             const labelVectorPositions = {
-                position: labelPosition,
+                position: subgraphPosition.clone(),
                 radius: currentRadius,
                 angle: angle,
             };
