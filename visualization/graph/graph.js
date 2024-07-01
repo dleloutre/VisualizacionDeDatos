@@ -18,6 +18,7 @@ export class Graph {
         this.totalNodes = this.calculateTotalNodes();
         //this.totalEdges = this.calculateTotalEdges();
         this.metadata = metadata;
+        this.positionOffset = positionOffset;
         this.layout = new SpiralLayout(this.subgraphs, this.totalNodes, {
             steps: 0.5,
             rounds: 1,
@@ -76,7 +77,7 @@ export class Graph {
 
     updateSeparation(factor) {
         this.layout.setSeparationFactor(factor);
-        this.layout.distributeNodes();
+        this.layout.distributeNodes(this.positionOffset);
     }
 
     getLabels() {
