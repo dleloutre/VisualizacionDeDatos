@@ -43,28 +43,23 @@ export class BipartiteGraph {
     }
 
     createCrossingEdges(crossing_A, crossing_B) {
-        console.log("starting")
-        console.log(this.graphA.getSubgraphs())
-        const crossingAToB = crossing_A.map(([originId, targetId]) => {
+        let crossingAToB = crossing_A.map(([originId, targetId]) => {
             const originNode = this.graphA.getAllNodes().find(node => node.getId() === originId);
             const targetNode = this.graphB.getAllNodes().find(node => node.getId() === targetId);
-            if (!originNode || !targetNode) {
-                console.log("Missing: ", originNode, targetNode)
-            } else {
+            if (originNode && targetNode) {
                 return new Edge(originNode, targetNode);
             }
         });
-console.log("finish crossing a to b")
-        const crossingBToA = crossing_B.map(([originId, targetId]) => {
+
+        let crossingBToA = crossing_B.map(([originId, targetId]) => {
             const originNode = this.graphB.getAllNodes().find(node => node.getId() === originId);
             const targetNode = this.graphA.getAllNodes().find(node => node.getId() === targetId);
-            if (!originNode || !targetNode) {
-                console.log("Missing: ", originId, targetId)
-            } else {
+            if (originNode && targetNode) {
                 return new Edge(originNode, targetNode);
             }
         });
-console.log("finish crossing")
+        crossingAToB = crossingAToB.filter((edge) => edge)
+        crossingBToA = crossingBToA.filter((edge) => edge)
         this.crossingEdges = crossingAToB.concat(crossingBToA);
     }
 
@@ -79,5 +74,28 @@ console.log("finish crossing")
     updateSeparation(factor) {
         this.graphA.updateSeparation(factor);
         this.graphB.updateSeparation(factor);
+    }
+
+    updatePositions(graphAElements, graphBElements) {
+        const allNodesA = this.graphA.getAllNodes();
+        for (const node of allNodesA) {
+            let newPosition = node.getPosition().clone();
+            newPosition.x = newPosition.x - 3500;
+            //newPosition.rotateY(Math.PI/2);
+            node.setPosition(newPosition)
+        }
+        const allNodesB = this.graphB.getAllNodes();
+        for (const node of allNodesB) {
+            let newPosition = node.getPosition().clone();
+            newPosition.x = newPosition.x + 4000;
+            newPosition.z = newPosition.z + 2000;
+            node.setPosition(newPosition)
+        }
+        graphAElements.position.x = graphAElements.position.x - 3500;
+        graphAElements.rotateY(Math.PI/2)
+        graphBElements.position.x = graphBElements.position.x + 4000;
+        // graphBElements.position.y = graphBElements.position.y + 1000;
+        graphBElements.position.z = graphBElements.position.z + 2000;
+        // graphBElements.rotateX(-Math.PI)
     }
 }

@@ -10,7 +10,7 @@ export class Graph {
     totalEdges = 0;
     metadata = {};
 
-	constructor(subgraphs, crossingEdges, metadata  ) {
+	constructor(subgraphs, crossingEdges, metadata, positionOffset) {
         this.subgraphs = this.sortSubgraphsBySize(subgraphs);
         this.allNodes = this.subgraphs.flatMap(subgraph => subgraph.getNodes());
         //this.crossingEdges = this.createEdges(crossingEdges);
@@ -24,7 +24,7 @@ export class Graph {
             separation: 1,
             constantRadius: true
         });
-        this.layout.distributeNodes(metadata);
+        this.layout.distributeNodes(positionOffset);
 	}
 
     getAllNodes() {
@@ -81,7 +81,7 @@ export class Graph {
 
     getLabels() {
         return this.subgraphs.reduce((labels, subgraph) => {
-            labels[subgraph.getKey()] = subgraph.getPosition();
+            labels[subgraph.getKey()] = subgraph.getLabelPosition();
             return labels;
         }, {});
     }

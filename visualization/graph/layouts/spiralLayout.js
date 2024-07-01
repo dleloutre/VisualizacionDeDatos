@@ -28,18 +28,17 @@ export class SpiralLayout {
             }
 
             const subgraphPosition = new THREE.Vector3(
-                this.rounds + currentRadius * Math.sin(angle),
-                this.steps * 3000 * size/this.totalNodes,
-                this.rounds + currentRadius * Math.cos(angle),
+                this.rounds + currentRadius * Math.sin(angle),// + metadata["x-offset"],
+                this.steps * 3000 * size/this.totalNodes,// + metadata["y-offset"],
+                this.rounds + currentRadius * Math.cos(angle)// + metadata["z-offset"],
             );
+            subgraphPosition.applyAxisAngle(new THREE.Vector3(1, 0, 0), metadata["x-angle"]);
+            subgraphPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), metadata["y-angle"]);
+            subgraphPosition.setX(subgraphPosition.x + metadata["x-offset"])
+            subgraphPosition.setY(subgraphPosition.y + metadata["y-offset"])
+            subgraphPosition.setZ(subgraphPosition.z + metadata["z-offset"])
 
-            const labelVectorPositions = {
-                position: subgraphPosition.clone(),
-                radius: currentRadius,
-                angle: angle,
-            };
-
-            subgraph.setLabelPosition(labelVectorPositions);
+            subgraph.setLabelPosition(subgraphPosition.clone().multiplyScalar(7));
             subgraph.setPosition(subgraphPosition);
         }
     }

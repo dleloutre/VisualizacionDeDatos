@@ -44,7 +44,7 @@ export function generateTextSprite(text, color, position) {
   });
 
   let sprite = new THREE.Sprite(spriteMaterial);
-  sprite.position.set(position.x * 8, position.y * 8, position.z * 8);
+  sprite.position.set(position.x, position.y, position.z);
   sprite.scale.set(canvas.width / 2000, canvas.height / 2000, 1);
 
   return sprite;

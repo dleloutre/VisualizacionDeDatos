@@ -37,6 +37,7 @@ const params = {
   droneCamera: false,
   antialias: false,
   showLabels: true,
+  showEdges: true,
 };
 
 function setup() {
@@ -113,6 +114,16 @@ function createUI() {
         textlabelsB.forEach((label) => graphBElements.remove(label));
       }
     });
+  gui
+    .add(params, "showEdges")
+    .name("show edges")
+    .onChange((v) => {
+      if (v) {
+        sceneElements.add(edges)
+      } else {
+        sceneElements.remove(edges)
+      }
+    });
 }
 
 function changeButtonsVisibility(visibility) {
@@ -139,13 +150,12 @@ function removeAllFromScene() {
 }
 
 function addAllToScene() {
-  sceneElements.add(edges);
+  if (params.showEdges) {
+    sceneElements.add(edges);
+  }
   //sceneElements.add(nodes);
   //textlabels.forEach((label) => sceneElements.add(label));
   graphAElements.add(nodesA)
-
-
-
   graphBElements.add(nodesB)
 
   if (params.showLabels) {
@@ -169,8 +179,8 @@ function updateGraph() {
   nodesB = gmb.createNodes();
   textlabelsB = graph.getPositionLabelsB();
 
-  //gmb = new GraphMeshBuilder(graph);
-  //edges = gmb.createEdges();
+  gmb = new GraphMeshBuilder(graph);
+  edges = gmb.createEdges();
 
   addAllToScene();
 }
@@ -184,17 +194,29 @@ const animate = function () {
 };
 
 async function prepareData() {
+  let positionOffset = {
+    A: {},
+    B: {}
+  }
   let fileKeys = Object.keys(metadata.A);
   const A = await loadFiles(fileKeys, "_A");
-  //metadata.A["x-offset"] = -1000;
-  const graph_A = new Graph(A.subgraphs, A.crossingEdges, metadata.A);
+  positionOffset.A["x-offset"] = -600;
+  positionOffset.A["y-offset"] = 0;
+  positionOffset.A["z-offset"] = 0;
+  positionOffset.A["x-angle"] = 0;
+  positionOffset.A["y-angle"] = Math.PI/2;
+  const graph_A = new Graph(A.subgraphs, A.crossingEdges, metadata.A, positionOffset.A);
   fileKeys = Object.keys(metadata.B);
   const B = await loadFiles(fileKeys, "_B");
-  //metadata.B["x-offset"] = 1000;
-  const graph_B = new Graph(B.subgraphs, B.crossingEdges, metadata.B);
+  positionOffset.B["x-offset"] = 800;
+  positionOffset.B["y-offset"] = 0;
+  positionOffset.B["z-offset"] = 0;
+  positionOffset.B["x-angle"] = 0//-Math.PI/2;
+  positionOffset.B["y-angle"] = 0;
+  const graph_B = new Graph(B.subgraphs, B.crossingEdges, metadata.B, positionOffset.B);
 
   const bGraph = new BipartiteGraph(graph_A, graph_B);
-  //bGraph.createCrossingEdges(A.crossingEdges, B.crossingEdges);
+  bGraph.createCrossingEdges(A.crossingEdges, B.crossingEdges);
 
   return bGraph;
 }
@@ -208,11 +230,6 @@ prepareData()
     graph = G;
     updateGraph();
     animate();
-    graphAElements.position.x = graphAElements.position.x - 3500;
-    graphAElements.rotateY(Math.PI/2)
-    graphBElements.position.x = graphBElements.position.x + 4000;
-    graphBElements.position.y = graphBElements.position.y + 1000;
-    graphBElements.position.z = graphBElements.position.z + 2000;
-    //graphBElements.rotateX(-Math.PI)
+    
   })
   .catch((e) => console.log(e));
