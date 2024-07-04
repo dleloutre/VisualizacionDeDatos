@@ -41,10 +41,11 @@ export class RenderController {
     }
 
     createPass(scene, camera) {
+        console.log("ismobile", isMobile)
         this.renderPass = new SSAARenderPass(scene, camera);
         this.renderPass.clearColor = new THREE.Color(0x000000); 
         this.renderPass.clearAlpha = 1; 
-        this.renderPass.sampleLevel = 4; 
+        this.renderPass.sampleLevel = isMobile.phone ? 2 : 4;
         this.renderPass.unbiased = true;
     }
 }
