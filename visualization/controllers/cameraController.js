@@ -1,15 +1,14 @@
 import * as THREE from "three";
 import { DroneCameraControl } from "./droneCameraControl.js";
 import { OrbitalCameraControl } from "./orbitalCameraControl.js";
-import { cameraPosition } from "../graph/layouts/spiralLayout.js";
 
 export class CameraController {
-    constructor(fov, aspect, near, far) {
+    constructor(fov, aspect, near, far, camPosition) {
         this.orbitalCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
         this.droneCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
         this.matrixValues = [];
         this.currentCamera = this.orbitalCamera;
-        this.setCameraPosition(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
+        this.setCameraPosition(camPosition[0], camPosition[1], camPosition[2]);
     }
 
     createControls(domElement) {

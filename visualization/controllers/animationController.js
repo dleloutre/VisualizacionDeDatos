@@ -4,12 +4,13 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
 export class AnimationController {
-    constructor(scene) {
+    constructor(scene, camPosition) {
         this.cameraController = new CameraController(
             35,
             window.innerWidth / window.innerHeight,
             0.1,
-            200000
+            200000,
+            camPosition
         );
         this.renderController = new RenderController();
         this.composer = new EffectComposer(this.renderController.getRenderer(), this.renderController.getTarget());

@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { Edge } from "./edgeT.js";
 import { generateTextSprite } from "../utils/spriteText.js";
 import { SpiralLayout } from "./layouts/spiralLayout.js";
-import { SemicircleLayout } from "./layouts/semicircleLayout.js";
 
 export class Graph {
 	totalSubgraphs = 0;
@@ -10,35 +9,41 @@ export class Graph {
     totalEdges = 0;
     metadata = {};
 
-	constructor(subgraphs, crossingEdges, metadata, positionOffset) {
+	constructor(subgraphs, crossingEdges, metadata) {
         this.subgraphs = this.sortSubgraphsBySize(subgraphs);
         this.allNodes = this.subgraphs.flatMap(subgraph => subgraph.getNodes());
-        //this.crossingEdges = this.createEdges(crossingEdges);
+        this.crossingEdges = crossingEdges ? this.createEdges(crossingEdges) : [];
         this.totalSubgraphs = subgraphs.length;
         this.totalNodes = this.calculateTotalNodes();
-        //this.totalEdges = this.calculateTotalEdges();
+        this.totalEdges = this.calculateTotalEdges();
         this.metadata = metadata;
-        this.positionOffset = positionOffset;
+	}
+
+    distributePositions(offset = {}) {
+        this.positionOffset = offset;
         this.layout = new SpiralLayout(this.subgraphs, this.totalNodes, {
-            steps: 0.5,
-            rounds: 1,
-            separation: 1,
+            steps: offset["steps"] ?? 0.5,
+            rounds: offset["rounds"] ?? 1,
+            separation: offset["separation"] ?? 1,
             constantRadius: true
         });
-        this.layout.distributeNodes(positionOffset);
-	}
+        this.layout.distributeNodes(this.positionOffset);
+    }
 
     getAllNodes() {
         return this.allNodes;
     }
 
-    /*createEdges(rawEdges) {
+    createEdges(rawEdges) {
         return rawEdges.map(([originId, targetId]) => {
             const originNode = this.allNodes.find(node => node.getId() === originId);
             const targetNode = this.allNodes.find(node => node.getId() === targetId);
+            if (!originNode || !targetNode) {
+                console.log(originNode, originId, targetNode, targetId)
+            }
             return new Edge(originNode, targetNode);
         });
-    }*/
+    }
 
     getSubgraphs() {
         return this.subgraphs;
@@ -56,9 +61,9 @@ export class Graph {
         return this.subgraphs.reduce((total, subgraph) => total += subgraph.getOrder(), 0);
     }
 
-    /*calculateTotalEdges() {
+    calculateTotalEdges() {
         return this.subgraphs.reduce((total, subgraph) => total += subgraph.getSize(), 0);
-    }*/
+    }
 
     updateSteps(steps) {
         this.layout.setSteps(steps);
@@ -91,13 +96,13 @@ export class Graph {
 		return this.totalNodes;
 	}
 
-    /*getTotalEdges() {
+    getTotalEdges() {
         return this.totalEdges;
-    }*/
+    }
 
-    /*getCrossingEdges() {
+    getCrossingEdges() {
         return this.crossingEdges;
-    }*/
+    }
 
     getColorList() {
         const colors = Object.values(this.metadata).map(data => new THREE.Color(data.color));

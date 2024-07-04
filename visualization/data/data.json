@@ -1,0 +1,62 @@
+{
+  "bfmtv": {
+    "label": "BFM TV"
+  },
+  "afpfr": {
+    "label": "Agence France-Presse"
+  },
+  "brutofficiel": {
+    "label": "Brut"
+  },
+  "leparisien": {
+    "label": "Le Parisien"
+  },
+  "franceinter": {
+    "label": "France Inter"
+  },
+  "libe": {
+    "label": "Libération"
+  },
+  "lemondefr": {
+    "label": "Le Monde"
+  },
+  "cnews": {
+    "label": "CNews"
+  },
+  "franceinfo": {
+    "label": "France Info"
+  },
+  "mediapart": {
+    "label": "Médiapart"
+  },
+  "rtlfrance": {
+    "label": "RTL"
+  },
+  "lci": {
+    "label": "LCI"
+  },
+  "europe1": {
+    "label": "Europe 1"
+  },
+  "lefigaro": {
+    "label": "Le Figaro"
+  },
+  "lehuffpost": {
+    "label": "Le HuffPost"
+  },
+  "lobs": {
+    "label": "L'Obs"
+  },
+  "20minutes": {
+    "label": "20 Minutes"
+  },
+  "lexpress": {
+    "label": "L'Express"
+  },
+  "humanitefr": {
+    "label": "L'Humanité"
+  },
+  "canardenchaine": {
+    "label": "Le Canard enchainé"
+  }
+}

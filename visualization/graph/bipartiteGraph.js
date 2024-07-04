@@ -4,6 +4,14 @@ export class BipartiteGraph {
     constructor(graph_A, graph_B) {
         this.graphA = graph_A;
         this.graphB = graph_B;
+        this.graphA.distributePositions({
+            "x-offset": -600,
+            "y-angle": Math.PI/2,
+            "steps": 0.6
+        });
+        this.graphB.distributePositions({
+            "x-offset": 800
+        });
     }
 
     getGraphA() {
@@ -58,8 +66,8 @@ export class BipartiteGraph {
                 return new Edge(originNode, targetNode);
             }
         });
-        crossingAToB = crossingAToB.filter((edge) => edge)
-        crossingBToA = crossingBToA.filter((edge) => edge)
+        crossingAToB = crossingAToB.filter((edge) => edge);
+        crossingBToA = crossingBToA.filter((edge) => edge);
         this.crossingEdges = crossingAToB.concat(crossingBToA);
     }
 
@@ -74,28 +82,5 @@ export class BipartiteGraph {
     updateSeparation(factor) {
         this.graphA.updateSeparation(factor);
         this.graphB.updateSeparation(factor);
-    }
-
-    updatePositions(graphAElements, graphBElements) {
-        const allNodesA = this.graphA.getAllNodes();
-        for (const node of allNodesA) {
-            let newPosition = node.getPosition().clone();
-            newPosition.x = newPosition.x - 3500;
-            //newPosition.rotateY(Math.PI/2);
-            node.setPosition(newPosition)
-        }
-        const allNodesB = this.graphB.getAllNodes();
-        for (const node of allNodesB) {
-            let newPosition = node.getPosition().clone();
-            newPosition.x = newPosition.x + 4000;
-            newPosition.z = newPosition.z + 2000;
-            node.setPosition(newPosition)
-        }
-        graphAElements.position.x = graphAElements.position.x - 3500;
-        graphAElements.rotateY(Math.PI/2)
-        graphBElements.position.x = graphBElements.position.x + 4000;
-        // graphBElements.position.y = graphBElements.position.y + 1000;
-        graphBElements.position.z = graphBElements.position.z + 2000;
-        // graphBElements.rotateX(-Math.PI)
     }
 }
