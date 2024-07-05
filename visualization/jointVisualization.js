@@ -80,7 +80,7 @@ function createUI() {
 }
 
 function changeButtonsVisibility(visibility) {
-  if (isMobile.apple.phone || isMobile.android.phone) {
+  if (isMobile.phone) {
     const visibilityString = visibility ? "visible" : "hidden";
     document.getElementById("translation-buttons").style.visibility = visibilityString;
     document.getElementById("rotation-buttons").style.visibility = visibilityString;
