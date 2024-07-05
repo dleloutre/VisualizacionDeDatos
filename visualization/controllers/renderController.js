@@ -3,7 +3,8 @@ import { SSAARenderPass } from 'three/addons/postprocessing/SSAARenderPass.js';
 
 export class RenderController {
     constructor() {
-        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer = new THREE.WebGLRenderer({antialias: true});
+        //this.renderer.setPixelRatio(window.devicePixelRatio);
         THREE.ColorManagement.enabled = true;
         this.renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
     }
@@ -41,11 +42,10 @@ export class RenderController {
     }
 
     createPass(scene, camera) {
-        console.log("ismobile", isMobile)
         this.renderPass = new SSAARenderPass(scene, camera);
         this.renderPass.clearColor = new THREE.Color(0x000000); 
         this.renderPass.clearAlpha = 1; 
-        this.renderPass.sampleLevel = isMobile.phone ? 2 : 4;
+        this.renderPass.sampleLevel = 4;
         this.renderPass.unbiased = true;
     }
 }

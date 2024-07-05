@@ -13,7 +13,10 @@ export class AnimationController {
             camPosition
         );
         this.renderController = new RenderController();
-        this.composer = new EffectComposer(this.renderController.getRenderer(), this.renderController.getTarget());
+
+        this.composer = new EffectComposer(this.renderController.getRenderer());
+        this.composer.setPixelRatio(1);
+
         this.initialize(scene);
     }
 
@@ -24,6 +27,7 @@ export class AnimationController {
         document.body.appendChild(rendererDomElement);
         this.cameraController.createControls(rendererDomElement);
         this.renderController.createPass(scene, this.getCamera());
+
         this.composer.addPass(this.renderController.getPass());
         this.composer.addPass(new OutputPass());
     }
