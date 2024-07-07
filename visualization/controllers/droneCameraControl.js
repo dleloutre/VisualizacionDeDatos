@@ -8,7 +8,7 @@ export class DroneCameraControl {
     let DELTA_ROTACION = 0.04;
     const FACTOR_INERCIA = 0.05;
     const MIN_TRANSLATION_THRESHOLD = 0.02;
-    const MIN_ROTATION_THRESHOLD = 0.01;
+    const MIN_ROTATION_THRESHOLD = 0.02;
 
     if (!initialPos) initialPos = [0, 0, 22000];
 
