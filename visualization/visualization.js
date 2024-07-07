@@ -21,7 +21,7 @@ const params = {
   emissionFactor: 0.3,
   spiralSteps: 1,
   spiralRounds: 1,
-  subgraphSeparation: 2,
+  subgraphSeparation: 2, // 2.4 for media
   spiralSwitch: true,
   droneCamera: false,
   antialias: false,
@@ -29,7 +29,7 @@ const params = {
 
 function setup() {
   scene = new THREE.Scene();
-  animationController = new AnimationController(scene);
+  animationController = new AnimationController(scene, [0, 22000, 0]);
   stats = new Stats();
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
@@ -41,7 +41,7 @@ function onResize() {
 }
 
 function createUI() {
-  const gui = new dat.GUI();
+  const gui = new dat.GUI({hideable: false});
   gui.add(params, "antialias")
     .name("antialias")
   gui
@@ -51,13 +51,6 @@ function createUI() {
       animationController.switchCamera(sceneElements);
       changeButtonsVisibility(v);
     });
-  /*gui
-    .add(params, "emissionFactor", 0, 1)
-    .step(0.01)
-    .name("emission factor")
-    .onChange((v) => {
-      edges.material.uniforms.emissionFactor.value = v;
-    });*/
   gui
     .add(params, "spiralSteps", 0, 10)
     .name("spiral steps")
@@ -74,13 +67,13 @@ function createUI() {
       graph.updateRounds(v);
       updateGraph();
     });
-  gui
+  /*gui
     .add(params, "spiralSwitch")
     .name("constant radius")
     .onChange((v) => {
       graph.updateConstantRadius(v);
       updateGraph();
-    });
+    });*/
   gui
     .add(params, "subgraphSeparation", 0, 5)
     .name("separation between subgraphs")
@@ -92,7 +85,7 @@ function createUI() {
 }
 
 function changeButtonsVisibility(visibility) {
-  if (isMobile.apple.phone || isMobile.android.phone) {
+  if (isMobile.phone) {
     const visibilityString = visibility ? "visible" : "hidden";
     document.getElementById("translation-buttons").style.visibility = visibilityString;
     document.getElementById("rotation-buttons").style.visibility = visibilityString;
@@ -133,6 +126,7 @@ const animate = function () {
 async function prepareData() {
   const fileKeys = Object.keys(metadata);
   const { subgraphs, crossingEdges } = await loadFiles(fileKeys);
+
   return new Graph(subgraphs, crossingEdges, metadata);
 }
 
@@ -141,6 +135,7 @@ createUI();
 metadata = validateMetadata(initialMetadata);
 prepareData()
   .then((G) => {
+    G.distributePositions();
     graph = G;
     updateGraph();
     animate();

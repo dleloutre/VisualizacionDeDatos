@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Three.js Instanced Cylinders</title>
-
     <script type="importmap">
       {
         "imports": {
@@ -16,7 +15,7 @@
       }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script type="module" src="visualization.js"></script>
+    <script type="module" src="jointVisualization.js"></script>
     <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>eruda.init();</script>
     <script src="https://cdn.jsdelivr.net/npm/ismobilejs@1/dist/isMobile.min.js"></script>
@@ -25,87 +24,100 @@
         overflow: hidden;
         margin: 0;
       }
+
+      .r-btn-container, .l-btn-container {
+        display: block;
+        position: absolute;
+        bottom: 20px;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
       .r-btn-container {
-        display: block;
-		    position: absolute;
         right: 20px;
-		    bottom: 20px;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
       }
+
       .l-btn-container {
-        display: block;
-		    position: absolute;
         left: 20px;
-		    bottom: 20px;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
       }
-      .arrow-btn {
-        width: 30px;
-        height: 30px;
-        background-color: #3498db;
-        border-radius: 50%;
-        border: none;
-        color: #fff;
-        font-size: 20px;
-        cursor: pointer;
-        position: relative;
-        transition: background-color 0.3s;
+
+      .column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
-      .arrow-btn:hover {
-        background-color: #2980b9;
-      }
+
       .row {
         display: flex;
         justify-content: center;
         align-items: center;
       }
-      .column {
+
+      .arrow-btn {
+        width: 40px;
+        height: 40px;
+        background-color: rgba(72, 84, 91, 0.8);
+        border-radius: 50%;
+        border: 2px solid rgba(72, 84, 91, 0.8);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px rgba(0, 0, 0, 0.4);
         display: flex;
-        flex-direction: column;
         justify-content: center;
         align-items: center;
       }
-      .left, .right {
+
+      .arrow-btn:active {
+        background-color: rgba(72, 84, 91, 0.8);
+        box-shadow: 0 2px rgba(0, 0, 0, 0.4);
+        transform: translateY(2px);
+      }
+
+      .arrow-btn:hover {
+        background-color: rgba(84, 97, 104, 0.8);
+      }
+
+      .left, .right, .up, .down, .rotleft, .rotright {
         margin: 0 10px;
+      }
+
+      .up, .zoomin, .rotleft, .rotright {
+        margin-bottom: 10px;
       }
     </style>
   </head>
   <body>
-    <div id="translation-buttons" class="l-btn-container" style='visibility:hidden'>
-      <div class="column">
-        <div class="row">
-            <button class="arrow-btn up">&#8593;</button>
-        </div>
-        <div class="row">
-            <button class="arrow-btn left">&#8592;</button>
-            <button class="arrow-btn right">&#8594;</button>
-        </div>
-        <div class="row">
-            <button class="arrow-btn down">&#8595;</button>
-        </div>
-      </div>
-    </div>
     <div id="rotation-buttons" class="r-btn-container" style='visibility:hidden'>
       <div class="column">
         <div class="row">
-            <button class="arrow-btn up">&#8593;</button>
+          <button class="arrow-btn rotleft">&#8635;</button>
+          <button class="arrow-btn up">&#8593;</button>
+          <button class="arrow-btn rotright">&#8634;</button>
         </div>
         <div class="row">
-            <button class="arrow-btn left">&#8592;</button>
-            <button class="arrow-btn right">&#8594;</button>
+          <button class="arrow-btn left">&#8592;</button>
+          <button class="arrow-btn down">&#8595;</button>
+          <button class="arrow-btn right">&#8594;</button>
+        </div>
+      </div>
+    </div>
+    <div id="translation-buttons" class="l-btn-container" style='visibility:hidden'>
+      <div class="column">
+        <div class="row">
+          <button class="arrow-btn up">&#8593;</button>
+          <button class="arrow-btn zoomin">+</button>
+          <button class="arrow-btn down" style="margin-bottom: 10px">&#8595;</button>
         </div>
         <div class="row">
-            <button class="arrow-btn down">&#8595;</button>
+          <button class="arrow-btn left">&#8592;</button>
+          <button class="arrow-btn zoomout">-</button>
+          <button class="arrow-btn right">&#8594;</button>
         </div>
       </div>
     </div>

@@ -11,29 +11,36 @@ export class Graph {
 
 	constructor(subgraphs, crossingEdges, metadata) {
         this.subgraphs = this.sortSubgraphsBySize(subgraphs);
-        this.allNodes = this.getAllNodes();
-        this.crossingEdges = this.createEdges(crossingEdges);
+        this.allNodes = this.subgraphs.flatMap(subgraph => subgraph.getNodes());
+        this.crossingEdges = crossingEdges ? this.createEdges(crossingEdges) : [];
         this.totalSubgraphs = subgraphs.length;
         this.totalNodes = this.calculateTotalNodes();
         this.totalEdges = this.calculateTotalEdges();
         this.metadata = metadata;
-        this.layout = new SpiralLayout(this.subgraphs, this.totalNodes, {
-            steps: 1,
-            rounds: 1,
-            separation: 2,
-            constantRadius: true
-        });
-        this.layout.distributeNodes();
 	}
 
+    distributePositions(offset = {}) {
+        this.positionOffset = offset;
+        this.layout = new SpiralLayout(this.subgraphs, this.totalNodes, {
+            steps: offset["steps"] ?? 0.5,
+            rounds: offset["rounds"] ?? 1,
+            separation: offset["separation"] ?? 1,
+            constantRadius: true
+        });
+        this.layout.distributeNodes(this.positionOffset);
+    }
+
     getAllNodes() {
-        return this.subgraphs.flatMap(subgraph => subgraph.getNodes());
+        return this.allNodes;
     }
 
     createEdges(rawEdges) {
         return rawEdges.map(([originId, targetId]) => {
             const originNode = this.allNodes.find(node => node.getId() === originId);
             const targetNode = this.allNodes.find(node => node.getId() === targetId);
+            if (!originNode || !targetNode) {
+                console.log(originNode, originId, targetNode, targetId)
+            }
             return new Edge(originNode, targetNode);
         });
     }
@@ -47,7 +54,7 @@ export class Graph {
     }
 
     sortSubgraphsBySize(subgraphs) {
-        return subgraphs.sort((a, b) => a.getSize() - b.getSize());
+        return subgraphs.sort((a, b) => a.getOrder() - b.getOrder());
     }
 
     calculateTotalNodes() {
@@ -75,7 +82,7 @@ export class Graph {
 
     updateSeparation(factor) {
         this.layout.setSeparationFactor(factor);
-        this.layout.distributeNodes();
+        this.layout.distributeNodes(this.positionOffset);
     }
 
     getLabels() {
@@ -106,15 +113,8 @@ export class Graph {
         const labelPositions = this.getLabels();
         return Object.keys(labelPositions).map(partyKey => {
             const { color = 0xffffff, label = partyKey } = this.metadata[partyKey];
-            const { radius, angle, position } = labelPositions[partyKey];
-            const textmesh = generateTextSprite(label, color);
-
-            textmesh.position.set(
-                radius * 9 * Math.sin(angle),
-                position.y * 7,
-                radius * 8 * Math.cos(angle)
-            );
-            textmesh.rotation.z = Math.PI / 2;
+            const position = labelPositions[partyKey];
+            const textmesh = generateTextSprite(label, color, position);
 
             return textmesh;
         });

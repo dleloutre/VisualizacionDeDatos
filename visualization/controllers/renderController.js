@@ -3,7 +3,7 @@ import { SSAARenderPass } from 'three/addons/postprocessing/SSAARenderPass.js';
 
 export class RenderController {
     constructor() {
-        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer = new THREE.WebGLRenderer({antialias: true});
         THREE.ColorManagement.enabled = true;
         this.renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
     }
@@ -44,7 +44,7 @@ export class RenderController {
         this.renderPass = new SSAARenderPass(scene, camera);
         this.renderPass.clearColor = new THREE.Color(0x000000); 
         this.renderPass.clearAlpha = 1; 
-        this.renderPass.sampleLevel = 4; 
+        this.renderPass.sampleLevel = 4;
         this.renderPass.unbiased = true;
     }
 }

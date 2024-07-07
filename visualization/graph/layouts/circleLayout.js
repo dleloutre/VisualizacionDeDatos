@@ -5,9 +5,10 @@ export const cameraPosition = [0, 3000, 0];
 export class CircleLayout {
     INITIAL_RADIUS = 650;
 
-    constructor(subgraphs, totalNodes) {
+    constructor(subgraphs, totalNodes, config) {
         this.subgraphs = subgraphs;
         this.totalNodes = totalNodes;
+        this.separation = config.separation;
     }
 
     distributeNodes() {

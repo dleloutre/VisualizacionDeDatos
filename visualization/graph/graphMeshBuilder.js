@@ -131,8 +131,9 @@ export class GraphMeshBuilder {
 
 		edges.forEach((edge, j) => {
 			const originNode = edge.getOrigin();
-			const originVectorPosition = originNode.getVectorPosition();
 			const targetNode = edge.getTarget();
+
+			const originVectorPosition = originNode.getVectorPosition();
 			const targetVectorPosition = targetNode.getVectorPosition();
 
 			const gradientOffset = (targetNode.getSubgraphId() + (1.0 + originNode.getSubgraphId()) / (1.0 + this.graph.getTotalSubgraphs())) / this.graph.getTotalSubgraphs();

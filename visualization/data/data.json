@@ -1,50 +1,62 @@
 {
-  "arthaud": {
-    "label": "Arthaud",
-    "color": "#ff0000"
+  "bfmtv": {
+    "label": "BFM TV"
   },
-  "poutou": {
-    "label": "Poutou",
-    "color": "#ff6600"
+  "afpfr": {
+    "label": "Agence France-Presse"
   },
-  "roussel": {
-    "label": "Roussel",
-    "color": "#ffe100"
+  "brutofficiel": {
+    "label": "Brut"
   },
-  "melenchon": {
-    "label": "Mélenchon",
-    "color": "#eeff00"
+  "leparisien": {
+    "label": "Le Parisien"
   },
-  "jadot": {
-    "label": "Jadot",
-    "color": "#b7ff00"
+  "franceinter": {
+    "label": "France Inter"
   },
-  "hidalgo": {
-    "label": "Hidalgo",
-    "color": "#55ff00"
+  "libe": {
+    "label": "Libération"
   },
-  "macron": {
-    "label": "Macron",
-    "color": "#00ff95"
+  "lemondefr": {
+    "label": "Le Monde"
   },
-  "pecresse": {
-    "label": "Pécresse",
-    "color": "#00ffd5"
+  "cnews": {
+    "label": "CNews"
   },
-  "lasalle": {
-    "label": "Lassalle",
-    "color": "#00fbff"
+  "franceinfo": {
+    "label": "France Info"
   },
-  "mlp": {
-    "label": "Le Pen",
-    "color": "#00c8ff"
+  "mediapart": {
+    "label": "Médiapart"
   },
-  "dupontaignan": {
-    "label": "Dupont-Aignan",
-    "color": "#0077ff"
+  "rtlfrance": {
+    "label": "RTL"
   },
-  "zemmour": {
-    "label": "Zemmour",
-    "color": "#0000ff"
+  "lci": {
+    "label": "LCI"
+  },
+  "europe1": {
+    "label": "Europe 1"
+  },
+  "lefigaro": {
+    "label": "Le Figaro"
+  },
+  "lehuffpost": {
+    "label": "Le HuffPost"
+  },
+  "lobs": {
+    "label": "L'Obs"
+  },
+  "20minutes": {
+    "label": "20 Minutes"
+  },
+  "lexpress": {
+    "label": "L'Express"
+  },
+  "humanitefr": {
+    "label": "L'Humanité"
+  },
+  "canardenchaine": {
+    "label": "Le Canard enchainé"
   }
 }

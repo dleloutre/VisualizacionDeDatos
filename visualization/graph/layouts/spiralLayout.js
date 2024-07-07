@@ -1,7 +1,5 @@
 import * as THREE from "three";
 
-export const cameraPosition = [0, 22000, 0];
-
 export class SpiralLayout {
     INITIAL_RADIUS = 650;
 
@@ -14,7 +12,13 @@ export class SpiralLayout {
         this.totalNodes = totalNodes;
     }
 
-    distributeNodes() {
+    distributeNodes(offset = {}) {
+        const xAngle = offset["x-angle"] ?? 0;
+        const yAngle = offset["y-angle"] ?? 0;
+        const zAngle = offset["z-angle"] ?? 0;
+        const xOffset = offset["x-offset"] ?? 0;
+        const yOffset = offset["y-offset"] ?? 0;
+        const zOffset = offset["z-offset"] ?? 0;
         let angle = 0;
         for (const subgraph of this.subgraphs) {
             const size = subgraph.getOrder();
@@ -30,17 +34,17 @@ export class SpiralLayout {
             const subgraphPosition = new THREE.Vector3(
                 this.rounds + currentRadius * Math.sin(angle),
                 this.steps * 3000 * size/this.totalNodes,
-                this.rounds + currentRadius * Math.cos(angle),
+                this.rounds + currentRadius * Math.cos(angle)
             );
 
-            const labelPosition = subgraphPosition.clone();
-            const labelVectorPositions = {
-                position: labelPosition,
-                radius: currentRadius,
-                angle: angle,
-            };
+            subgraphPosition.applyAxisAngle(new THREE.Vector3(1, 0, 0), xAngle);
+            subgraphPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), yAngle);
+            subgraphPosition.applyAxisAngle(new THREE.Vector3(0, 0, 1), zAngle);
+            subgraphPosition.setX(subgraphPosition.x + xOffset);
+            subgraphPosition.setY(subgraphPosition.y + yOffset);
+            subgraphPosition.setZ(subgraphPosition.z + zOffset);
 
-            subgraph.setLabelPosition(labelVectorPositions);
+            subgraph.setLabelPosition(subgraphPosition.clone().multiplyScalar(7));
             subgraph.setPosition(subgraphPosition);
         }
     }
@@ -60,5 +64,4 @@ export class SpiralLayout {
     setRadius(radius) {
         this.constantRadius = radius;
     }
-
 }
