@@ -8,6 +8,7 @@ export class DroneCameraControl {
     let DELTA_ROTACION = 0.04;
     const FACTOR_INERCIA = 0.05;
     const MIN_TRANSLATION_THRESHOLD = 0.02;
+    const MIN_ROTATION_THRESHOLD = 0.01;
 
     if (!initialPos) initialPos = [0, 0, 22000];
 
@@ -42,11 +43,17 @@ export class DroneCameraControl {
         case "arrow-btn left":
           camState.xVelTarget = DELTA_TRASLACION * 2;
           break;
-        case "arrow-btn up":
+        case "arrow-btn zoomin":
           camState.zVelTarget = -DELTA_TRASLACION * 4;
           break;
-        case "arrow-btn down":
+        case "arrow-btn zoomout":
           camState.zVelTarget = DELTA_TRASLACION * 4;
+          break;
+        case "arrow-btn up":
+          camState.yVelTarget = DELTA_TRASLACION * 2;
+          break;
+        case "arrow-btn down":
+          camState.yVelTarget = -DELTA_TRASLACION * 2;
           break;
       }
     });
@@ -54,16 +61,16 @@ export class DroneCameraControl {
     document.getElementById("translation-buttons").addEventListener("touchend", function (e) {
       switch (e.changedTouches[e.changedTouches.length - 1].target.className) {
         case "arrow-btn right":
-          camState.xVelTarget = 0;
-          break;
         case "arrow-btn left":
           camState.xVelTarget = 0;
           break;
-        case "arrow-btn up":
+        case "arrow-btn zoomin":
+        case "arrow-btn zoomout":
           camState.zVelTarget = 0;
           break;
+        case "arrow-btn up":
         case "arrow-btn down":
-          camState.zVelTarget = 0;
+          camState.yVelTarget = 0;
           break;
       }
     });
@@ -82,22 +89,28 @@ export class DroneCameraControl {
         case "arrow-btn down":
           camState.xRotVelTarget = DELTA_ROTACION;
           break;
+        case "arrow-btn rotright":
+          camState.zRotVelTarget = -DELTA_ROTACION;
+          break;
+        case "arrow-btn rotleft":
+          camState.zRotVelTarget = DELTA_ROTACION;
+          break;
       }
     });
 
     document.getElementById("rotation-buttons").addEventListener("touchend", function (e) {
       switch (e.changedTouches[e.changedTouches.length - 1].target.className) {
         case "arrow-btn right":
-          camState.yRotVelTarget = 0;
-          break;
         case "arrow-btn left":
           camState.yRotVelTarget = 0;
           break;
         case "arrow-btn up":
-          camState.xRotVelTarget = 0;
-          break;
         case "arrow-btn down":
           camState.xRotVelTarget = 0;
+          break;
+        case "arrow-btn rotright":
+        case "arrow-btn rotleft":
+          camState.zRotVelTarget = 0;
           break;
       }
     });
@@ -191,22 +204,16 @@ export class DroneCameraControl {
           break;
 
         case "a":
-          camState.yRotVelTarget = 0;
-          break;
         case "d":
           camState.yRotVelTarget = 0;
           break;
 
         case "w":
-          camState.xRotVelTarget = 0;
-          break;
         case "s":
           camState.xRotVelTarget = 0;
           break;
 
         case "q":
-          camState.zRotVelTarget = 0;
-          break;
         case "e":
           camState.zRotVelTarget = 0;
           break;
@@ -242,7 +249,7 @@ export class DroneCameraControl {
 
       let hasChanged = false;
       if (maxTranslation > MIN_TRANSLATION_THRESHOLD ||
-        maxRotation > MIN_TRANSLATION_THRESHOLD) {
+        maxRotation > MIN_ROTATION_THRESHOLD) {
         let forward = new THREE.Vector3(0, 0, 1);
         forward.applyQuaternion(camera.quaternion);
         forward.normalize();
@@ -275,6 +282,7 @@ export class DroneCameraControl {
 
         camera.rotation.x += camState.xRotVel * (1 - xVelAtenuation);
         camera.rotation.y += camState.yRotVel;
+        camera.rotation.z += camState.zRotVel;
 
         camera.rotation.x = Math.min(
           Math.PI / 2,
