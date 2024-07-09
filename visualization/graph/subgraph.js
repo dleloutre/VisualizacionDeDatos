@@ -83,7 +83,7 @@ export class Subgraph {
         this.position = position;
         this.nodes.forEach(node => {
             node.setSubgraphPosition(position);
-            const newPosition = node.getOriginalPosition().clone().add(position).multiplyScalar(5);
+            const newPosition = node.getOriginalPosition().clone().add(position).multiplyScalar(4.7);
             node.setPosition(newPosition);
         });
     }

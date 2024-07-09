@@ -21,7 +21,7 @@ const params = {
   emissionFactor: 0.3,
   spiralSteps: 1,
   spiralRounds: 1,
-  subgraphSeparation: 2, // 2.4 for media
+  subgraphSeparation: 3,
   spiralSwitch: true,
   droneCamera: false,
   antialias: false,
@@ -29,7 +29,7 @@ const params = {
 
 function setup() {
   scene = new THREE.Scene();
-  animationController = new AnimationController(scene, [0, 22000, 0]);
+  animationController = new AnimationController(scene, [0, 18000, 0]);
   stats = new Stats();
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
@@ -67,13 +67,6 @@ function createUI() {
       graph.updateRounds(v);
       updateGraph();
     });
-  /*gui
-    .add(params, "spiralSwitch")
-    .name("constant radius")
-    .onChange((v) => {
-      graph.updateConstantRadius(v);
-      updateGraph();
-    });*/
   gui
     .add(params, "subgraphSeparation", 0, 5)
     .name("separation between subgraphs")
