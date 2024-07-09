@@ -24,7 +24,7 @@ export class Graph {
         this.layout = new SpiralLayout(this.subgraphs, this.totalNodes, {
             steps: offset["steps"] ?? 0.5,
             rounds: offset["rounds"] ?? 1,
-            separation: offset["separation"] ?? 1,
+            separation: offset["separation"] ?? 2,
             constantRadius: true
         });
         this.layout.distributeNodes(this.positionOffset);

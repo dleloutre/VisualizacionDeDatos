@@ -29,7 +29,7 @@ const params = {
 
 function setup() {
   scene = new THREE.Scene();
-  animationController = new AnimationController(scene, [0, 22000, 0]);
+  animationController = new AnimationController(scene, [0, 18000, 0]);
   stats = new Stats();
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
