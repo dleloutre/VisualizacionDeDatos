@@ -1,7 +1,10 @@
 {
+  "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:joint": "ANIMATION=joint vite",
     "build": "vite build",
+    "build:joint": "ANIMATION=joint vite build",
     "preview": "vite preview"
   },
   "dependencies": {
