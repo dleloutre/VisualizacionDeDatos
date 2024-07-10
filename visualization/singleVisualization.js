@@ -21,7 +21,7 @@ const params = {
   emissionFactor: 0.3,
   spiralSteps: 1,
   spiralRounds: 1,
-  subgraphSeparation: 2, // 2.4 for media
+  subgraphSeparation: 2,
   spiralSwitch: true,
   droneCamera: false,
   antialias: false,
