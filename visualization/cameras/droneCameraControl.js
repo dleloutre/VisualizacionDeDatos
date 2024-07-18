@@ -293,13 +293,58 @@ export class DroneCameraControl {
       } else {
         hasChanged = false;
       }
+
       return hasChanged;
     };
 
-    this.adjustGraphPosition = function (graph) {
-      graph.rotation.y = Math.PI;
-      graph.rotation.x = -Math.PI / 2;
-      graph.rotation.z = Math.PI;
+    this.setInitialState = function (position, target) {
+      camState = Object.assign({}, camInitialState);
+  
+      let direction = target.clone();
+      direction.sub(position);
+      direction.normalize();
+  
+      let alfa;
+      let beta;
+      // convierto direction a coordenadas esfericas
+      let r = direction.length();
+      let x = direction.x;
+      let y = direction.y;
+      let z = direction.z;
+      alfa = -Math.atan2(z, x) - Math.PI / 2;
+      beta = Math.asin(y / r);
+  
+      camera.rotation.order = "YXZ";
+  
+      camera.rotation.x = beta;
+      camera.rotation.y = alfa;
+  
+      camera.rotation.x = Math.min(
+        Math.PI / 2,
+        Math.max(-Math.PI / 2, camera.rotation.x)
+      );
+      camera.position.copy(position);
+      camera.updateMatrixWorld();
+  
+      this.update();
+    };
+  
+    this.getPosition = function () {
+      return camera.position.clone();
+    };
+  
+    this.getTarget = function () {
+      let target = new THREE.Vector3(0, 0, -10);
+      target = camera.localToWorld(target);
+      return target;
+    };
+  
+    this.getDirection = function () {
+      let direction = new THREE.Vector3(0, 0, -1);
+      direction = camera.localToWorld(direction);
+      direction.sub(camera.position);
+      direction.normalize();
+      return direction;
     };
   }
 }
