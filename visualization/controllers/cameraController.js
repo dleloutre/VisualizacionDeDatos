@@ -1,6 +1,13 @@
 import * as THREE from "three";
-import { DroneCameraControl } from "./droneCameraControl.js";
-import { OrbitalCameraControl } from "./orbitalCameraControl.js";
+import { DroneCameraControl } from "../cameras/droneCameraControl.js";
+import { OrbitalCameraControl } from "../cameras/orbitalCameraControl.js";
+
+const EXTERIOR_SPHERE_RADIUS = 1000;
+const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+const exteriorSphere = new THREE.Sphere(
+    new THREE.Vector3(0, 0, 0),
+    EXTERIOR_SPHERE_RADIUS
+);
 
 export class CameraController {
     constructor(fov, aspect, near, far, camPosition) {
@@ -26,10 +33,40 @@ export class CameraController {
         return this.currentCamera;
     }
     
-    switchCamera(elements) {
-        this.currentCamera = (this.currentCamera === this.droneCamera) ? this.orbitalCamera : this.droneCamera;
+    switchCamera() {
+        this.currentCamera = (this.currentCamera === this.droneCamera) ? this.droneToOrbitalCamera() : this.orbitalToDroneCamera();
         this.currentControl = (this.currentCamera === this.droneCamera) ? this.droneControl : this.orbitalControl;
-        this.currentControl.adjustGraphPosition(elements);
+    }
+
+    droneToOrbitalCamera() {
+        let position = this.droneControl.getPosition();
+        let direction = this.droneControl.getDirection();
+
+        let target = new THREE.Vector3();
+        let ray = new THREE.Ray(position, direction);
+        target = ray.intersectPlane(floorPlane, target);
+
+        if (target == null) {
+            target = new THREE.Vector3();
+            target = ray.intersectSphere(exteriorSphere, target); 
+            if (target == null) {
+                target = this.droneControl.getTarget();
+            }
+        }
+        this.orbitalCamera.position.copy(position);
+        this.orbitalCamera.updateMatrixWorld();
+        this.orbitalControl.getControl().target.copy(target);
+
+        return this.orbitalCamera;
+    }
+
+    orbitalToDroneCamera() {
+        let position = this.orbitalCamera.position.clone();
+        let target = new THREE.Vector3(0, 0, -1);
+        this.orbitalCamera.localToWorld(target);
+        this.droneControl.setInitialState(position, target);
+
+        return this.droneCamera;
     }
 
     getOrbitalCamera() {

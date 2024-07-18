@@ -6,7 +6,7 @@ import { Graph } from "./graph/graph.js";
 import initialMetadata_A from "/data/data_A.json" assert { type: "json" };
 import initialMetadata_B from "/data/data_B.json" assert { type: "json" };
 import { AnimationController } from "./controllers/animationController.js";
-import { validateMetadata, loadFiles } from "./dataManager.js";
+import { validateMetadata, loadFiles } from "./fileManager.js";
 import { BipartiteGraph } from "./graph/bipartiteGraph.js";
 
 let scene,
