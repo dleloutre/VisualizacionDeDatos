@@ -5,7 +5,7 @@ import { GraphMeshBuilder } from "./graph/graphMeshBuilder.js";
 import { Graph } from "./graph/graph.js";
 import initialMetadata from "/data/data.json" assert { type: "json" };
 import { AnimationController } from "./controllers/animationController.js";
-import { validateMetadata, loadFiles } from "./dataManager.js";
+import { validateMetadata, loadFiles } from "./fileManager.js";
 
 let scene,
   sceneElements = new THREE.Group(),
@@ -33,6 +33,7 @@ function setup() {
   stats = new Stats();
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
+  scene.add(new THREE.AxesHelper(100,100))
   window.addEventListener("resize", onResize);
 }
 
@@ -48,7 +49,7 @@ function createUI() {
     .add(params, "droneCamera")
     .name("drone view")
     .onChange((v) => {
-      animationController.switchCamera(sceneElements);
+      animationController.switchCamera();
       changeButtonsVisibility(v);
     });
   gui

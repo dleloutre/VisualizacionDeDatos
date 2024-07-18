@@ -5,16 +5,13 @@ export class OrbitalCameraControl {
         this.control = new OrbitControls(camera, domElement);
     }
 
+    getControl() {
+        return this.control;
+    }
+
     update(cameraHasChanged) {
-        //const cameraHasChanged = controller.cameraHasChanged();
         this.control.update();
 
         return cameraHasChanged;
-    }
-
-    adjustGraphPosition(elements) {
-        elements.rotation.y = -Math.PI;
-        elements.rotation.x = Math.PI;
-        elements.rotation.z = -Math.PI;
     }
 }
