@@ -7,3 +7,5 @@ __pycache__
 */FRUCHTERMAN_REINGOLD_ALGM/myenv
 visualization/public
 visualization/data
+*/.pytest_cache
+*/app.log
