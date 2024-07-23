@@ -1,20 +1,20 @@
 Data Visualization
 ==============
 
-# I. Data Preprocessing
+## I. Data Preprocessing
 -------------
 
-## Technologies
+### Technologies
 
 * Python3
 * Pandas
 * NetworkX
 
-## Install dependencies
+### Install dependencies
 
 ```pip install -r requirements.txt```
 
-## Run
+### Run
 
 ```main.py [-h] -e EDGES -c CATEGORIES [-r] [-rad RADIUS] [-l LIMIT] [-a ANIMATION] [-e2 EDGES2] [-c2 CATEGORIES2] [-rr RATE]```
 ```
@@ -38,16 +38,16 @@ options:
   -rr RATE, --rate RATE
                         sampling rate, namely, the proportion of the nodes preserved in the sample
 ```
-### Example
+#### Example
 
 ```python3 main.py -e edges.csv -c nodes.csv```
 
-### Example for a bipartite visualization
+#### Example for a bipartite visualization
 
 ```python3 main.py -e edges_graph_A.csv -c nodes_graph_A.csv -e2 edges_graph_B.csv -c2 nodes_graph_B.csv```
 
-## Files
-### Edges file
+### Files
+#### Edges file
 
 The edges file contains the network edges, it must be located in the visualization/public/uploaded_files folder. This file must include the following columns:
 
@@ -57,7 +57,7 @@ The edges file contains the network edges, it must be located in the visualizati
 
 **Important**: The file must have the previously mentioned column names as the header.
 
-### Categories file
+#### Categories file
 
 The categories file contains the node categories, it must be located in the visualization/public/uploaded_files folder. This file must include the following columns:
 
@@ -66,7 +66,7 @@ The categories file contains the node categories, it must be located in the visu
 
 **Important**: The file must have the previously mentioned column names as the header. Additionally, the file must not have any null or empty values in the category column.
 
-### Animation file (optional)
+#### Animation file (optional)
 
 The animation file contains the edges and timestamps for any desired animation. It must be located in the visualization/public/uploaded_files folder. This file must include the following columns:
 
@@ -84,23 +84,23 @@ The animation file contains the edges and timestamps for any desired animation. 
 
 * Three.js
 
-### Run Single Visualization
+### Single Visualization
 
-Install dependencies
+#### Install dependencies
 
 ```npm install```
 
-Run
+#### Run
 
 ```npm run dev```
 
-### Run Bipartite Visualization
+### Bipartite Visualization
 
-Install dependencies
+#### Install dependencies
 
 ```npm install```
 
-Run
+#### Run
 
 ```npm run dev:joint```
 
@@ -121,13 +121,18 @@ The files must be named "dataset_${key}.csv", where ${key} is a unique identifie
 
 The node files must have the following columns:
 
-node_id;x_coordinate;y_coordinate;z_coordinate
+- `node_id`
+- `x_coordinate`
+- `y_coordinate`
+- `z_coordinate`
 
 Where (x_coordinate, y_coordinate, z_coordinate) are the spatial coordinates where the node should be located, relative to the origin.
 
 The edge files must have the following columns:
 
-origin_node_id;target_node_id;weight
+- `origin_node_id`
+- `target_node_id`
+- `weight`
 
 In addition to the edge files for each subgraph, there must be a file named "dataset_crossing.csv" that contains the edges crossing all subgraphs.
 
@@ -137,8 +142,8 @@ Within the /data folder, there must be a file named data.json. This file must be
 
 Each key can contain the following information:
 
- * label: Name or label you want to assign to the subgraph.
- * color: Color you want to assign to the subgraph.
+- `label`: Name or label you want to assign to the subgraph.
+- `color`: Color you want to assign to the subgraph.
 
 Both fields are optional; if not provided, labels will take the value of ${key}, and colors will be generated automatically.
 
@@ -150,7 +155,10 @@ The files must be named "dataset_${key}.csv", where ${key} is a unique identifie
 
 The node files must have the following columns:
 
-node_id;x_coordinate;y_coordinate;z_coordinate
+- `node_id`
+- `x_coordinate`
+- `y_coordinate`
+- `z_coordinate`
 
 Where (x_coordinate, y_coordinate, z_coordinate) are the spatial coordinates where the node should be located, relative to the origin.
 
@@ -158,7 +166,9 @@ Also, you must provide a file of crossing edges from graph A to graph B, and cro
 
 The edge files must have the following columns:
 
-origin_node_id;target_node_id;weight
+- `origin_node_id`
+- `target_node_id`
+- `weight`
 
 The aforementioned files can be obtained by running the [preprocessing step](#user-content-data-preprocessing).
 
