@@ -2,7 +2,6 @@ Data Visualization
 ==============
 
 ## I. Data Preprocessing
--------------
 
 ### Technologies
 
@@ -78,7 +77,6 @@ The animation file contains the edges and timestamps for any desired animation. 
 
 
 ## II. Graph Visualization
----------------
 
 ### Technologies
 
@@ -136,7 +134,7 @@ The edge files must have the following columns:
 
 In addition to the edge files for each subgraph, there must be a file named "dataset_crossing.csv" that contains the edges crossing all subgraphs.
 
-The aforementioned files can be obtained by running the [preprocessing step](#user-content-data-preprocessing).
+The aforementioned files can be obtained by running the [preprocessing step](#user-content-i-data-preprocessing).
 
 Within the /data folder, there must be a file named data.json. This file must be a JSON where the keys match the ${key} of the datasets. 
 
@@ -170,7 +168,7 @@ The edge files must have the following columns:
 - `target_node_id`
 - `weight`
 
-The aforementioned files can be obtained by running the [preprocessing step](#user-content-data-preprocessing).
+The aforementioned files can be obtained by running the [preprocessing step](#user-content-i-data-preprocessing).
 
 Within the /data folder, there must be two files named "data_A.json" and "data_B.json". These files must be a JSON where the keys match the ${key} of the datasets.
 
