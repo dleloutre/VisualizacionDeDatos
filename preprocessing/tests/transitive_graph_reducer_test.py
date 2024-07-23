@@ -1,6 +1,6 @@
 import pytest
 import networkx as nx
-from graph_reducer import *
+from graph_reduction.transitive_reducer import TransitiveGraphReducer
 
 def test_simple_reduction():
     G = nx.DiGraph()
@@ -64,6 +64,14 @@ def test_edges_out():
     assert list(reduced_graph.nodes()) == [1, 4]
     assert len(reduced_graph.edges()) == 1
     assert list(reduced_graph.edges()) == [(4, 1)]
+
+def test_no_redundancy():
+    G = nx.DiGraph()
+    G.add_edges_from([(1, 4), (1, 5), (1, 2), (2, 3), (3, 6), (2,7)])
+    reducer = TransitiveGraphReducer()
+    reduced_graph = reducer.reduce(G)
+    assert len(reduced_graph.nodes()) == 3
+    assert list(reduced_graph.edges()) == [(1,2), (2,3)]
 
 if __name__ == "__main__":
     pytest.main()
