@@ -1,28 +1,104 @@
-## Data Preprocessing
+Data Visualization
+==============
 
-## Graph Visualization
+## I. Data Preprocessing
+
+### Technologies
+
+* Python3
+* Pandas
+* NetworkX
+
+### Install dependencies
+
+```pip install -r requirements.txt```
+
+### Run
+
+```main.py [-h] -e EDGES -c CATEGORIES [-r] [-rad RADIUS] [-l LIMIT] [-a ANIMATION] [-e2 EDGES2] [-c2 CATEGORIES2] [-rr RATE]```
+```
+options:
+  -h, --help            show this help message and exit
+  -e EDGES, --edges EDGES
+                        filename containing all the edges
+  -c CATEGORIES, --categories CATEGORIES
+                        filename containing all the nodes and their categories
+  -r, --reduction       apply reduction algorithm
+  -rad RADIUS, --radius RADIUS
+                        radius scale for the sphere constraint
+  -l LIMIT, --limit LIMIT
+                        filter number of edges crossing inside each category
+  -a ANIMATION, --animation ANIMATION
+                        filename containing all the edges and timestamps for animation
+  -e2 EDGES2, --edges2 EDGES
+                        filename containing all the edges for graph B of bipartite
+  -c2 CATEGORIES2, --categories2 CATEGORIES
+                        filename containing all the nodes and their categories for graph B of bipartite
+  -rr RATE, --rate RATE
+                        sampling rate, namely, the proportion of the nodes preserved in the sample
+```
+#### Example
+
+```python3 main.py -e edges.csv -c nodes.csv```
+
+#### Example for a bipartite visualization
+
+```python3 main.py -e edges_graph_A.csv -c nodes_graph_A.csv -e2 edges_graph_B.csv -c2 nodes_graph_B.csv```
+
+### Files
+#### Edges file
+
+The edges file contains the network edges, it must be located in the visualization/public/uploaded_files folder. This file must include the following columns:
+
+- `source`: Source node identifier
+- `target`: Target node identifier
+- `weight`: Edge weight
+
+**Important**: The file must have the previously mentioned column names as the header.
+
+#### Categories file
+
+The categories file contains the node categories, it must be located in the visualization/public/uploaded_files folder. This file must include the following columns:
+
+- `node_id`: Node identifier
+- `category`: Node category
+
+**Important**: The file must have the previously mentioned column names as the header. Additionally, the file must not have any null or empty values in the category column.
+
+#### Animation file (optional)
+
+The animation file contains the edges and timestamps for any desired animation. It must be located in the visualization/public/uploaded_files folder. This file must include the following columns:
+
+- `source`: Source node identifier
+- `target`: Target node identifier
+- `timestamp`: Timestamp of the event in the format "YYYY-MM-DD HH:mm:ss"
+
+**Important**: The file must have the previously mentioned column names as the header. Additionally, the file must not have any null or empty values in the category column.
+
+
+## II. Graph Visualization
 
 ### Technologies
 
 * Three.js
 
-### Run Single Visualization
+### Single Visualization
 
-Install dependencies
+#### Install dependencies
 
 ```npm install```
 
-Run the code
+#### Run
 
 ```npm run dev```
 
-### Run Bipartite Visualization
+### Bipartite Visualization
 
-Install dependencies
+#### Install dependencies
 
 ```npm install```
 
-Run the code
+#### Run
 
 ```npm run dev:joint```
 
@@ -43,24 +119,29 @@ The files must be named "dataset_${key}.csv", where ${key} is a unique identifie
 
 The node files must have the following columns:
 
-node_id;x_coordinate;y_coordinate;z_coordinate
+- `node_id`
+- `x_coordinate`
+- `y_coordinate`
+- `z_coordinate`
 
 Where (x_coordinate, y_coordinate, z_coordinate) are the spatial coordinates where the node should be located, relative to the origin.
 
 The edge files must have the following columns:
 
-origin_node_id;target_node_id;weight
+- `origin_node_id`
+- `target_node_id`
+- `weight`
 
 In addition to the edge files for each subgraph, there must be a file named "dataset_crossing.csv" that contains the edges crossing all subgraphs.
 
-The aforementioned files can be obtained by running the [preprocessing step](#user-content-data-preprocessing).
+The aforementioned files can be obtained by running the [preprocessing step](#user-content-i-data-preprocessing).
 
 Within the /data folder, there must be a file named data.json. This file must be a JSON where the keys match the ${key} of the datasets. 
 
 Each key can contain the following information:
 
- * label: Name or label you want to assign to the subgraph.
- * color: Color you want to assign to the subgraph.
+- `label`: Name or label you want to assign to the subgraph.
+- `color`: Color you want to assign to the subgraph.
 
 Both fields are optional; if not provided, labels will take the value of ${key}, and colors will be generated automatically.
 
@@ -72,7 +153,10 @@ The files must be named "dataset_${key}.csv", where ${key} is a unique identifie
 
 The node files must have the following columns:
 
-node_id;x_coordinate;y_coordinate;z_coordinate
+- `node_id`
+- `x_coordinate`
+- `y_coordinate`
+- `z_coordinate`
 
 Where (x_coordinate, y_coordinate, z_coordinate) are the spatial coordinates where the node should be located, relative to the origin.
 
@@ -80,9 +164,11 @@ Also, you must provide a file of crossing edges from graph A to graph B, and cro
 
 The edge files must have the following columns:
 
-origin_node_id;target_node_id;weight
+- `origin_node_id`
+- `target_node_id`
+- `weight`
 
-The aforementioned files can be obtained by running the [preprocessing step](#user-content-data-preprocessing).
+The aforementioned files can be obtained by running the [preprocessing step](#user-content-i-data-preprocessing).
 
 Within the /data folder, there must be two files named "data_A.json" and "data_B.json". These files must be a JSON where the keys match the ${key} of the datasets.
 

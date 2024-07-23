@@ -3,7 +3,7 @@ import networkx as nx
 
 class ForceAlgorithm:
     def apply_force_algorithm_2D(self, G):
-        pos = nx.spring_layout(G, seed=42) 
+        pos = nx.spring_layout(G, seed=42)
         pos_df = pd.DataFrame(pos).T
         pos_df.columns = ['x', 'y']
         pos_df.reset_index(inplace=True)
