@@ -1,11 +1,12 @@
 import pytest
 import networkx as nx
-from graph_reducer import *
+from graph_reduction.degree_reducer import ByDegreeGraphReducer
 
 def test_simple_reduction():
     G = nx.DiGraph()
     G.add_edges_from([(1, 2), (2, 3), (3, 4)])
     reducer = ByDegreeGraphReducer()
+    reducer.set_limit(1)
     reduced_G = reducer.reduce(G)
     
     assert list(reduced_G.edges()) == [(2, 4)]
@@ -16,6 +17,7 @@ def test_cyclic_graph():
     G = nx.DiGraph()
     G.add_edges_from([(1, 2), (2, 3), (1, 3)])
     reducer = ByDegreeGraphReducer()
+    reducer.set_limit(1)
     reduced_G = reducer.reduce(G)
     
     assert list(reduced_G.edges()) == []
@@ -41,12 +43,12 @@ def test_single_node():
     assert list(reduced_G.nodes()) == [1]
     assert len(reduced_G.edges()) == 0
     assert list(reduced_G.edges()) == []
-    
 
 def test_edges_in():
     G = nx.DiGraph()
     G.add_edges_from([(1, 2), (1, 3), (1, 4), (4, 5)])
     reducer = ByDegreeGraphReducer()
+    reducer.set_limit(1)
     reduced_graph = reducer.reduce(G)
     
     assert len(reduced_graph.nodes()) == 2
@@ -58,6 +60,7 @@ def test_edges_out():
     G = nx.DiGraph()
     G.add_edges_from([(2, 1), (3, 1), (4, 1), (5, 4)])
     reducer = ByDegreeGraphReducer()
+    reducer.set_limit(1)
     reduced_graph = reducer.reduce(G)
     
     assert len(reduced_graph.nodes()) == 2
