@@ -15,7 +15,7 @@ Data Visualization
 
 ## Run
 
-```main.py [-h] -e EDGES -c CATEGORIES [-r] [-rad RADIUS] [-l LIMIT] [-a ANIMATION] [-e2 EDGES2] [-c2 CATEGORIES2] [-rr RATE]```
+```main.py [-h] -e EDGES -c CATEGORIES [-e2 EDGES2] [-c2 CATEGORIES2] [-a ANIMATION] [-r {mcgs,degree,transitive}] [-rad RADIUS] [-l LIMIT] [-rr RATE]```
 ```
 options:
   -h, --help            show this help message and exit
@@ -23,17 +23,18 @@ options:
                         filename containing all the edges
   -c CATEGORIES, --categories CATEGORIES
                         filename containing all the nodes and their categories
-  -r, --reduction       apply reduction algorithm
+  -e2 EDGES2, --edges2 EDGES2
+                        filename containing all the edges for a bipartite visualization
+  -c2 CATEGORIES2, --categories2 CATEGORIES2
+                        filename containing all the nodes and their categories for a bipartite visualization
+  -a ANIMATION, --animation ANIMATION
+                        filename containing animation flow
+  -r {mcgs,degree,transitive}, --reduction {mcgs,degree,transitive}
+                        type of reduction algorithm
   -rad RADIUS, --radius RADIUS
-                        radius scale for the sphere constraint
+                        radius of the sphere constraint
   -l LIMIT, --limit LIMIT
                         filter number of edges crossing inside each category
-  -a ANIMATION, --animation ANIMATION
-                        filename containing all the edges and timestamps for animation
-  -e2 EDGES2, --edges2 EDGES
-                        filename containing all the edges for graph B of bipartite
-  -c2 CATEGORIES2, --categories2 CATEGORIES
-                        filename containing all the nodes and their categories for graph B of bipartite
   -rr RATE, --rate RATE
                         sampling rate, namely, the proportion of the nodes preserved in the sample
 ```
