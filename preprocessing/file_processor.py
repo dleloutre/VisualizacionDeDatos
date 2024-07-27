@@ -114,5 +114,5 @@ class FileProcessor(BaseFileProcessor):
         self.create_edges_files(data)
         self.logger.info("Creating nodes files")
         self.create_nodes_files()
-        ##self.logger.info("Creating crossing edges files")
-        ##self.create_crossing_edges_files(data)
+        self.logger.info("Creating crossing edges files")
+        self.create_crossing_edges_files(data)
