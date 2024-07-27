@@ -8,13 +8,13 @@ from force_directed.sphere_constraint import SphereConstraint
 from utils import *
 
 class BaseFileProcessor(ABC):
-    def __init__(self, apply_reduction, process_animation):
-        self.reduce = apply_reduction
+    def __init__(self, reduction_type, process_animation):
+        self.reduce = reduction_type
         self.animate = process_animation
         self.df_animation = None
         self.limit = EDGES_LIMIT
         self.reducer_rate = None
-        self.radius = 1 #RADIUS
+        self.radius = None #RADIUS
         #self.min_radius = MIN_RADIUS
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -62,8 +62,8 @@ class BaseFileProcessor(ABC):
 
     def apply_reduction_algorithm(self, G):
         self.logger.info("Applying reduction algorithm")
-        ## Se deberia poder elegir el algoritmo de reduccion?? ##get_reducer(sys.argv[1])
-        reducer = get_reducer("mcgs")
+        ##Pasar el valor limit al reducer??
+        reducer = get_reducer(self.reduce)
         if self.reducer_rate:
             reducer.set_rate(float(self.reducer_rate))
         subgraphs = []

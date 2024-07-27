@@ -5,7 +5,7 @@ from utils import *
 
 
 class FileProcessor(BaseFileProcessor):
-    def __init__(self, reduce=False, animate=None):
+    def __init__(self, reduce="mcgs", animate=None):
         super().__init__(reduce, animate)
         self.total_nodes = 0
         self.graph = None
@@ -33,6 +33,7 @@ class FileProcessor(BaseFileProcessor):
         self.logger.debug(f"Final dataframe:\n{df_w_category.head()}")
 
         self.category_values = self.nodes[category_name].drop_duplicates().compute()
+        ##self.category_values = ["n_arthaud", "jeanlassalle"]
         self.logger.debug(f"Category keys: {self.category_values}")
 
         return df_w_category
@@ -59,7 +60,7 @@ class FileProcessor(BaseFileProcessor):
         self.logger.debug(f"Total edges: {self.processed_edges.head()}")
 
     def _apply_reduction_if_needed(self, edges, output_edges):
-        G = get_graph_from_df(edges, 'source', 'target')
+        G = get_graph_from_df(edges, 'source', 'target', 'weight')
         if self.reduce:
             G_reduced = self.apply_reduction_algorithm(G)
             write_graph_to_csv_file(G_reduced, output_edges)
