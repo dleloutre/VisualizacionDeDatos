@@ -5,7 +5,7 @@ from constants import *
 from utils import *
 
 class BipartiteFileProcessor(BaseFileProcessor):
-    def __init__(self, reduce=False, animate=None):
+    def __init__(self, reduce='mcgs', animate=None):
         super().__init__(reduce, animate)
         self.total_nodes = 0
         self.all_edges = {}
