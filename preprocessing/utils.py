@@ -16,28 +16,43 @@ def validate_file(fileName, isEdgesFile = False):
     if not os.path.isfile(fileName):
         print("File not found")
         exit()
-    ## Validar los types de las columnas
     df = get_df_from_file(fileName)
     if df is None:
         print("File extension not supported only csv and parquet files are supported")
         exit()
-    validated = check_amount_columns(df, isEdgesFile) and check_names_columns(df, isEdgesFile)
+    validated = check_amount_columns(df, isEdgesFile) and check_names_columns(df, isEdgesFile) and check_types_columns(df, isEdgesFile)
     if not validated:
         print("Invalid file format")
         exit()
     return df
 
 def check_names_columns(df, isEdgesFile):
+    if isEdgesFile and 'source' in df.columns and 'target' in df.columns and 'weight' in df.columns:
+        return True
+    elif not isEdgesFile and 'node_id' in df.columns:
+        return True
+    return False
+
+def check_amount_columns(df, isEdgesFile):
+    if isEdgesFile and (len(df.columns) == NUMBER_COLUMNS):
+        return True
+    elif not isEdgesFile and len(df.columns) == 2:
+        return True
+    return False
+
+def check_types_columns(df, isEdgesFile):
+    result = True
     if isEdgesFile:
-        if 'source' in df.columns and 'target' in df.columns and 'weight' in df.columns:
-            return True
-        else:
-            return False
+        for i in range(len(df.columns)):
+            column = str(df.columns[i])
+            result = result and (all(type(item) is int for item in df[column].drop_duplicates().compute().to_list()))
+        return result
     else:
-        if 'node_id' in df.columns:
-            return True
-        else:
-            return False
+        column = str(df.columns[0])
+        result = result and (all(type(item) is int for item in df[column].drop_duplicates().compute().to_list()))
+        column = str(df.columns[1])
+        result = result and (all(type(item) is str for item in df[column].drop_duplicates().compute().to_list()))
+        return result
 
 def get_df_from_file(fileName):
     if fileName.endswith('.csv'):
@@ -47,18 +62,6 @@ def get_df_from_file(fileName):
     else:
         return None
     return df
-
-def check_amount_columns(df, isEdgesFile):
-    if isEdgesFile:
-        if (len(df.columns) == NUMBER_COLUMNS):
-            return True
-        else:
-            return False
-    else:
-        if (len(df.columns) == 2):
-            return True
-        else:
-            return False
 
 def set_arguments():
     ap = argparse.ArgumentParser()
@@ -72,8 +75,8 @@ def set_arguments():
     help="filename containing all the nodes and their categories for a bipartite visualization")
     ap.add_argument("-a", "--animation", required=False,
     help="filename containing animation flow")
-    ap.add_argument("-r", "--reduction", action='store_true', required=False,
-    help="apply reduction algorithm")
+    ap.add_argument("-r", "--reduction", required=False, choices=['mcgs', 'degree', 'transitive'],
+    help="type of reduction algorithm")
     ap.add_argument("-rad", "--radius", required=False,
     help="radius of the sphere constraint")
     ap.add_argument("-l", "--limit", required=False,
@@ -106,10 +109,10 @@ def show_properties(G):
 def get_reducer(reducerType):
     if reducerType == 'transitive':
         return TransitiveGraphReducer()
-    if reducerType == 'mcgs':
-        return MCGSReducer()
     if reducerType == 'degree':
         return ByDegreeGraphReducer()
+    if reducerType == 'mcgs':
+        return MCGSReducer()
     return None
 
 def get_graph_from_file(fileName):
