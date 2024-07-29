@@ -64,10 +64,11 @@ class BipartiteFileProcessor(BaseFileProcessor):
     def _generate_metadata(self, category):
         return {'label': category, 'color': generate_color()}
     
-    def _apply_reduction_if_needed(self, edges):
-        G = get_graph_from_df(edges, 'source', 'target')
+    def _apply_reduction_if_needed(self, edges, output_edges):
+        G = get_graph_from_df(edges, 'source', 'target', 'weight')
         if self.reduce:
             G_reduced = self.apply_reduction_algorithm(G)
+            write_graph_to_csv_file(G_reduced, output_edges)
             return nx.to_pandas_edgelist(G_reduced)
         return edges
 
@@ -77,7 +78,7 @@ class BipartiteFileProcessor(BaseFileProcessor):
         data = {}
         for category in category_values:
             edges = self.all_edges[category]
-            G = get_graph_from_df(edges, 'source', 'target')
+            G = get_graph_from_df(edges, 'source', 'target', 'weight')
             output_nodes = f"../visualization/public/nodes_{bKey}/dataset_{category}.csv"
             df_nodes_position = self._process_graph(G)
             self.logger.debug(f"Nodes position:\n{df_nodes_position.head()}")
@@ -99,7 +100,10 @@ class BipartiteFileProcessor(BaseFileProcessor):
             df_filtered = df.loc[(df[[category_source, category_target]] == category_value).any(axis=1)]
             df_filtered = df_filtered.drop([category_source, category_target], axis=1)
             self.logger.debug(f"Filtered dataframe:\n{df_filtered.head()}")
-            df_filtered = self._apply_reduction_if_needed(df_filtered)
+            output_edges = f"../visualization/public/edges_{bKey}/dataset_{category_value}.csv"
+            df_filtered = self._apply_reduction_if_needed(df_filtered, output_edges)
+            if not self.reduce:
+                write_dask_df_to_csv_file(df_filtered, output_edges)
             self.logger.debug(f"Reduced dataframe:\n{df_filtered.head()}")
             self.all_edges[category_value] = df_filtered
             self.total_nodes += len(df_filtered)
