@@ -52,7 +52,8 @@ class FileProcessor(BaseFileProcessor):
             self.logger.debug(f"Filtered dataframe:\n{df_filtered.head()}")
             output_edges = f"{ROUTE_EDGES}/dataset_{category_value}.csv"
             df_filtered = self._apply_reduction_if_needed(df_filtered, output_edges)
-            write_dask_df_to_csv_file(df_filtered, output_edges)
+            if not self.reduce:
+                write_dask_df_to_csv_file(df_filtered, output_edges)
             self.logger.debug(f"Reduced dataframe:\n{df_filtered.head()}")
             all_edges.append(df_filtered)
             self.total_nodes += len(df_filtered)
