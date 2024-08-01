@@ -1,6 +1,6 @@
 import numpy as np
 
-DEFAULT_RADIUS = 300
+DEFAULT_RADIUS = 1
 MIN_RADIUS = 30
 
 class SphereConstraint:
@@ -10,6 +10,8 @@ class SphereConstraint:
         sphere_radius = sphere_radius*100*radius_scalator
         if sphere_radius < MIN_RADIUS:
             sphere_radius = MIN_RADIUS
+        print(f"Sphere radius: {sphere_radius}")
+        print(f"Radius scalator: {radius_scalator}")
         self.sphere_radius = sphere_radius
 
     def constrain_to_sphere(self, pos_df):
@@ -29,12 +31,19 @@ class SphereConstraint:
                 new_z = z * scale_factor
                 pos_array[i] = [new_x, new_y, new_z]
         if max_distance < 0.8 * self.sphere_radius:
-          larger_pos = pos_df
+          '''larger_pos = pos_df
           scale_factor = 0.4 * self.sphere_radius
           for i in range(len(pos_array)):
             pos_array[i] = [x * scale_factor, y * scale_factor, z * scale_factor]
           larger_pos[['x', 'y', 'z']] = pos_array
-          return self.constrain_to_sphere(larger_pos)
+          return self.constrain_to_sphere(larger_pos)'''
+          for i in range(len(pos_array)):
+              x, y, z = pos_array[i]
+              scale_factor = 0.4 * self.sphere_radius
+              new_x = x * scale_factor
+              new_y = y * scale_factor
+              new_z = z * scale_factor
+              pos_array[i] = [new_x, new_y, new_z]
 
         pos_df[['x', 'y', 'z']] = pos_array
         return pos_df
