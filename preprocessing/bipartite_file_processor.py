@@ -8,7 +8,7 @@ class BipartiteFileProcessor(BaseFileProcessor):
     def __init__(self, reduce='mcgs', animate=None):
         super().__init__(reduce, animate)
         self.total_nodes = 0
-        self.all_edges = {}
+        self.processed_edges = {}
         self.all_nodes = {}
 
     def set_datasets(self, dfs):
@@ -71,14 +71,36 @@ class BipartiteFileProcessor(BaseFileProcessor):
             write_graph_to_csv_file(G_reduced, output_edges)
             return nx.to_pandas_edgelist(G_reduced)
         return edges
+    
+    def _get_all_nodes(self, category, key):
+        if self.reduce:
+            return self.processed_edges[category]
+        nodes = self.nodes_A if key == 'A' else self.nodes_B
+        category_name = nodes.columns[1]
+        df_nodes = nodes.loc[nodes[category_name] == category]
+        df_processed_edges = self.processed_edges[category]
+        list_source = list(df_processed_edges['source'])
+        list_target = list(df_processed_edges['target'])
+        self.logger.debug(f"List source:\n{list_source}")
+        self.logger.debug(f"List target:\n{list_target}")
+        df_nodes = df_nodes.loc[~df_nodes['node_id'].isin(set(list_source + list_target))]
+        self.logger.debug(f"DF  Nodes:\n{df_nodes.head()}")
+        df_nodes = df_nodes.drop([category_name], axis=1)
+        df_nodes = df_nodes.rename(columns={'node_id': 'source'})
+        df_nodes['target'] = df_nodes['source']
+        df_nodes['weight'] = 1
+        self.logger.debug(f"New df_nodes:\n{df_nodes.head()}")
+        df_edges = dd.concat([df_nodes, self.processed_edges[category]])
+        self.logger.debug(f"New df_edges:\n{df_edges.head()}")
+        return df_edges
 
     def create_nodes_files(self, category_values, bKey):
         nodes = []
         self._ensure_directory_exists(f"../visualization/public/nodes_{bKey}")
         data = {}
         for category in category_values:
-            edges = self.all_edges[category]
-            G = get_graph_from_df(edges, 'source', 'target', 'weight')
+            df_edges = self._get_all_nodes(category, bKey) 
+            G = get_graph_from_df(df_edges, 'source', 'target', 'weight')
             output_nodes = f"../visualization/public/nodes_{bKey}/dataset_{category}.csv"
             df_nodes_position = self._process_graph(G)
             self.logger.debug(f"Nodes position:\n{df_nodes_position.head()}")
@@ -97,7 +119,7 @@ class BipartiteFileProcessor(BaseFileProcessor):
         for category_value in category_values:
             self.logger.info("Preprocessing " + category_value)
             self.logger.debug(f"Original dataframe:\n{df.head()}")
-            df_filtered = df.loc[(df[[category_source, category_target]] == category_value).any(axis=1)]
+            df_filtered = df.loc[(df[[category_source, category_target]] == category_value).all(axis=1)]
             df_filtered = df_filtered.drop([category_source, category_target], axis=1)
             self.logger.debug(f"Filtered dataframe:\n{df_filtered.head()}")
             output_edges = f"../visualization/public/edges_{bKey}/dataset_{category_value}.csv"
@@ -105,7 +127,7 @@ class BipartiteFileProcessor(BaseFileProcessor):
             if not self.reduce:
                 write_dask_df_to_csv_file(df_filtered, output_edges)
             self.logger.debug(f"Reduced dataframe:\n{df_filtered.head()}")
-            self.all_edges[category_value] = df_filtered
+            self.processed_edges[category_value] = df_filtered
             self.total_nodes += len(df_filtered)
         self.logger.debug(f"Total number of nodes: {self.total_nodes}")
 
@@ -127,7 +149,7 @@ class BipartiteFileProcessor(BaseFileProcessor):
 
     def process_files(self):
         self.logger.info("Starting bipartite file process")
-        self.all_edges = {}
+        self.processed_edges = {}
         category_values_A = self.nodes_A[self.nodes_A.columns[1]].drop_duplicates().compute()
         category_values_B = self.nodes_B[self.nodes_B.columns[1]].drop_duplicates().compute()
         self.logger.debug(f"Category keys for graph A: {category_values_A}")
