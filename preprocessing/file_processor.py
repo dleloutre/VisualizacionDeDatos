@@ -9,7 +9,7 @@ class FileProcessor(BaseFileProcessor):
         super().__init__(reduce, animate)
         self.total_nodes = 0
         self.graph = None
-        self.processed_edges = pd.DataFrame({})
+        self.processed_edges = {}
 
     def set_datasets(self, dfs):
         self.nodes = dfs['categories']
@@ -39,7 +39,7 @@ class FileProcessor(BaseFileProcessor):
         return df_w_category
 
     def create_edges_files(self, df):
-        all_edges = []
+        ##all_edges = []
         self.logger.debug(f"Original dataframe: {df}")
         self._ensure_directory_exists(ROUTE_EDGES)
         category_name = self._get_category_name()
@@ -47,7 +47,8 @@ class FileProcessor(BaseFileProcessor):
         category_target = f"{category_name}_target"
         for category_value in self.category_values:
             self.logger.info("Preprocessing " + category_value)
-            df_filtered = df.loc[(df[[category_source, category_target]] == category_value).any(axis=1)]
+            df_filtered = df.loc[(df[[category_source, category_target]] == category_value).all(axis=1)]
+            self.logger.debug(f"Filtered dataframe:\n{df_filtered.head()}")
             df_filtered = df_filtered.drop([category_source, category_target], axis=1)
             self.logger.debug(f"Filtered dataframe:\n{df_filtered.head()}")
             output_edges = f"{ROUTE_EDGES}/dataset_{category_value}.csv"
@@ -55,11 +56,11 @@ class FileProcessor(BaseFileProcessor):
             if not self.reduce:
                 write_dask_df_to_csv_file(df_filtered, output_edges)
             self.logger.debug(f"Reduced dataframe:\n{df_filtered.head()}")
-            all_edges.append(df_filtered)
+            ##all_edges.append(df_filtered)
             self.total_nodes += len(df_filtered)
-        self.processed_edges = dd.concat(all_edges)
+            self.processed_edges[category_value] = df_filtered
         self.logger.debug(f"Total number of nodes: {self.total_nodes}")
-        self.logger.debug(f"Total edges: {self.processed_edges.head()}")
+        self.logger.debug(f"Total edges: {self.processed_edges}")
 
     def _apply_reduction_if_needed(self, edges, output_edges):
         G = get_graph_from_df(edges, 'source', 'target', 'weight')
@@ -81,12 +82,34 @@ class FileProcessor(BaseFileProcessor):
     
     def _generate_metadata(self, category):
         return {'label': category, 'color': generate_color()}
+    
+    def _get_all_nodes(self, category):
+        if self.reduce:
+            return self.processed_edges[category]
+        category_name = self._get_category_name()
+        df_nodes = self.nodes.loc[self.nodes[category_name] == category]
+        df_processed_edges = self.processed_edges[category]
+        list_source = list(df_processed_edges['source'])
+        list_target = list(df_processed_edges['target'])
+        self.logger.debug(f"List source:\n{list_source}")
+        self.logger.debug(f"List target:\n{list_target}")
+        df_nodes = df_nodes.loc[~df_nodes['node_id'].isin(set(list_source + list_target))]
+        self.logger.debug(f"DF  Nodes:\n{df_nodes.head()}")
+        df_nodes = df_nodes.drop([category_name], axis=1)
+        df_nodes = df_nodes.rename(columns={'node_id': 'source'})
+        df_nodes['target'] = df_nodes['source']
+        df_nodes['weight'] = 1
+        self.logger.debug(f"New df_nodes:\n{df_nodes.head()}")
+        df_edges = dd.concat([df_nodes, self.processed_edges[category]])
+        self.logger.debug(f"New df_edges:\n{df_edges.head()}")
+        return df_edges
 
     def create_nodes_files(self):
         self._ensure_directory_exists(ROUTE_NODES)
         data = {}
         for category in self.category_values:
-            G = get_graph_from_df(self.processed_edges, 'source', 'target', 'weight')
+            df_edges = self._get_all_nodes(category) 
+            G = get_graph_from_df(df_edges, 'source', 'target', 'weight')
             output_nodes = f"{ROUTE_NODES}/dataset_{category}.csv"
             df_nodes_position = self._process_graph(G)
             self.logger.debug(f"Nodes position:\n{df_nodes_position.head()}")
@@ -115,5 +138,5 @@ class FileProcessor(BaseFileProcessor):
         self.create_edges_files(data)
         self.logger.info("Creating nodes files")
         self.create_nodes_files()
-        self.logger.info("Creating crossing edges files")
-        self.create_crossing_edges_files(data)
+        ##self.logger.info("Creating crossing edges files")
+        ##self.create_crossing_edges_files(data)
