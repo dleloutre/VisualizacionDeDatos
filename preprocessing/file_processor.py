@@ -10,6 +10,7 @@ class FileProcessor(BaseFileProcessor):
         self.total_nodes = 0
         self.graph = None
         self.processed_edges = {}
+        self.processed_nodes = {}
 
     def set_datasets(self, dfs):
         self.nodes = dfs['categories']
@@ -107,6 +108,7 @@ class FileProcessor(BaseFileProcessor):
     def create_nodes_files(self):
         self._ensure_directory_exists(ROUTE_NODES)
         data = {}
+        all_nodes = []
         for category in self.category_values:
             df_edges = self._get_all_nodes(category) 
             G = get_graph_from_df(df_edges, 'source', 'target', 'weight')
@@ -115,15 +117,19 @@ class FileProcessor(BaseFileProcessor):
             self.logger.debug(f"Nodes position:\n{df_nodes_position.head()}")
             self.logger.info("Writing files")
             write_df_to_csv_file(df_nodes_position, output_nodes)
+            all_nodes.append(df_nodes_position)
             data[category] = self._generate_metadata(category)
             self.logger.info("End processing " + category)
+        self.processed_nodes = all_nodes
         write_json(data, f"{ROUTE_JSONS}/data.json")
 
     def create_crossing_edges_files(self, df):
         category_name = self._get_category_name()
         category_source = f"{category_name}_source"
         category_target = f"{category_name}_target"
-        df_edges = df.merge(self.edges, on=['source', 'target', 'weight'], suffixes=[None,"_y"])
+        all_nodes = pd.concat(list(self.processed_nodes.values()))
+        #df_edges = df.merge(all_nodes, on=['source', 'target', 'weight'], suffixes=[None,"_y"])
+        df_edges = df[(df['source'].isin(all_nodes['id_node'])) & (df['target'].isin(all_nodes['id_node']))]
         df_crossing_edges = df_edges.loc[(df[category_source] != df[category_target])]
         self.logger.debug(f"All crossing edges:\n{df_crossing_edges.head()}")
         df_crossing_edges = df_crossing_edges.drop([f"{category_name}_source", f"{category_name}_target"], axis=1)
@@ -139,4 +145,4 @@ class FileProcessor(BaseFileProcessor):
         self.logger.info("Creating nodes files")
         self.create_nodes_files()
         self.logger.info("Creating crossing edges files")
-        self.create_crossing_edges_files(data)
+        ##self.create_crossing_edges_files(data)
