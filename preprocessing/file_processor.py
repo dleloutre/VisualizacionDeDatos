@@ -123,7 +123,7 @@ class FileProcessor(BaseFileProcessor):
         category_name = self._get_category_name()
         category_source = f"{category_name}_source"
         category_target = f"{category_name}_target"
-        df_edges = df.merge(self.processed_edges, on=['source', 'target', 'weight'], suffixes=[None,"_y"])
+        df_edges = df.merge(self.edges, on=['source', 'target', 'weight'], suffixes=[None,"_y"])
         df_crossing_edges = df_edges.loc[(df[category_source] != df[category_target])]
         self.logger.debug(f"All crossing edges:\n{df_crossing_edges.head()}")
         df_crossing_edges = df_crossing_edges.drop([f"{category_name}_source", f"{category_name}_target"], axis=1)
@@ -138,5 +138,5 @@ class FileProcessor(BaseFileProcessor):
         self.create_edges_files(data)
         self.logger.info("Creating nodes files")
         self.create_nodes_files()
-        ##self.logger.info("Creating crossing edges files")
-        ##self.create_crossing_edges_files(data)
+        self.logger.info("Creating crossing edges files")
+        self.create_crossing_edges_files(data)
