@@ -82,7 +82,10 @@ export class GraphMeshBuilder {
 	}
 
 	createEdges() {
-		const totalEdgesToDraw = this.graph.getTotalEdges();
+		const subgraphs = this.graph.getSubgraphs();
+		let edges = this.graph.getCrossingEdges().concat(...subgraphs.map(subgraph => subgraph.getEdges()));
+
+		const totalEdgesToDraw = edges.length;
 		const instancedEdgeGeometry = new THREE.InstancedBufferGeometry();
 		instancedEdgeGeometry.copy(this._getUnitCylinder());
 
@@ -109,9 +112,6 @@ export class GraphMeshBuilder {
 			material,
 			totalEdgesToDraw
 		);
-
-		const subgraphs = this.graph.getSubgraphs();
-		let edges = this.graph.getCrossingEdges().concat(...subgraphs.map(subgraph => subgraph.getEdges()));
 
 		this.setEdgesAttributes(edges, instancedEdges, instanceGradientOffsetArray, instanceRandomSeedArray);
 
