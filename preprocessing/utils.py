@@ -86,8 +86,10 @@ def set_arguments():
     return ap
 
 def generate_color():
-    color = random.randrange(0, 2**24)
-    hex_color = "#{:06x}".format(color)
+    r = random.randint(128, 255)
+    g = random.randint(128, 255)
+    b = random.randint(128, 255)
+    hex_color = "#{:02x}{:02x}{:02x}".format(r, g, b)
     return hex_color
 
 def directed_diameter(G):
