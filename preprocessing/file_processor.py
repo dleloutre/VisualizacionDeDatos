@@ -64,10 +64,12 @@ class FileProcessor(BaseFileProcessor):
         self.logger.debug(f"Total edges: {self.processed_edges}")
 
     def _apply_reduction_if_needed(self, edges, output_edges):
+        self.logger.debug(f"Number of edges before reduction: {len(edges)}")
         G = get_graph_from_df(edges, 'source', 'target', 'weight')
         if self.reduce:
             G_reduced = self.apply_reduction_algorithm(G)
             write_graph_to_csv_file(G_reduced, output_edges)
+            self.logger.debug(f"Number of edges after reduction: {len(nx.to_pandas_edgelist(G_reduced))}")
             return nx.to_pandas_edgelist(G_reduced)
         return edges
     
@@ -127,9 +129,12 @@ class FileProcessor(BaseFileProcessor):
         category_name = self._get_category_name()
         category_source = f"{category_name}_source"
         category_target = f"{category_name}_target"
-        all_nodes = pd.concat(list(self.processed_nodes.values()))
+        all_nodes = pd.concat(self.processed_nodes)
+        self.logger.debug(f"All final nodes: {all_nodes.head()}, total: {len(all_nodes)}")
+        self.logger.debug(f"All edges {df.head()}")
         #df_edges = df.merge(all_nodes, on=['source', 'target', 'weight'], suffixes=[None,"_y"])
         df_edges = df[(df['source'].isin(all_nodes['id_node'])) & (df['target'].isin(all_nodes['id_node']))]
+        self.logger.debug(f"Edges with nodes in all_nodes: {df_edges.head()}")
         df_crossing_edges = df_edges.loc[(df[category_source] != df[category_target])]
         self.logger.debug(f"All crossing edges:\n{df_crossing_edges.head()}")
         df_crossing_edges = df_crossing_edges.drop([f"{category_name}_source", f"{category_name}_target"], axis=1)
@@ -145,4 +150,4 @@ class FileProcessor(BaseFileProcessor):
         self.logger.info("Creating nodes files")
         self.create_nodes_files()
         self.logger.info("Creating crossing edges files")
-        ##self.create_crossing_edges_files(data)
+        self.create_crossing_edges_files(data)
