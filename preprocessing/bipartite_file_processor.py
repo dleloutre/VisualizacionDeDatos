@@ -68,7 +68,7 @@ class BipartiteFileProcessor(BaseFileProcessor):
         G = get_graph_from_df(edges, 'source', 'target', 'weight')
         if self.reduce:
             G_reduced = self.apply_reduction_algorithm(G)
-            write_graph_to_csv_file(G_reduced, output_edges)
+            ##write_graph_to_csv_file(G_reduced, output_edges)
             return nx.to_pandas_edgelist(G_reduced)
         return edges
     
@@ -124,8 +124,8 @@ class BipartiteFileProcessor(BaseFileProcessor):
             self.logger.debug(f"Filtered dataframe:\n{df_filtered.head()}")
             output_edges = f"../visualization/public/edges_{bKey}/dataset_{category_value}.csv"
             df_filtered = self._apply_reduction_if_needed(df_filtered, output_edges)
-            if not self.reduce:
-                write_dask_df_to_csv_file(df_filtered, output_edges)
+            ##if not self.reduce:
+            ##    write_dask_df_to_csv_file(df_filtered, output_edges)
             self.logger.debug(f"Reduced dataframe:\n{df_filtered.head()}")
             self.processed_edges[category_value] = df_filtered
             self.total_nodes += len(df_filtered)
