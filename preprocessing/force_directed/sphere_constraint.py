@@ -7,6 +7,7 @@ class SphereConstraint:
     def __init__(self, sphere_radius, radius_scalator):
         if not radius_scalator:
             radius_scalator = DEFAULT_RADIUS
+        print(f"Sphere radius before: {sphere_radius}")
         sphere_radius = sphere_radius*100*radius_scalator
         if sphere_radius < MIN_RADIUS:
             sphere_radius = MIN_RADIUS
