@@ -60,6 +60,7 @@ class FileProcessor(BaseFileProcessor):
             ##all_edges.append(df_filtered)
             self.total_nodes += len(df_filtered)
             self.processed_edges[category_value] = df_filtered
+        ##Correegir este log porque no es el total real de nodos
         self.logger.debug(f"Total number of nodes: {self.total_nodes}")
         self.logger.debug(f"Total edges: {self.processed_edges}")
 
@@ -94,8 +95,9 @@ class FileProcessor(BaseFileProcessor):
         df_processed_edges = self.processed_edges[category]
         list_source = list(df_processed_edges['source'])
         list_target = list(df_processed_edges['target'])
-        self.logger.debug(f"List source:\n{list_source}")
-        self.logger.debug(f"List target:\n{list_target}")
+        self.logger.debug(f"Lenght list source:\n{len(list_source)}")
+        self.logger.debug(f"Lenght list target:\n{len(list_target)}")
+        self.logger.debug(f"Df nodes antes:\n{df_nodes.head()}")
         df_nodes = df_nodes.loc[~df_nodes['node_id'].isin(set(list_source + list_target))]
         self.logger.debug(f"DF  Nodes:\n{df_nodes.head()}")
         df_nodes = df_nodes.drop([category_name], axis=1)
@@ -103,6 +105,7 @@ class FileProcessor(BaseFileProcessor):
         df_nodes['target'] = df_nodes['source']
         df_nodes['weight'] = 1
         self.logger.debug(f"New df_nodes:\n{df_nodes.head()}")
+        self.logger.debug(f"Processed edges:\n{self.processed_edges[category].head()}")
         df_edges = dd.concat([df_nodes, self.processed_edges[category]])
         self.logger.debug(f"New df_edges:\n{df_edges.head()}")
         return df_edges
