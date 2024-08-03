@@ -1,7 +1,7 @@
 import numpy as np
 
 DEFAULT_RADIUS = 1
-MIN_RADIUS = 30
+MIN_RADIUS = 80
 
 class SphereConstraint:
     def __init__(self, sphere_radius, radius_scalator):
