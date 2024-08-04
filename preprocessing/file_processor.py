@@ -7,7 +7,6 @@ from utils import *
 class FileProcessor(BaseFileProcessor):
     def __init__(self, reduce="mcgs", animate=None, logger=False):
         super().__init__(reduce, animate, logger)
-        self.total_nodes = 0
         self.processed_edges = {}
         self.processed_nodes = {}
 
@@ -54,7 +53,6 @@ class FileProcessor(BaseFileProcessor):
             self.logger.debug(f"Internal edges dataframe:\n{df_filtered.head()}\n{df_filtered.describe()}")
             output_edges = f"{ROUTE_EDGES}/dataset_{category_value}.csv"
             df_filtered = self._apply_reduction_if_needed(df_filtered, output_edges)
-            self.logger.debug(f"Reduced dataframe:\n{df_filtered.head()}")
             if not self.reduce:
                 self.logger.debug(f"Writing internal edges file..")
                 write_dask_df_to_csv_file(df_filtered, output_edges)
@@ -72,7 +70,9 @@ class FileProcessor(BaseFileProcessor):
             self.logger.debug(f"Writing internal edges file..")
             write_graph_to_csv_file(G_reduced, output_edges)
             self.logger.debug("Ends _apply_reduction_if_needed()")
-            return nx.to_pandas_edgelist(G_reduced)
+            df = nx.to_pandas_edgelist(G_reduced)
+            self.logger.debug(f"Reduced dataframe:\n{df.head()}")
+            return df
         return edges
     
     def _process_graph(self, G):
