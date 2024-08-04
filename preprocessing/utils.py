@@ -8,7 +8,7 @@ from graph_reduction.mcgs_reducer import MCGSReducer
 from graph_reduction.transitive_reducer import TransitiveGraphReducer
 import argparse
 import dask.dataframe as dd
-from constants import NUMBER_COLUMNS, ROUTE_UPLOADED_FILES
+from constants import ROUTE_UPLOADED_FILES
 import random
 
 def validate_file(fileName, isEdgesFile = False):
@@ -34,7 +34,7 @@ def check_names_columns(df, isEdgesFile):
     return False
 
 def check_amount_columns(df, isEdgesFile):
-    if isEdgesFile and (len(df.columns) == NUMBER_COLUMNS):
+    if isEdgesFile and (len(df.columns) == 3):
         return True
     elif not isEdgesFile and len(df.columns) == 2:
         return True
