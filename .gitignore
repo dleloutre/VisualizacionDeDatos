@@ -9,3 +9,5 @@ visualization/public
 visualization/data
 */.pytest_cache
 */app.log
+./idea
+*/.DS_Store
