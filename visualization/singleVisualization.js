@@ -27,8 +27,8 @@ const params = {
   spiralSwitch: true,
   droneCamera: false,
   antialias: false,
-  animation: true,
-  showAllEdges: false,
+  animation: false,
+  showAllEdges: true,
   time: 0
 };
 

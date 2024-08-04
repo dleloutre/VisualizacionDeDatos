@@ -81,12 +81,14 @@ class BaseFileProcessor(ABC):
         df_nodes_position = force_alg.apply_force_algorithm_3D(G)
         return df_nodes_position
 
-    def apply_sphere_constraint(self, df_nodes_position, total_nodes):
+    def apply_sphere_constraint(self, df_nodes_position, total_nodes, all_graphs_sizes):
         self.logger.info("Applying sphere constraint")
+        print("len(df_nodes_position): ", len(df_nodes_position))
+        print("total_nodes: ", total_nodes)
         sphere_radius = len(df_nodes_position)/total_nodes
         self.logger.debug(f"Sphere radius: {sphere_radius}")
         self.logger.debug(f"Sphere radius scalator: {self.radius}")
-        sphere_constraint = SphereConstraint(sphere_radius, self.radius)
+        sphere_constraint = SphereConstraint(sphere_radius, total_nodes, all_graphs_sizes, self.radius)
         df_nodes_position_constrained = sphere_constraint.constrain_to_sphere(df_nodes_position)
         return df_nodes_position_constrained
 

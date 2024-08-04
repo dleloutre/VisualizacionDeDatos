@@ -9,10 +9,12 @@ class FileProcessor(BaseFileProcessor):
         super().__init__(reduce, animate, logger)
         self.processed_edges = {}
         self.processed_nodes = {}
+        self.all_graphs_sizes = []
 
     def set_datasets(self, dfs):
         self.nodes = dfs['categories']
         self.edges = dfs['edges']
+        self.total_nodes = self.nodes.shape[0].compute()
     
     def _get_category_name(self):
         return self.nodes.columns[1]
@@ -79,9 +81,8 @@ class FileProcessor(BaseFileProcessor):
         self.logger.debug("Starts _process_graph()")
         self.logger.debug(f"G nodes: {G.number_of_nodes()}")
         self.logger.debug(f"G edges: {G.number_of_edges()}")
-        total_nodes = G.number_of_nodes()
         df_nodes_position = self.apply_force_algorithm(G)
-        df_nodes_position_constrained = self.apply_sphere_constraint(df_nodes_position, total_nodes)
+        df_nodes_position_constrained = self.apply_sphere_constraint(df_nodes_position, int(self.total_nodes), self.all_graphs_sizes)
         df_nodes_position_constrained.columns = ['id_node', 'x', 'y', 'z']
         self.logger.debug(f"Nodes positions:\n{df_nodes_position_constrained.head()}\n{df_nodes_position_constrained.describe()}")
         if self.animate:
@@ -114,12 +115,19 @@ class FileProcessor(BaseFileProcessor):
         self.logger.debug(f"All nodes in category {category}:\n{df_edges.head()}")
         self.logger.debug("Ends _get_all_nodes()")
         return df_edges
+    
+    def _get_all_graph_sizes(self):
+        category_name = self._get_category_name()
+        for category_value in self.category_values:
+            df_nodes = self.nodes.loc[self.nodes[category_name] == category_value]
+            self.all_graphs_sizes.append(df_nodes.shape[0].compute())
 
     def create_nodes_files(self):
         self.logger.info("Starts create_nodes_files()")
         self._ensure_directory_exists(ROUTE_NODES)
         data = {}
         all_nodes = []
+        self._get_all_graph_sizes()
         for category_value in self.category_values:
             self.logger.info("Preprocessing " + category_value)
             df_edges = self._get_all_nodes(category_value) 
