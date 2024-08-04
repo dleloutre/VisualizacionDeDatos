@@ -8,15 +8,18 @@ from force_directed.sphere_constraint import SphereConstraint
 from utils import *
 
 class BaseFileProcessor(ABC):
-    def __init__(self, apply_reduction, process_animation):
-        self.reduce = apply_reduction
+    def __init__(self, reduction_type, process_animation, logger):
+        self.reduce = reduction_type
         self.animate = process_animation
         self.df_animation = None
         self.limit = EDGES_LIMIT
         self.reducer_rate = None
-        self.radius = 1 #RADIUS
-        #self.min_radius = MIN_RADIUS
+        self.radius = None
         self.logger = logging.getLogger(self.__class__.__name__)
+        if not logger:
+            self.logger.setLevel(logging.CRITICAL + 1)
+        else:
+            self.logger.setLevel(logging.DEBUG)
 
     @abstractmethod
     def process_files(self):
@@ -34,7 +37,6 @@ class BaseFileProcessor(ABC):
 
     def set_radius(self, new_radius):
         self.radius = new_radius
-        #self.min_radius = new_radius/10
 
     def process_animation_files(self):
         self.logger.info("Starting animation file process")
@@ -62,8 +64,7 @@ class BaseFileProcessor(ABC):
 
     def apply_reduction_algorithm(self, G):
         self.logger.info("Applying reduction algorithm")
-        ## Se deberia poder elegir el algoritmo de reduccion?? ##get_reducer(sys.argv[1])
-        reducer = get_reducer("mcgs")
+        reducer = get_reducer(self.reduce)
         if self.reducer_rate:
             reducer.set_rate(float(self.reducer_rate))
         subgraphs = []
@@ -80,11 +81,11 @@ class BaseFileProcessor(ABC):
         df_nodes_position = force_alg.apply_force_algorithm_3D(G)
         return df_nodes_position
 
-    def apply_sphere_constraint(self, df_nodes_position):
+    def apply_sphere_constraint(self, df_nodes_position, total_nodes):
         self.logger.info("Applying sphere constraint")
-        sphere_radius = len(df_nodes_position)/self.total_nodes#*100*RADIUS
-        #if (sphere_radius < MIN_RADIUS):
-        #    sphere_radius = MIN_RADIUS
+        sphere_radius = len(df_nodes_position)/total_nodes
+        self.logger.debug(f"Sphere radius: {sphere_radius}")
+        self.logger.debug(f"Sphere radius scalator: {self.radius}")
         sphere_constraint = SphereConstraint(sphere_radius, self.radius)
         df_nodes_position_constrained = sphere_constraint.constrain_to_sphere(df_nodes_position)
         return df_nodes_position_constrained

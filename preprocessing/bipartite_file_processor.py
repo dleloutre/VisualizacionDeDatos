@@ -5,10 +5,10 @@ from constants import *
 from utils import *
 
 class BipartiteFileProcessor(BaseFileProcessor):
-    def __init__(self, reduce=False, animate=None):
-        super().__init__(reduce, animate)
+    def __init__(self, reduce='mcgs', animate=None, logger=False):
+        super().__init__(reduce, animate, logger)
         self.total_nodes = 0
-        self.all_edges = {}
+        self.processed_edges = {}
         self.all_nodes = {}
 
     def set_datasets(self, dfs):
@@ -54,8 +54,9 @@ class BipartiteFileProcessor(BaseFileProcessor):
     def _process_graph(self, G):
         self.logger.debug(f"G nodes: {G.number_of_nodes()}")
         self.logger.debug(f"G edges: {G.number_of_edges()}")
+        total_nodes = G.number_of_nodes()
         df_nodes_position = self.apply_force_algorithm(G)
-        df_nodes_position_constrained = self.apply_sphere_constraint(df_nodes_position)
+        df_nodes_position_constrained = self.apply_sphere_constraint(df_nodes_position, total_nodes)
         df_nodes_position_constrained.columns = ['id_node', 'x', 'y', 'z']
         if self.animate:
             df_nodes_position_constrained = df_nodes_position_constrained.merge(self.df_animation, on='id_node', how='left').fillna(0)
@@ -65,19 +66,42 @@ class BipartiteFileProcessor(BaseFileProcessor):
         return {'label': category, 'color': generate_color()}
     
     def _apply_reduction_if_needed(self, edges):
-        G = get_graph_from_df(edges, 'source', 'target')
+        G = get_graph_from_df(edges, 'source', 'target', 'weight')
         if self.reduce:
             G_reduced = self.apply_reduction_algorithm(G)
             return nx.to_pandas_edgelist(G_reduced)
         return edges
+    
+    def _get_all_nodes(self, category, key):
+        self.logger.debug("Starts _get_all_nodes()")
+        if self.reduce:
+            return self.processed_edges[category]
+        nodes = self.nodes_A if key == 'A' else self.nodes_B
+        category_name = nodes.columns[1]
+        df_nodes = nodes.loc[nodes[category_name] == category]
+        self.logger.debug(f"Nodes in category {category}:\n{df_nodes.head()}")
+        df_processed_edges = self.processed_edges[category]
+        list_source = list(df_processed_edges['source'])
+        list_target = list(df_processed_edges['target'])
+        df_nodes = df_nodes.loc[~df_nodes['node_id'].isin(set(list_source + list_target))]
+        self.logger.debug(f"Nodes without internal edges:\n{df_nodes.head()}")
+        df_nodes = df_nodes.drop([category_name], axis=1)
+        df_nodes = df_nodes.rename(columns={'node_id': 'source'})
+        df_nodes['target'] = df_nodes['source']
+        df_nodes['weight'] = 1
+        self.logger.debug(f"Final dataframe for nodes without internal edges:\n{df_nodes.head()}")
+        df_edges = dd.concat([df_nodes, self.processed_edges[category]])
+        self.logger.debug(f"All nodes in category {category}:\n{df_edges.head()}")
+        self.logger.debug("Ends _get_all_nodes()")
+        return df_edges
 
     def create_nodes_files(self, category_values, bKey):
         nodes = []
         self._ensure_directory_exists(f"../visualization/public/nodes_{bKey}")
         data = {}
         for category in category_values:
-            edges = self.all_edges[category]
-            G = get_graph_from_df(edges, 'source', 'target')
+            df_edges = self._get_all_nodes(category, bKey) 
+            G = get_graph_from_df(df_edges, 'source', 'target', 'weight')
             output_nodes = f"../visualization/public/nodes_{bKey}/dataset_{category}.csv"
             df_nodes_position = self._process_graph(G)
             self.logger.debug(f"Nodes position:\n{df_nodes_position.head()}")
@@ -96,12 +120,12 @@ class BipartiteFileProcessor(BaseFileProcessor):
         for category_value in category_values:
             self.logger.info("Preprocessing " + category_value)
             self.logger.debug(f"Original dataframe:\n{df.head()}")
-            df_filtered = df.loc[(df[[category_source, category_target]] == category_value).any(axis=1)]
+            df_filtered = df.loc[(df[[category_source, category_target]] == category_value).all(axis=1)]
             df_filtered = df_filtered.drop([category_source, category_target], axis=1)
             self.logger.debug(f"Filtered dataframe:\n{df_filtered.head()}")
             df_filtered = self._apply_reduction_if_needed(df_filtered)
             self.logger.debug(f"Reduced dataframe:\n{df_filtered.head()}")
-            self.all_edges[category_value] = df_filtered
+            self.processed_edges[category_value] = df_filtered
             self.total_nodes += len(df_filtered)
         self.logger.debug(f"Total number of nodes: {self.total_nodes}")
 
@@ -123,7 +147,7 @@ class BipartiteFileProcessor(BaseFileProcessor):
 
     def process_files(self):
         self.logger.info("Starting bipartite file process")
-        self.all_edges = {}
+        self.processed_edges = {}
         category_values_A = self.nodes_A[self.nodes_A.columns[1]].drop_duplicates().compute()
         category_values_B = self.nodes_B[self.nodes_B.columns[1]].drop_duplicates().compute()
         self.logger.debug(f"Category keys for graph A: {category_values_A}")
