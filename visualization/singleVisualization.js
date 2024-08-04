@@ -13,9 +13,11 @@ let scene,
   nodes,
   edges,
   graph,
+  time = 0,
   textlabels = [],
   animationController,
-  metadata = initialMetadata;
+  metadata = initialMetadata,
+  gui = new dat.GUI({ hideable: false });
 
 const params = {
   emissionFactor: 0.3,
@@ -25,6 +27,9 @@ const params = {
   spiralSwitch: true,
   droneCamera: false,
   antialias: false,
+  animation: true,
+  showAllEdges: false,
+  time: 0
 };
 
 function setup() {
@@ -33,7 +38,6 @@ function setup() {
   stats = new Stats();
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
-  scene.add(new THREE.AxesHelper(100,100))
   window.addEventListener("resize", onResize);
 }
 
@@ -42,17 +46,21 @@ function onResize() {
 }
 
 function createUI() {
-  const gui = new dat.GUI({hideable: false});
-  gui.add(params, "antialias")
+  const animationFolder = gui.addFolder('Animation');
+  const layoutFolder = gui.addFolder('Layout');
+  const viewFolder = gui.addFolder('View');
+  viewFolder.add(params, "antialias")
     .name("antialias")
-  gui
+  viewFolder
     .add(params, "droneCamera")
     .name("drone view")
     .onChange((v) => {
-      animationController.switchCamera();
+      animationController.switchCamera(sceneElements);
       changeButtonsVisibility(v);
     });
-  gui
+  animationFolder.add(params, "animation")
+      .name("play/pause animation");
+  layoutFolder
     .add(params, "spiralSteps", 0, 10)
     .name("spiral steps")
     .step(1)
@@ -60,7 +68,7 @@ function createUI() {
       graph.updateSteps(v);
       updateGraph();
     });
-  gui
+  layoutFolder
     .add(params, "spiralRounds", 1, 10)
     .name("spiral rounds")
     .step(1)
@@ -68,14 +76,7 @@ function createUI() {
       graph.updateRounds(v);
       updateGraph();
     });
-  /*gui
-    .add(params, "spiralSwitch")
-    .name("constant radius")
-    .onChange((v) => {
-      graph.updateConstantRadius(v);
-      updateGraph();
-    });*/
-  gui
+  layoutFolder
     .add(params, "subgraphSeparation", 0, 5)
     .name("separation between subgraphs")
     .step(0.1)
@@ -83,6 +84,18 @@ function createUI() {
       graph.updateSeparation(v);
       updateGraph();
     });
+  viewFolder.add(params, "showAllEdges")
+      .name("show all edges")
+      .onChange((_v) => {
+        updateGraph();
+      });
+  animationFolder
+      .add(params, "time", 0, 30)
+      .name("time")
+      .step(1)
+      .onChange((v) => {
+        time = v;
+      });
 }
 
 function changeButtonsVisibility(visibility) {
@@ -110,7 +123,7 @@ function addAllToScene() {
 function updateGraph() {
   removeAllFromScene();
   let gmb = new GraphMeshBuilder(graph);
-  edges = gmb.createEdges();
+  edges = gmb.createEdges(params.showAllEdges);
   nodes = gmb.createNodes();
   textlabels = graph.getPositionLabels();
   addAllToScene();
@@ -120,7 +133,16 @@ const animate = function () {
   stats.begin();
   animationController.setCameraToRenderer();
   requestAnimationFrame(animate);
-  animationController.render(scene, params.antialias)
+  edges.material.uniforms.time.value = time;
+  nodes.material.uniforms.time.value = time;
+
+  animationController.render(scene, params.antialias);
+  if (params.animation) {
+    time += 0.03;
+    params.time = time;
+    gui.updateDisplay();
+  }
+  if (time > 30) time = 0;
   stats.end();
 };
 

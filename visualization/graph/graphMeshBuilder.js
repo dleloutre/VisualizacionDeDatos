@@ -1,11 +1,14 @@
 import * as THREE from "three";
 import { nodeShader } from "../shaders/nodeShader.js";
 import { edgeShader } from "../shaders/edgeShader.js";
+import { animatedEdgeShader } from "../shaders/animatedEdgeShader.js";
 
 export class GraphMeshBuilder {
 	constructor(graph) {
 		this.graph = graph;
 		this.edgesTexture = this._getEdgesTexture();
+		this.edgeAnimationTexture = this._getEdgeAnimationTexture();
+		this.nodeAnimationTexture = this._getNodeAnimationTexture();
 	}
 
 	_getUnitCylinder() {
@@ -46,6 +49,80 @@ export class GraphMeshBuilder {
 		return texture;
 	}
 
+	getTexture(data, width, height) {
+		const texture = new THREE.DataTexture(
+			data,
+			width,
+			height,
+			THREE.RedIntegerFormat,
+			THREE.UnsignedByteType
+		);
+		texture.needsUpdate = true;
+		texture.minFilter = THREE.NearestFilter;
+		texture.magFilter = THREE.NearestFilter;
+		texture.wrapS = THREE.ClampToEdgeWrapping;
+		texture.wrapT = THREE.ClampToEdgeWrapping;
+		return texture;
+	}
+
+	_getEdgeAnimationTexture() {
+		/*
+		Esta textura almacena en cada pixel, el tiempo en el que la arista correspondiente
+		debe iluminarse.
+		El parametro time en el edgeMaterial, es el tiempo actual de la animacion.
+		el shader compara el valor de la textura con el tiempo actual y enciende la arista
+		cuando el tiempo actual es mayor que el valor de la textura.
+		Cada arista tiene un atributo que es numero de arista, entre 0 y Integer maximo de 32 bits
+		*/
+		// la textura debe tener un tamaño tal que permita almacenar el tiempo de encendido de cada arista
+		const TEXTURE_SIZE = 2048;
+		const width = TEXTURE_SIZE;
+		const height = TEXTURE_SIZE;
+
+		const size = width * height;
+		const data = new Uint8Array(size);
+
+		let i = 0;
+
+		for (let r = 0; r < height; r++) {
+			for (let c = 0; c < width; c++) {
+				// i es el nro de arista
+				// IMPORTANTE: data[i] no puede ser mayor a 255
+				// encender por niveles de profundidad
+				// cada arista se enciende en un tiempo distinto segun su profundidad
+
+				data[i] = this.graph.getDepthFromEdge(i)*3;
+				//if (i % 2 == 0) data[i] = 0;
+				i++;
+			}
+		}
+
+		return this.getTexture(data, width, height);
+	}
+
+	_getNodeAnimationTexture() {
+		const TEXTURE_SIZE = 2048;
+		const width = TEXTURE_SIZE;
+		const height = TEXTURE_SIZE;
+
+		const size = width * height;
+		const data = new Uint8Array(size);
+
+		let i = 0;
+
+		for (let r = 0; r < height; r++) {
+			for (let c = 0; c < width; c++) {
+				// i es el nro de nodo
+				// IMPORTANTE: data[i] no puede ser mayor a 255
+				// encender por niveles de profundidad
+				data[i] = this.graph.getNodeDepthFromIndex(i)*3;
+				i++;
+			}
+		}
+
+		return this.getTexture(data, width, height);
+	}
+
 	getColor(colors, factor, numColors) {
 		const color = new THREE.Color();
 		const colorIndex = Math.floor(factor * numColors);
@@ -57,14 +134,16 @@ export class GraphMeshBuilder {
 		return new THREE.ShaderMaterial({
 			uniforms: {
 				color: { value: new THREE.Color(0xffffff) },
-				edgeColor: { type: "t", value: this.edgesTexture },
-				waveOffset: { value: -3.0 },
+				diffuseMap: { type: "t", value: this.edgesTexture },
+				animationData: { type: "t", value: this.edgeAnimationTexture },
+				time: { value: 0.0 },
 				directionalLightDirection: { type: "v3", value: new THREE.Vector3(1, 1, 1).normalize() },
-				ambientColor: { type: "v3", value: new THREE.Color(0x666666) },
+				ambientColor: { type: "v3", value: new THREE.Color(0x333333) },
 				emissionFactor: { value: 0.3 },
 			},
-			vertexShader: edgeShader.vertexShader,
-			fragmentShader: edgeShader.fragmentShader,
+			defines: { ANIMATION_TEXTURE_SIDE: String(this.edgeAnimationTexture.image.width) + ".0" },
+			vertexShader: animatedEdgeShader.vertexShader,
+			fragmentShader: animatedEdgeShader.fragmentShader,
 		});
 	}
 
@@ -74,57 +153,34 @@ export class GraphMeshBuilder {
 				color: { value: new THREE.Color(0xffffff) },
 				size: { value: nodeSize },
 				diffuseMap: { type: "t", value: this.edgesTexture },
+				animationData: { type: "t", value: this.nodeAnimationTexture },
+				time: { value: 0.0 },
 			},
 			vertexShader: nodeShader.vertexShader,
 			fragmentShader: nodeShader.fragmentShader,
 			glslVersion: THREE.GLSL3,
+			defines: { ANIMATION_TEXTURE_SIDE: String(this.nodeAnimationTexture.image.width) + ".0" },
 		});
 	}
 
-	createEdges() {
-		const subgraphs = this.graph.getSubgraphs();
-		let edges = this.graph.getCrossingEdges().concat(...subgraphs.map(subgraph => subgraph.getEdges()));
+	createEdges(showAll) {
+		let edges = this.graph.getAllEdges();
 
 		const totalEdgesToDraw = edges.length;
 		const instancedEdgeGeometry = new THREE.InstancedBufferGeometry();
 		instancedEdgeGeometry.copy(this._getUnitCylinder());
 
-		const instanceGradientOffsetArray = new Float32Array(
-			totalEdgesToDraw * 1
-		);
-		const gradientOffsetAttribute = new THREE.InstancedBufferAttribute(
-			instanceGradientOffsetArray,
-			1,
-			true
-		);
-
-		const instanceRandomSeedArray = new Float32Array(totalEdgesToDraw * 1);
-		const randomSeedAttribute = new THREE.InstancedBufferAttribute(
-			instanceRandomSeedArray,
-			1,
-			true
-		);
+		const instanceGradientOffsetArray = new Float32Array(totalEdgesToDraw);
+		const gradientOffsetAttribute = new THREE.InstancedBufferAttribute(instanceGradientOffsetArray, 1, true);
+		const instanceEdgeLengthArray = new Float32Array(totalEdgesToDraw);
+		const edgeLengthAttribute = new THREE.InstancedBufferAttribute(instanceEdgeLengthArray, 1, true);
+		const instanceEdgeNumberArray = new Uint32Array(totalEdgesToDraw);
+		const edgeNumberAttribute = new THREE.InstancedBufferAttribute(instanceEdgeNumberArray, 1, true);
 
 		let material = this._createEdgesMaterial();
+		const instancedEdges = new THREE.InstancedMesh(instancedEdgeGeometry, material, totalEdgesToDraw);
 
-		const instancedEdges = new THREE.InstancedMesh(
-			instancedEdgeGeometry,
-			material,
-			totalEdgesToDraw
-		);
 
-		this.setEdgesAttributes(edges, instancedEdges, instanceGradientOffsetArray, instanceRandomSeedArray);
-
-		instancedEdgeGeometry.setAttribute(
-			"gradientOffset",
-			gradientOffsetAttribute
-		);
-
-		instancedEdgeGeometry.setAttribute("randomSeed", randomSeedAttribute);
-		return instancedEdges;
-	}
-
-	setEdgesAttributes(edges, instancedEdges, gradientOffsetArray, randomSeedArray) {
 		const rotMatrix = new THREE.Matrix4();
 		const translationMatrix = new THREE.Matrix4();
 		const matrix = new THREE.Matrix4();
@@ -132,6 +188,11 @@ export class GraphMeshBuilder {
 		edges.forEach((edge, j) => {
 			const originNode = edge.getOrigin();
 			const targetNode = edge.getTarget();
+			const animatedEdge = (originNode.getDepth() !== -1 && targetNode.getDepth() !== -1);
+
+			if (!showAll && !animatedEdge) {
+				return;
+			}
 
 			const originVectorPosition = originNode.getVectorPosition();
 			const targetVectorPosition = targetNode.getVectorPosition();
@@ -144,42 +205,49 @@ export class GraphMeshBuilder {
 			matrix.identity().makeScale(1, 1, length).premultiply(rotMatrix).premultiply(translationMatrix);
 
 			instancedEdges.setMatrixAt(j, matrix);
-			gradientOffsetArray[j] = gradientOffset;
-			randomSeedArray[j] = 4.0;
+			instanceGradientOffsetArray[j] = gradientOffset;
+			instanceEdgeNumberArray[j] = j;
+			instanceEdgeLengthArray[j] = length;
 		});
+
+		instancedEdgeGeometry.setAttribute("edgeNumber", edgeNumberAttribute);
+		instancedEdgeGeometry.setAttribute("edgeLength", edgeLengthAttribute);
+		instancedEdgeGeometry.setAttribute("gradientOffset", gradientOffsetAttribute);
+
+		return instancedEdges;
 	}
 
 	createNodes() {
 		const positions = [-0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5];
 		const totalNodes = this.graph.getTotalNodes();
 
-		const { offsets, vTextureCoord } = this.getNodeAttributes();
+		const { translation, vTextureCoord, nodeNumber } = this.getNodeAttributes();
 
 		const geo = new THREE.InstancedBufferGeometry();
 		geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 2));
-		geo.setAttribute("offset", new THREE.InstancedBufferAttribute(new Float32Array(offsets), 3));
+		geo.setAttribute("translation", new THREE.InstancedBufferAttribute(new Float32Array(translation), 3));
 		geo.setAttribute("vTextureCoord", new THREE.InstancedBufferAttribute(new Float32Array(vTextureCoord), 1));
+		geo.setAttribute("nodeNumber", new THREE.InstancedBufferAttribute(new Float32Array(nodeNumber), 1));
 
 		const material = this._createNodesMaterial();
-
 		const instancedNodes = new THREE.InstancedMesh(geo, material, totalNodes);
 		instancedNodes.frustumCulled = false;
-
 		return instancedNodes;
 	}
 
 	getNodeAttributes() {
-		const offsets = [];
 		const vTextureCoord = [];
+		const translation = [];
+		const nodeNumber = [];
 
-		for (const subgraph of this.graph.getSubgraphs()) {
-			for (const node of subgraph.getNodes()) {
-				const position = node.getVectorPosition();
-				offsets.push(position.x, position.y, position.z);
-				vTextureCoord.push(node.getVTextureCoord(this.graph.getTotalSubgraphs()));
-			}
-		}
+		const nodes = this.graph.getAllNodes();
+		nodes.forEach((node, i) => {
+			const position = node.getVectorPosition();
+			translation.push(position.x, position.y, position.z);
+			nodeNumber.push(i);
+			vTextureCoord.push(node.getVTextureCoord(this.graph.getTotalSubgraphs()));
+		})
 
-		return { offsets, vTextureCoord };
+		return { translation, vTextureCoord, nodeNumber };
 	}
 }

@@ -13,9 +13,10 @@ export class Graph {
         this.subgraphs = this.sortSubgraphsBySize(subgraphs);
         this.allNodes = this.subgraphs.flatMap(subgraph => subgraph.getNodes());
         this.crossingEdges = crossingEdges ? this.createEdges(crossingEdges) : [];
+        this.allEdges = this.subgraphs.flatMap(subgraph => subgraph.getEdges()).concat(this.crossingEdges);
         this.totalSubgraphs = subgraphs.length;
-        this.totalNodes = this.calculateTotalNodes();
-        this.totalEdges = this.calculateTotalEdges();
+        this.totalNodes = this.allNodes.length;
+        this.totalEdges = this.allEdges.length;
         this.metadata = metadata;
 	}
 
@@ -32,6 +33,22 @@ export class Graph {
 
     getAllNodes() {
         return this.allNodes;
+    }
+
+    getAllEdges() {
+        return this.allEdges;
+    }
+
+    getAnimatedEdges() {
+        return this.allEdges.filter((edge) => {
+            return edge.getOrigin().getDepth() !== -1 || edge.getTarget().getDepth() !== -1
+        })
+    }
+
+    getStillEdges() {
+        return this.allEdges.filter((edge) => {
+            return edge.getOrigin().getDepth() === -1 && edge.getTarget().getDepth() === -1
+        })
     }
 
     createEdges(rawEdges) {
@@ -51,6 +68,22 @@ export class Graph {
 
     getTotalSubgraphs() {
         return this.totalSubgraphs;
+    }
+
+    getNodeDepthFromIndex(idx) {
+        if (!this.allNodes[idx]) return -1;
+        return this.allNodes[idx].getDepth();
+    }
+
+    getDepthFromEdge(idx) {
+        if (!this.allEdges[idx]) return -1;
+        const edge = this.allEdges[idx];
+        const srcDepth = edge.getOrigin().getDepth();
+        const tgtDepth = edge.getTarget().getDepth();
+        if (srcDepth == -1 || tgtDepth == -1) {
+            return -1;
+        }
+        return (srcDepth > tgtDepth) ? srcDepth : tgtDepth;
     }
 
     sortSubgraphsBySize(subgraphs) {
