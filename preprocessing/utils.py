@@ -83,6 +83,8 @@ def set_arguments():
     help="filter number of edges crossing inside each category")
     ap.add_argument("-rr", "--rate", required=False,
     help="sampling rate, namely, the proportion of the nodes preserved in the sample")
+    ap.add_argument("-log", required=False, action='store_true',
+    help="enable logs on execution")
     return ap
 
 def generate_color():
@@ -117,20 +119,9 @@ def get_reducer(reducerType):
         return MCGSReducer()
     return None
 
-def get_graph_from_file(fileName):
-    df = pd.read_csv(fileName, sep=';', header=0, names=['source', 'target', 'weight'])
-    print(df.head())
-    return nx.from_pandas_edgelist(df, source='source', target='target', edge_attr=['weight'], create_using=nx.DiGraph())
-
 def get_graph_from_df(df, src='v1', tgt='v2', weight='v3'):
     df = df.rename(columns={weight: 'weight'})
     return nx.from_pandas_edgelist(df, source=src, target=tgt, edge_attr=['weight'], create_using=nx.DiGraph())
-
-def write_graph_to_binary_file(G, fileName):
-    df = nx.to_pandas_edgelist(G)
-    data_format = [('source', 'int32'), ('target', 'int32'), ('weight', 'int16')]
-    data = np.array(df.to_records(index=False), dtype=data_format)
-    data.tofile(fileName)
 
 def write_graph_to_csv_file(G, route):
     df = nx.to_pandas_edgelist(G)
@@ -141,27 +132,6 @@ def write_dask_df_to_csv_file(df, route):
 
 def write_df_to_csv_file(df, route):
     df.to_csv(route, sep = ';', index=False, header=False)
-
-def write_df_to_binary_file(df, route):
-    data_format = [('node_id', 'int64'), ('x', 'float64'), ('y', 'float64'), ('z', 'float64')]
-    print("df", df)
-    data = np.array(df.to_records(index=False), dtype=data_format)
-    print("data", data)
-    data.tofile(route)
-
-def write_dfs_to_csv(dfs, dfs_name, route):
-    for i in range(len(dfs)):
-        print("Candidate: " + dfs_name[i] + " started")
-        dfs[i].to_csv(route + dfs_name[i] +'.csv', single_file=True, sep = ';', index=False, header=False)
-        print("Candidate: " + dfs_name[i] + " done")
-
-def write_dfs_to_binary(dfs, dfs_name, df_type):
-    for i in range(len(dfs)):
-        print("Candidate: " + dfs_name[i] + " started")
-        fileName = './datasets/binary/dataset_' + dfs_name[i] + '.bin'
-        array = np.array(dfs[i].compute(), dtype=df_type)
-        array.tofile(fileName)
-        print("Candidate: " + dfs_name[i] + " done")
 
 def write_json(data, fileName):
     with open(fileName, 'w') as jsonfile:

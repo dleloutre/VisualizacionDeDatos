@@ -15,6 +15,7 @@ class TransitiveGraphReducer(GraphReducer):
     return G
   
   def transitivity(self, G):
+    initial_nodes = G.number_of_nodes()
     for node in list(G.nodes()):
       if node in G.nodes():
         for neighbor in list(G.neighbors(node)):
@@ -24,6 +25,6 @@ class TransitiveGraphReducer(GraphReducer):
               G.remove_edge(neighbor, neighbor_neighbor)
               if G.degree(neighbor) == 0:
                 G.remove_node(neighbor)
-              if G.number_of_nodes() <= self.limit:
+              if (G.number_of_nodes()/initial_nodes) <= self.rate:
                 return G
     return G
