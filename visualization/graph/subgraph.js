@@ -10,7 +10,6 @@ export class Subgraph {
         this.edges = [];
         this.color = "#FFFFFF";
         this.label = key;
-        this.angle = 0;
         this.radius = 0;
         this.position = new THREE.Vector3(0,0,0);
         this.labelPosition = {};
@@ -33,9 +32,10 @@ export class Subgraph {
     }
 
     setNodes(nodesData) {
-        this.nodes = nodesData.map(([id, x, y, z]) => {
+        this.nodes = nodesData.map(([id, x, y, z, depth]) => {
             const position = new THREE.Vector3(x, y, z);
             const node = new Node(id, position);
+            if (depth && depth !== 0) node.setDepth(depth);
             node.setSubgraphId(this.id);
             const radius = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
             if (radius > this.radius) {
@@ -48,10 +48,6 @@ export class Subgraph {
 
     searchNodeById(id) {
         return this.nodes.find((node) => node.getId() === id);
-    }
-
-    setAngle(angle) {
-        this.angle = angle;
     }
 
     getEdges() {
@@ -90,9 +86,5 @@ export class Subgraph {
 
     getLabelPosition() {
         return this.labelPosition;
-    }
-
-    getPosition() {
-        return this.position;
     }
 }
