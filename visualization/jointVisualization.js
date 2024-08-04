@@ -33,8 +33,8 @@ const params = {
   droneCamera: false,
   antialias: false,
   showLabels: true,
-  animation: true,
-  showAllEdges: false,
+  animation: false,
+  showAllEdges: true,
   time: 0
 };
 

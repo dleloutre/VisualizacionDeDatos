@@ -9,12 +9,14 @@ class BipartiteFileProcessor(BaseFileProcessor):
         super().__init__(reduce, animate, logger)
         self.processed_edges = {}
         self.all_nodes = {}
+        self.all_graphs_sizes = []
 
     def set_datasets(self, dfs):
         self.nodes_A = dfs['categories_A']
         self.nodes_B = dfs['categories_B']
         self.edges_A = dfs['edges_A']
         self.edges_B = dfs['edges_B']
+        self.total_nodes = (int(self.nodes_A.shape[0].compute()) + int(self.nodes_A.shape[0].compute()))
 
     def _get_node_ids(self, bKey):
         self.logger.debug("Starts _get_node_ids()")
@@ -56,9 +58,8 @@ class BipartiteFileProcessor(BaseFileProcessor):
         self.logger.debug("Starts _process_graph()")
         self.logger.debug(f"G nodes: {G.number_of_nodes()}")
         self.logger.debug(f"G edges: {G.number_of_edges()}")
-        total_nodes = G.number_of_nodes()
         df_nodes_position = self.apply_force_algorithm(G)
-        df_nodes_position_constrained = self.apply_sphere_constraint(df_nodes_position, total_nodes)
+        df_nodes_position_constrained = self.apply_sphere_constraint(df_nodes_position, int(self.total_nodes), self.all_graphs_sizes)
         df_nodes_position_constrained.columns = ['id_node', 'x', 'y', 'z']
         self.logger.debug(f"Nodes positions:\n{df_nodes_position_constrained.head()}\n{df_nodes_position_constrained.describe()}")
         if self.animate:
@@ -105,12 +106,22 @@ class BipartiteFileProcessor(BaseFileProcessor):
         self.logger.debug(f"All nodes in category {category}:\n{df_edges.head()}")
         self.logger.debug("Ends _get_all_nodes()")
         return df_edges
+    
+    def _get_all_graph_sizes(self, category_values, key):
+        all_sizes = []
+        nodes = self.nodes_A if key == 'A' else self.nodes_B
+        category_name = nodes.columns[1]
+        for category_value in category_values:
+            df_nodes = nodes.loc[nodes[category_name] == category_value]
+            all_sizes.append(df_nodes.shape[0].compute())
+        self.all_graphs_sizes = all_sizes
 
     def create_nodes_files(self, category_values, bKey):
         self.logger.info("Starts create_nodes_files()")
         nodes = []
         self._ensure_directory_exists(f"../visualization/public/nodes_{bKey}")
         data = {}
+        self._get_all_graph_sizes(category_values, bKey)
         for category_value in category_values:
             self.logger.info("Preprocessing " + category_value)
             df_edges = self._get_all_nodes(category_value, bKey) 
