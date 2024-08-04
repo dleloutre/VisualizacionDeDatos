@@ -80,7 +80,7 @@ export class Graph {
         const edge = this.allEdges[idx];
         const srcDepth = edge.getOrigin().getDepth();
         const tgtDepth = edge.getTarget().getDepth();
-        if (srcDepth == -1 || tgtDepth == -1) {
+        if (srcDepth === -1 || tgtDepth === -1) {
             return -1;
         }
         return (srcDepth > tgtDepth) ? srcDepth : tgtDepth;

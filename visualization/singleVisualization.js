@@ -5,7 +5,7 @@ import { GraphMeshBuilder } from "./graph/graphMeshBuilder.js";
 import { Graph } from "./graph/graph.js";
 import initialMetadata from "/data/data.json" assert { type: "json" };
 import { AnimationController } from "./controllers/animationController.js";
-import { validateMetadata, loadFiles } from "./fileManager.js";
+import { loadFiles } from "./fileManager.js";
 
 let scene,
   sceneElements = new THREE.Group(),
@@ -155,7 +155,6 @@ async function prepareData() {
 
 setup();
 createUI();
-metadata = validateMetadata(initialMetadata);
 prepareData()
   .then((G) => {
     G.distributePositions();
