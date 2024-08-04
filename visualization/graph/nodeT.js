@@ -7,14 +7,19 @@ export class Node {
         this.originalPosition = position;
         this.subgraphPosition = subgraphPosition;
         this.subgraphId = subgraphId;
+        this.depth = -1;
     }
 
     getId() {
         return this.id;
     }
 
-    getPosition() {
-        return this.position;
+    setDepth(depth) {
+        this.depth = depth;
+    }
+
+    getDepth() {
+        return this.depth;
     }
 
     getOriginalPosition() {
