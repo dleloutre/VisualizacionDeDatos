@@ -10,8 +10,14 @@ export class BipartiteGraph {
             "steps": 0.6
         });
         this.graphB.distributePositions({
-            "x-offset": 800
+            "x-offset": 600,
+            "y-angle": Math.PI/2,
+            "steps": 0.6
         });
+    }
+
+    getAllEdges() {
+        return this.crossingEdges;
     }
 
     getGraphA() {
@@ -82,5 +88,25 @@ export class BipartiteGraph {
     updateSeparation(factor) {
         this.graphA.updateSeparation(factor);
         this.graphB.updateSeparation(factor);
+    }
+
+    getNodeDepthFromIndex(idx) {
+        const depthA = this.graphA.getNodeDepthFromIndex(idx);
+        const depthB = this.graphB.getNodeDepthFromIndex(idx);
+        if (depthA !== -1) return depthA;
+        if (depthB !== -1) return depthB;
+
+        return -1;
+    }
+
+    getDepthFromEdge(idx) {
+        if (!this.crossingEdges[idx]) return -1;
+        const edge = this.crossingEdges[idx];
+        const srcDepth = edge.getOrigin().getDepth();
+        const tgtDepth = edge.getTarget().getDepth();
+        if (srcDepth === -1 || tgtDepth === -1) {
+            return -1;
+        }
+        return (srcDepth > tgtDepth) ? srcDepth : tgtDepth;
     }
 }

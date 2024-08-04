@@ -6,7 +6,7 @@ import { Graph } from "./graph/graph.js";
 import initialMetadata_A from "/data/data_A.json" assert { type: "json" };
 import initialMetadata_B from "/data/data_B.json" assert { type: "json" };
 import { AnimationController } from "./controllers/animationController.js";
-import { validateMetadata, loadFiles } from "./fileManager.js";
+import { loadFiles } from "./fileManager.js";
 import { BipartiteGraph } from "./graph/bipartiteGraph.js";
 
 let scene,
@@ -24,13 +24,18 @@ let scene,
   metadata = {
     A: initialMetadata_A,
     B: initialMetadata_B
-  };
+  },
+  time = 0,
+  gui = new dat.GUI({ hideable: false });
 
 const params = {
   subgraphSeparation: 1,
   droneCamera: false,
   antialias: false,
   showLabels: true,
+  animation: true,
+  showAllEdges: false,
+  time: 0
 };
 
 function setup() {
@@ -47,17 +52,19 @@ function onResize() {
 }
 
 function createUI() {
-  const gui = new dat.GUI({hideable: false});
-  gui.add(params, "antialias")
+  const animationFolder = gui.addFolder('Animation');
+  const layoutFolder = gui.addFolder('Layout');
+  const viewFolder = gui.addFolder('View');
+  viewFolder.add(params, "antialias")
     .name("antialias")
-  gui
+  viewFolder
     .add(params, "droneCamera")
     .name("drone view")
     .onChange((v) => {
       animationController.switchCamera(sceneElements);
       changeButtonsVisibility(v);
     });
-  gui
+  layoutFolder
     .add(params, "subgraphSeparation", 0, 5)
     .name("separation between subgraphs")
     .step(0.1)
@@ -65,7 +72,7 @@ function createUI() {
       graph.updateSeparation(v);
       updateGraph();
     });
-  gui
+  viewFolder
     .add(params, "showLabels")
     .name("show labels")
     .onChange((v) => {
@@ -77,6 +84,20 @@ function createUI() {
         textlabelsB.forEach((label) => graphBElements.remove(label));
       }
     });
+  viewFolder.add(params, "showAllEdges")
+      .name("show all edges")
+      .onChange((_v) => {
+        updateGraph();
+      });
+  animationFolder
+      .add(params, "time", 0, 30)
+      .name("time")
+      .step(1)
+      .onChange((v) => {
+        time = v;
+      });
+  animationFolder.add(params, "animation")
+      .name("play/pause animation");
 }
 
 function changeButtonsVisibility(visibility) {
@@ -126,7 +147,7 @@ function updateGraph() {
   textlabelsB = graph.getPositionLabelsB();
 
   gmb = new GraphMeshBuilder(graph);
-  edges = gmb.createEdges();
+  edges = gmb.createEdges(params.showAllEdges);
 
   addAllToScene();
 }
@@ -135,7 +156,17 @@ const animate = function () {
   stats.begin();
   animationController.setCameraToRenderer();
   requestAnimationFrame(animate);
-  animationController.render(scene, params.antialias)
+  edges.material.uniforms.time.value = time;
+  nodesA.material.uniforms.time.value = time;
+  nodesB.material.uniforms.time.value = time;
+
+  animationController.render(scene, params.antialias);
+  if (params.animation) {
+    time += 0.03;
+    params.time = time;
+    gui.updateDisplay();
+  }
+  if (time > 30) time = 0;
   stats.end();
 };
 
@@ -154,8 +185,6 @@ async function prepareData() {
 
 setup();
 createUI();
-metadata.A = validateMetadata(initialMetadata_A);
-metadata.B = validateMetadata(initialMetadata_B);
 prepareData()
   .then((G) => {
     graph = G;
