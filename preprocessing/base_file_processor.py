@@ -15,7 +15,6 @@ class BaseFileProcessor(ABC):
         self.limit = EDGES_LIMIT
         self.reducer_rate = None
         self.radius = None
-        #self.min_radius = MIN_RADIUS
         self.logger = logging.getLogger(self.__class__.__name__)
         if not logger:
             self.logger.setLevel(logging.CRITICAL + 1)
@@ -38,7 +37,6 @@ class BaseFileProcessor(ABC):
 
     def set_radius(self, new_radius):
         self.radius = new_radius
-        #self.min_radius = new_radius/10
 
     def process_animation_files(self):
         self.logger.info("Starting animation file process")
@@ -66,7 +64,6 @@ class BaseFileProcessor(ABC):
 
     def apply_reduction_algorithm(self, G):
         self.logger.info("Applying reduction algorithm")
-        ##Pasar el valor limit al reducer??
         reducer = get_reducer(self.reduce)
         if self.reducer_rate:
             reducer.set_rate(float(self.reducer_rate))

@@ -2,10 +2,10 @@ import networkx as nx
 
 class GraphReducer():
   def __init__(self):
-    self.limit = 10
+    self.rate = 10
 
-  def set_limit(self, new_limit):
-    self.limit = new_limit
+  def set_rate(self, new_rate):
+    self.rate = new_rate
 
   def find_node_to_contract(self, G):
     for node in list(G.nodes()):

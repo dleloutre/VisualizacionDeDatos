@@ -5,6 +5,7 @@ class ByDegreeGraphReducer(GraphReducer):
         G = G.copy()
         reduced_nodes = set()
         nodes = sorted(G, key=G.degree, reverse=True)
+        initial_nodes = len(nodes)
         for node in nodes:
             if node not in reduced_nodes:
                 neighbors = list(G.predecessors(node)) + list(G.successors(node))
@@ -23,7 +24,7 @@ class ByDegreeGraphReducer(GraphReducer):
                                         G.add_edge(n, node)
                         reduced_nodes.add(neighbor)
                         G.remove_node(neighbor)
-                        if G.number_of_nodes() <= self.limit:
+                        if (G.number_of_nodes()/initial_nodes) <= self.rate:
                             return G
                 reduced_nodes.add(node)
         return G

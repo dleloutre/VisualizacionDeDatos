@@ -11,7 +11,7 @@ def main():
     df_categories = validate_file(args['categories'])
 
     if args['categories2'] and args['edges2']:
-        processor = BipartiteFileProcessor(args['reduction'], args['animation'])
+        processor = BipartiteFileProcessor(args['reduction'], args['animation'], args['log'])
         dfs = {
             'edges_A': df_edges,
             'categories_A': df_categories,
@@ -19,7 +19,7 @@ def main():
             'categories_B': validate_file(args['categories2'])
         }
     else:
-        processor = FileProcessor(args['reduction'], args['animation'])
+        processor = FileProcessor(args['reduction'], args['animation'], args['log'])
         dfs = {
             'edges': df_edges,
             'categories': df_categories
@@ -44,7 +44,7 @@ if __name__=="__main__":
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
             logging.FileHandler("app.log"),
-            logging.StreamHandler()
+            ##logging.StreamHandler()
         ]
     )
     main()
