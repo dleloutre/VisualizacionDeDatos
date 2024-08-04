@@ -5,8 +5,8 @@ from constants import *
 from utils import *
 
 class BipartiteFileProcessor(BaseFileProcessor):
-    def __init__(self, reduce='mcgs', animate=None):
-        super().__init__(reduce, animate)
+    def __init__(self, reduce='mcgs', animate=None, logger=False):
+        super().__init__(reduce, animate, logger)
         self.total_nodes = 0
         self.processed_edges = {}
         self.all_nodes = {}
@@ -54,8 +54,9 @@ class BipartiteFileProcessor(BaseFileProcessor):
     def _process_graph(self, G):
         self.logger.debug(f"G nodes: {G.number_of_nodes()}")
         self.logger.debug(f"G edges: {G.number_of_edges()}")
+        total_nodes = G.number_of_nodes()
         df_nodes_position = self.apply_force_algorithm(G)
-        df_nodes_position_constrained = self.apply_sphere_constraint(df_nodes_position)
+        df_nodes_position_constrained = self.apply_sphere_constraint(df_nodes_position, total_nodes)
         df_nodes_position_constrained.columns = ['id_node', 'x', 'y', 'z']
         if self.animate:
             df_nodes_position_constrained = df_nodes_position_constrained.merge(self.df_animation, on='id_node', how='left').fillna(0)
