@@ -65,34 +65,34 @@ class BipartiteFileProcessor(BaseFileProcessor):
     def _generate_metadata(self, category):
         return {'label': category, 'color': generate_color()}
     
-    def _apply_reduction_if_needed(self, edges, output_edges):
+    def _apply_reduction_if_needed(self, edges):
         G = get_graph_from_df(edges, 'source', 'target', 'weight')
         if self.reduce:
             G_reduced = self.apply_reduction_algorithm(G)
-            ##write_graph_to_csv_file(G_reduced, output_edges)
             return nx.to_pandas_edgelist(G_reduced)
         return edges
     
     def _get_all_nodes(self, category, key):
+        self.logger.debug("Starts _get_all_nodes()")
         if self.reduce:
             return self.processed_edges[category]
         nodes = self.nodes_A if key == 'A' else self.nodes_B
         category_name = nodes.columns[1]
         df_nodes = nodes.loc[nodes[category_name] == category]
+        self.logger.debug(f"Nodes in category {category}:\n{df_nodes.head()}")
         df_processed_edges = self.processed_edges[category]
         list_source = list(df_processed_edges['source'])
         list_target = list(df_processed_edges['target'])
-        self.logger.debug(f"List source:\n{list_source}")
-        self.logger.debug(f"List target:\n{list_target}")
         df_nodes = df_nodes.loc[~df_nodes['node_id'].isin(set(list_source + list_target))]
-        self.logger.debug(f"DF  Nodes:\n{df_nodes.head()}")
+        self.logger.debug(f"Nodes without internal edges:\n{df_nodes.head()}")
         df_nodes = df_nodes.drop([category_name], axis=1)
         df_nodes = df_nodes.rename(columns={'node_id': 'source'})
         df_nodes['target'] = df_nodes['source']
         df_nodes['weight'] = 1
-        self.logger.debug(f"New df_nodes:\n{df_nodes.head()}")
+        self.logger.debug(f"Final dataframe for nodes without internal edges:\n{df_nodes.head()}")
         df_edges = dd.concat([df_nodes, self.processed_edges[category]])
-        self.logger.debug(f"New df_edges:\n{df_edges.head()}")
+        self.logger.debug(f"All nodes in category {category}:\n{df_edges.head()}")
+        self.logger.debug("Ends _get_all_nodes()")
         return df_edges
 
     def create_nodes_files(self, category_values, bKey):
@@ -123,10 +123,7 @@ class BipartiteFileProcessor(BaseFileProcessor):
             df_filtered = df.loc[(df[[category_source, category_target]] == category_value).all(axis=1)]
             df_filtered = df_filtered.drop([category_source, category_target], axis=1)
             self.logger.debug(f"Filtered dataframe:\n{df_filtered.head()}")
-            output_edges = f"../visualization/public/edges_{bKey}/dataset_{category_value}.csv"
-            df_filtered = self._apply_reduction_if_needed(df_filtered, output_edges)
-            ##if not self.reduce:
-            ##    write_dask_df_to_csv_file(df_filtered, output_edges)
+            df_filtered = self._apply_reduction_if_needed(df_filtered)
             self.logger.debug(f"Reduced dataframe:\n{df_filtered.head()}")
             self.processed_edges[category_value] = df_filtered
             self.total_nodes += len(df_filtered)
