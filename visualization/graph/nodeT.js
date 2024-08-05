@@ -8,6 +8,8 @@ export class Node {
         this.subgraphPosition = subgraphPosition;
         this.subgraphId = subgraphId;
         this.depth = -1;
+        this.inEdge = false;
+        this.inAnimatedEdge = false;
     }
 
     getId() {
@@ -52,5 +54,22 @@ export class Node {
     getVTextureCoord(totalSubgraphs) {
         const blockHeight = 1.0 / Math.pow(totalSubgraphs, 2);
 		return (blockHeight / 2 + this.subgraphId / totalSubgraphs);
+    }
+
+    mark() {
+        this.inEdge = true;
+    }
+
+    markAsAnimated() {
+        this.inEdge = true;
+        this.inAnimatedEdge = true;
+    }
+
+    isInAnimatedEdge() {
+        return this.inAnimatedEdge;
+    }
+
+    isInEdge() {
+        return this.inEdge;
     }
 }
