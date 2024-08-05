@@ -69,7 +69,12 @@ export class Subgraph {
         return this.nodes.length;
     }
 
+    getRadius() {
+        return this.radius;
+    }
+
     getAngle(distanceToCenter, prevAngle) {
+        console.log("SUBGRAPH RADIUS", this.key, this.radius)
         const angleBetweenGraphs = Math.atan((this.radius * 3) / distanceToCenter);
         return prevAngle + angleBetweenGraphs;
     }
