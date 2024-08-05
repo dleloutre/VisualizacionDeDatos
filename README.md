@@ -1,180 +1,99 @@
-Data Visualization
-==============
+# Visualización de Datos
 
-## I. Data Preprocessing
+**Visualización de Datos** es una herramienta diseñada para la visualización de grafos en los que los nodos pertenecen a distintas categorías. Esta herramienta permite visualizar los nodos divididos en comunidades y ver fácilmente cómo se relacionan entre ellos. Además, ofrece una opción para generar una visualización conjunta entre dos grafos y otra para visualizar la propagación de un mensaje en la red.
 
-### Technologies
+## Requerimientos Técnicos
 
-* Python3
-* Pandas
-* NetworkX
+- NPM
+- PIP
+- Python 3
 
-### Install dependencies
+## Estructura del Proyecto
 
-```pip install -r requirements.txt```
+El proyecto consta de dos partes principales:
 
-### Run
+### Parte 1: Procesamiento de Datos
 
-```main.py [-h] -e EDGES -c CATEGORIES [-r] [-rad RADIUS] [-l LIMIT] [-a ANIMATION] [-e2 EDGES2] [-c2 CATEGORIES2] [-rr RATE]```
+Para el procesamiento de datos, se requieren los siguientes archivos CSV que deben guardarse en el directorio `/visualization/public/uploaded_files`:
+
+- **Archivo de nodos:** columnas "node_id,{category}" donde `node_id` es el identificador único del nodo y `{category}` es la categoría de agrupación (ej. si la categoría es música, los valores pueden ser géneros musicales).
+- **Archivo de aristas:** columnas "source,target,weight" donde `source` es el ID del nodo origen, `target` el ID del nodo destino y `weight` el peso de la arista.
+- **(Opcional) Archivos para visualización conjunta:** un archivo de nodos y uno de aristas por cada categoría respetando el formato mencionado previamente.
+- **(Opcional) Archivo de transmisión de mensajes:** columnas "source,target,timestamp" donde `source` es el ID del nodo origen, `target` el ID del nodo destino y `timestamp` el momento de la transmisión del mensaje.
+
+
+Ejemplos de estos archivos se encuentran en la carpeta `/examples`.
+
+### Ejecución del Procesamiento de Datos
+
+Para ejecutar el procesamiento de datos, sigue estos pasos:
+
+1. Instalar las dependencias: `pip install -r requirements.txt`
+2. Ejecutar el script principal:
+
+    ```bash
+    python main.py [-h] -e EDGES -c CATEGORIES [-e2 EDGES2] [-c2 CATEGORIES2] [-a ANIMATION] [-r {mcgs,degree,transitive}] [-rad RADIUS] [-l LIMIT] [-rr RATE] [-log LOG]
+    ```
+
+#### Opciones:
+
+- `-h, --help`: muestra la descripción de cada opción.
+- `-e EDGES, --edges EDGES`: archivo que contiene todas las aristas.
+- `-c CATEGORIES, --categories CATEGORIES`: archivo que contiene todos los nodos y sus categorías.
+- `-e2 EDGES2, --edges2 EDGES2`: segundo archivo con las aristas para una visualización bipartita.
+- `-c2 CATEGORIES2, --categories2 CATEGORIES2`: segundo archivo con los nodos y sus categorías para una visualización bipartita.
+- `-a ANIMATION, --animation ANIMATION`: archivo que contiene el flujo de animación.
+- `-r {mcgs,degree,transitive}, --reduction {mcgs,degree,transitive}`: tipo de algoritmo de reducción.
+- `-rad RADIUS, --radius RADIUS`: factor escalar para calcular el radio de la restricción de la esfera.
+- `-l LIMIT, --limit LIMIT`: filtra el número de aristas que cruzan dentro de cada categoría.
+- `-rr RATE, --rate RATE`: tasa de muestreo, es decir, la proporción de nodos preservados en la muestra.
+- `-log LOG`: habilita el *logger* en la ejecución.
+
+#### Salida del Procesamiento
+
+El procesamiento de datos genera nuevos archivos que se utilizarán para la visualización:
+
+- En `/visualization/public/nodes`, se genera un archivo de nodos para cada categoría posible.
+- En `/visualization/public/edges`, se genera un archivo de aristas internas para cada categoría y un archivo de aristas que cruzan entre categorías.
+- En `/visualization/data`, se genera un archivo JSON con la especificación de la etiqueta y color asignado a cada categoría. Este archivo se puede editar para personalizarlo.
+- Para una visualización conjunta, los archivos de nodos y aristas se dividirán en las carpetas `/nodes_A` y `/edges_A` respectivamente, y los archivos JSON serán dos: `data_A.json` y `data_B.json`.
+
+### Parte 2: Visualización
+
+1. Instalar dependencias: `npm install`
+2. Ejecutar el programa:
+    - Para la visualización clásica: `npm run dev`
+    - Para la visualización conjunta: `npm run dev:joint`
+
+#### Parámetros ajustable en la visualización
+
+- **Antialias:** mejora la calidad de la visualización.
+- **Drone View:** cambia el tipo de cámara a una "drone". Controla la cámara con las teclas: "A, W, S, D, Q, E" para cambiar el ángulo y "U, H, J, K, O, L" para trasladarte en el espacio. La velocidad de movimiento se ajusta con las teclas 1, 2, 3 o 4.
+- **Spiral Steps:** ajusta el paso en la distribución en forma de espiral.
+- **Spiral Rounds:** ajusta la cantidad de vueltas en la espiral.
+- **Separation:** ajusta la separación entre subgrafos.
+- **Show All Edges:** muestra u oculta las aristas que no se iluminan durante la animación.
+- **Play/Pause animation:** pausa o reproduce la animación.
+- **Time:** controla el tiempo de la animación.
+- **Show All Labels:** muestra u oculta las etiquetas de los subgrafos.
+
+La visualización genera un grafo con subgrafos diferenciados por color. Las aristas entre subgrafos de distintos grupos tendrán un color gradiente donde el extremo corresponderá al color del nodo del otro extremo. Esto permite identificar fácilmente las conexiones entre grupos.
+
+La visualización requiere que existan y sean correctos todos los archivos generados en el procesamiento de datos. El único archivo que puede editarse es `data.json`, respetando sus claves.
+
+### Ejemplos
 ```
-options:
-  -h, --help            show this help message and exit
-  -e EDGES, --edges EDGES
-                        filename containing all the edges
-  -c CATEGORIES, --categories CATEGORIES
-                        filename containing all the nodes and their categories
-  -r, --reduction       apply reduction algorithm
-  -rad RADIUS, --radius RADIUS
-                        radius scale for the sphere constraint
-  -l LIMIT, --limit LIMIT
-                        filter number of edges crossing inside each category
-  -a ANIMATION, --animation ANIMATION
-                        filename containing all the edges and timestamps for animation
-  -e2 EDGES2, --edges2 EDGES
-                        filename containing all the edges for graph B of bipartite
-  -c2 CATEGORIES2, --categories2 CATEGORIES
-                        filename containing all the nodes and their categories for graph B of bipartite
-  -rr RATE, --rate RATE
-                        sampling rate, namely, the proportion of the nodes preserved in the sample
+cp examples/ visualization/public/uploaded_files
 ```
-#### Example
 
-```python3 main.py -e edges.csv -c nodes.csv```
+```
+python3 main.py -e edges_politicos.csv -c politicos.csv -a animation_comida.csv -rad 5
+```
 
-#### Example for a bipartite visualization
+```
+python3 main.py -e edges_musica.csv -c musica.csv -a animation_comida.csv
+```
 
-```python3 main.py -e edges_graph_A.csv -c nodes_graph_A.csv -e2 edges_graph_B.csv -c2 nodes_graph_B.csv```
-
-### Files
-#### Edges file
-
-The edges file contains the network edges, it must be located in the visualization/public/uploaded_files folder. This file must include the following columns:
-
-- `source`: Source node identifier
-- `target`: Target node identifier
-- `weight`: Edge weight
-
-**Important**: The file must have the previously mentioned column names as the header.
-
-#### Categories file
-
-The categories file contains the node categories, it must be located in the visualization/public/uploaded_files folder. This file must include the following columns:
-
-- `node_id`: Node identifier
-- `category`: Node category
-
-**Important**: The file must have the previously mentioned column names as the header. Additionally, the file must not have any null or empty values in the category column.
-
-#### Animation file (optional)
-
-The animation file contains the edges and timestamps for any desired animation. It must be located in the visualization/public/uploaded_files folder. This file must include the following columns:
-
-- `source`: Source node identifier
-- `target`: Target node identifier
-- `timestamp`: Timestamp of the event in the format "YYYY-MM-DD HH:mm:ss"
-
-**Important**: The file must have the previously mentioned column names as the header. Additionally, the file must not have any null or empty values in the category column.
-
-
-## II. Graph Visualization
-
-### Technologies
-
-* Three.js
-
-### Single Visualization
-
-#### Install dependencies
-
-```npm install```
-
-#### Run
-
-```npm run dev```
-
-### Bipartite Visualization
-
-#### Install dependencies
-
-```npm install```
-
-#### Run
-
-```npm run dev:joint```
-
-### How it Works
-The visualization generates a graph with subgraphs differentiated by color. The goal is to recognize connections between groups of different categories and understand which ones are more influential. Edges that cross different subgraphs will have a gradient color, making it easy to identify the origins of the connections.
-The visualization includes several parameters to suit different needs:
-
-* Antialias: Improves the definition of the visualization when the view is static.
-* Drone View: Changes the camera mode to a "drone" type. To control this camera, use the keys "A, W, S, D, Q, E" to change the viewing angle and "U, H, J, K, O, L" to move around. You can also adjust the movement speed by pressing keys 1, 2, 3, or 4. By default, the assigned camera is an orbital camera, which is manipulated using the mouse and allows you to rotate, zoom in and out relative to a fixed point.
-* Spiral Steps: Allows you to increase or decrease the step between subgraphs distributed in a spiral shape.
-* Spiral Rounds: Allows you to increase or decrease the number of turns in the spiral where the subgraphs are distributed.
-* Separation: Allows you to increase or decrease the distance between subgraphs.
-
-### Required Files for Single Visualization
-You must provide a file of nodes and a file of edges for each subgraph to be visualized.
-These files should be located within the /public/nodes and /public/edges folders, respectively.
-The files must be named "dataset_${key}.csv", where ${key} is a unique identifier for the subgraph.
-
-The node files must have the following columns:
-
-- `node_id`
-- `x_coordinate`
-- `y_coordinate`
-- `z_coordinate`
-
-Where (x_coordinate, y_coordinate, z_coordinate) are the spatial coordinates where the node should be located, relative to the origin.
-
-The edge files must have the following columns:
-
-- `origin_node_id`
-- `target_node_id`
-- `weight`
-
-In addition to the edge files for each subgraph, there must be a file named "dataset_crossing.csv" that contains the edges crossing all subgraphs.
-
-The aforementioned files can be obtained by running the [preprocessing step](#user-content-i-data-preprocessing).
-
-Within the /data folder, there must be a file named data.json. This file must be a JSON where the keys match the ${key} of the datasets. 
-
-Each key can contain the following information:
-
-- `label`: Name or label you want to assign to the subgraph.
-- `color`: Color you want to assign to the subgraph.
-
-Both fields are optional; if not provided, labels will take the value of ${key}, and colors will be generated automatically.
-
-### Required Files for Bipartite Visualization
-
-You must provide a file of nodes for each subgraph to be visualized.
-These files should be located within the /public/nodes_A, /public/nodes_B, where A and B represents each graph in the bipartite graph.
-The files must be named "dataset_${key}.csv", where ${key} is a unique identifier for the subgraph.
-
-The node files must have the following columns:
-
-- `node_id`
-- `x_coordinate`
-- `y_coordinate`
-- `z_coordinate`
-
-Where (x_coordinate, y_coordinate, z_coordinate) are the spatial coordinates where the node should be located, relative to the origin.
-
-Also, you must provide a file of crossing edges from graph A to graph B, and crossing edges from graph B to graph A. These files must be located within /public/edges_A and /public/edges_B, respectively. Both files must be named "dataset_crossing.csv".
-
-The edge files must have the following columns:
-
-- `origin_node_id`
-- `target_node_id`
-- `weight`
-
-The aforementioned files can be obtained by running the [preprocessing step](#user-content-i-data-preprocessing).
-
-Within the /data folder, there must be two files named "data_A.json" and "data_B.json". These files must be a JSON where the keys match the ${key} of the datasets.
-
-Each key can contain the following information:
-
- * label: Name or label you want to assign to the subgraph.
- * color: Color you want to assign to the subgraph.
-
-Both fields are optional; if not provided, labels will take the value of ${key}, and colors will be generated automatically.
+```
+python3 main.py -e edges_comida.csv -c comida.csv -e2 edges_musica.csv -c2 musica.csv -a animation_comida.csv
+```

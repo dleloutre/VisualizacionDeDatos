@@ -5,15 +5,23 @@ export class BipartiteGraph {
         this.graphA = graph_A;
         this.graphB = graph_B;
         this.graphA.distributePositions({
-            "x-offset": -600,
+            "constantRadius": this.getDefaultRadius(),
+            "x-offset": -1000,
             "y-angle": Math.PI/2,
             "steps": 0.6
         });
         this.graphB.distributePositions({
-            "x-offset": 600,
-            "y-angle": Math.PI/2,
+            "constantRadius": this.getDefaultRadius(),
+            "x-offset": 1000,
+            "y-angle": -Math.PI/2,
             "steps": 0.6
         });
+    }
+
+    getDefaultRadius() {
+        const radioA = this.graphA.getDefaultRadius();
+        const radioB = this.graphB.getDefaultRadius();
+        return Math.max(radioA, radioB);
     }
 
     getTotalEdges() {

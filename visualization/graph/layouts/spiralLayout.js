@@ -18,7 +18,7 @@ export class SpiralLayout {
         const yOffset = offset["y-offset"] ?? 0;
         const zOffset = offset["z-offset"] ?? 0;
         let angle = 0;
-        let initialRadius = 3*this.subgraphs[this.subgraphs.length-1].getRadius();
+        let initialRadius = this.constantRadius;
         for (const subgraph of this.subgraphs) {
             const size = subgraph.getOrder();
             let currentRadius = initialRadius;
