@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { Edge } from "./edgeT.js";
-import { generateTextSprite } from "../utils/spriteText.js";
-import { SpiralLayout } from "./layouts/spiralLayout.js";
+import {Edge} from "./edgeT.js";
+import {generateTextSprite} from "../utils/spriteText.js";
+import {SpiralLayout} from "./layouts/spiralLayout.js";
 
 export class Graph {
 	totalSubgraphs = 0;
@@ -12,6 +12,11 @@ export class Graph {
 	constructor(subgraphs, crossingEdges, metadata) {
         this.subgraphs = this.sortSubgraphsBySize(subgraphs);
         this.allNodes = this.subgraphs.flatMap(subgraph => subgraph.getNodes());
+        this.allNodesMap = this.allNodes.reduce((acc, node) => {
+            const id = node.getId();
+            acc[id] = node;
+            return acc;
+        }, {});
         this.crossingEdges = crossingEdges ? this.createEdges(crossingEdges) : [];
         this.allEdges = this.subgraphs.flatMap(subgraph => subgraph.getEdges()).concat(this.crossingEdges);
         this.totalSubgraphs = subgraphs.length;
@@ -39,31 +44,23 @@ export class Graph {
         return this.allEdges;
     }
 
-    getAnimatedEdges() {
-        return this.allEdges.filter((edge) => {
-            return edge.getOrigin().getDepth() !== -1 && edge.getTarget().getDepth() !== -1
-        })
-    }
-
-    getNonAnimatedEdges() {
-        return this.allEdges.filter((edge) => {
-            return edge.getOrigin().getDepth() === -1 || edge.getTarget().getDepth() === -1
-        })
+    getNodesMap() {
+        return this.allNodesMap;
     }
 
     createEdges(rawEdges) {
         return rawEdges.map(([originId, targetId]) => {
-            const originNode = this.allNodes.find(node => node.getId() === originId);
-            const targetNode = this.allNodes.find(node => node.getId() === targetId);
-            if (!originNode || !targetNode) {
-                console.log(originNode, originId, targetNode, targetId)
+            const originNode = this.allNodesMap[originId];
+            const targetNode = this.allNodesMap[targetId];
+            if (originNode.getDepth() !== -1 && targetNode.getDepth() !== -1) {
+                originNode.markAsAnimated();
+                targetNode.markAsAnimated();
+            } else {
+                originNode.mark();
+                targetNode.mark();
             }
             return new Edge(originNode, targetNode);
         });
-    }
-
-    getSubgraphs() {
-        return this.subgraphs;
     }
 
     getTotalSubgraphs() {
@@ -72,7 +69,9 @@ export class Graph {
 
     getNodeDepthFromIndex(idx) {
         if (!this.allNodes[idx]) return -1;
-        return this.allNodes[idx].getDepth();
+        const node = this.allNodes[idx];
+        if (!node.isInEdge() || !node.isInAnimatedEdge()) return -1;
+        return node.getDepth();
     }
 
     getDepthFromEdge(idx) {
@@ -83,19 +82,11 @@ export class Graph {
         if (srcDepth === -1 || tgtDepth === -1) {
             return -1;
         }
-        return (srcDepth > tgtDepth) ? srcDepth : tgtDepth;
+        return Math.min(srcDepth, tgtDepth);
     }
 
     sortSubgraphsBySize(subgraphs) {
         return subgraphs.sort((a, b) => a.getOrder() - b.getOrder());
-    }
-
-    calculateTotalNodes() {
-        return this.subgraphs.reduce((total, subgraph) => total += subgraph.getOrder(), 0);
-    }
-
-    calculateTotalEdges() {
-        return this.subgraphs.reduce((total, subgraph) => total += subgraph.getSize(), 0);
     }
 
     updateSteps(steps) {
@@ -105,11 +96,6 @@ export class Graph {
 
     updateRounds(rounds) {
         this.layout.setRounds(rounds);
-        this.layout.distributeNodes();
-    }
-
-    updateConstantRadius(constantRadius) {
-        this.layout.setRadius(constantRadius);
         this.layout.distributeNodes();
     }
 
@@ -133,13 +119,8 @@ export class Graph {
         return this.totalEdges;
     }
 
-    getCrossingEdges() {
-        return this.crossingEdges;
-    }
-
     getColorList() {
-        const colors = Object.values(this.metadata).map(data => new THREE.Color(data.color));
-        return colors;
+        return Object.values(this.metadata).map(data => new THREE.Color(data.color));
     }
 
     getPositionLabels() {

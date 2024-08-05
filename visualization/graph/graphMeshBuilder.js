@@ -83,15 +83,20 @@ export class GraphMeshBuilder {
 		const data = new Uint8Array(size);
 
 		let i = 0;
+		const totalNodes = this.graph.getTotalEdges();
+		const limit = Math.min(totalNodes, size);
 
 		for (let r = 0; r < height; r++) {
 			for (let c = 0; c < width; c++) {
 				// i es el nro de arista
-				// IMPORTANTE: data[i] no puede ser mayor a 255
-				// encender por niveles de profundidad
-				// cada arista se enciende en un tiempo distinto segun su profundidad
-
-				data[i] = this.graph.getDepthFromEdge(i)*3;
+				if (i < limit) {
+					// IMPORTANTE: data[i] no puede ser mayor a 255
+					// encender por niveles de profundidad
+					// cada arista se enciende en un tiempo distinto segun su profundidad
+					data[i] = this.graph.getDepthFromEdge(i) * 5;
+				} else {
+					data[i] = -1;
+				}
 				//if (i % 2 == 0) data[i] = 0;
 				i++;
 			}
@@ -109,13 +114,19 @@ export class GraphMeshBuilder {
 		const data = new Uint8Array(size);
 
 		let i = 0;
+		const totalNodes = this.graph.getTotalNodes();
+		const limit = Math.min(totalNodes, size);
 
 		for (let r = 0; r < height; r++) {
 			for (let c = 0; c < width; c++) {
 				// i es el nro de nodo
-				// IMPORTANTE: data[i] no puede ser mayor a 255
-				// encender por niveles de profundidad
-				data[i] = this.graph.getNodeDepthFromIndex(i)*3;
+				if (i < limit) {
+					// IMPORTANTE: data[i] no puede ser mayor a 255
+					// encender por niveles de profundidad
+					data[i] = this.graph.getNodeDepthFromIndex(i) * 5;
+				} else {
+					data[i] = -1;
+				}
 				i++;
 			}
 		}
@@ -275,6 +286,7 @@ export class GraphMeshBuilder {
 		const nodeNumber = [];
 
 		const nodes = this.graph.getAllNodes();
+		console.log("all nodes: ", nodes)
 		nodes.forEach((node, i) => {
 			const position = node.getVectorPosition();
 			translation.push(position.x, position.y, position.z);
