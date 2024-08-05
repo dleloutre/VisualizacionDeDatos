@@ -5,13 +5,14 @@ import { GraphMeshBuilder } from "./graph/graphMeshBuilder.js";
 import { Graph } from "./graph/graph.js";
 import initialMetadata from "/data/data.json" assert { type: "json" };
 import { AnimationController } from "./controllers/animationController.js";
-import { loadFiles } from "./fileManager.js";
+import { loadFiles } from "./utils/fileManager.js";
 
 let scene,
   sceneElements = new THREE.Group(),
   stats,
   nodes,
-  edges,
+  edges = [],
+  animatedEdges,
   graph,
   time = 0,
   textlabels = [],
@@ -86,7 +87,7 @@ function createUI() {
     });
   viewFolder.add(params, "showAllEdges")
       .name("show all edges")
-      .onChange((_v) => {
+      .onChange((v) => {
         updateGraph();
       });
   animationFolder
@@ -109,12 +110,14 @@ function changeButtonsVisibility(visibility) {
 function removeAllFromScene() {
   scene.remove(sceneElements);
   sceneElements.remove(edges);
+  sceneElements.remove(animatedEdges);
   sceneElements.remove(nodes);
   textlabels.forEach((label) => sceneElements.remove(label));
 }
 
 function addAllToScene() {
-  sceneElements.add(edges);
+  if (params.showAllEdges) sceneElements.add(edges);
+  sceneElements.add(animatedEdges);
   sceneElements.add(nodes);
   textlabels.forEach((label) => sceneElements.add(label));
   scene.add(sceneElements);
@@ -123,7 +126,10 @@ function addAllToScene() {
 function updateGraph() {
   removeAllFromScene();
   let gmb = new GraphMeshBuilder(graph);
-  edges = gmb.createEdges(params.showAllEdges);
+  if (params.showAllEdges) {
+    edges = gmb.createNonAnimatedEdges();
+  }
+  animatedEdges = gmb.createdAnimatedEdges();
   nodes = gmb.createNodes();
   textlabels = graph.getPositionLabels();
   addAllToScene();
@@ -133,7 +139,7 @@ const animate = function () {
   stats.begin();
   animationController.setCameraToRenderer();
   requestAnimationFrame(animate);
-  edges.material.uniforms.time.value = time;
+  animatedEdges.material.uniforms.time.value = time;
   nodes.material.uniforms.time.value = time;
 
   animationController.render(scene, params.antialias);

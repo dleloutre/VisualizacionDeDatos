@@ -130,7 +130,7 @@ export class GraphMeshBuilder {
 		return color;
 	}
 
-	_createEdgesMaterial() {
+	_createAnimatedEdgesMaterial() {
 		return new THREE.ShaderMaterial({
 			uniforms: {
 				color: { value: new THREE.Color(0xffffff) },
@@ -144,6 +144,21 @@ export class GraphMeshBuilder {
 			defines: { ANIMATION_TEXTURE_SIDE: String(this.edgeAnimationTexture.image.width) + ".0" },
 			vertexShader: animatedEdgeShader.vertexShader,
 			fragmentShader: animatedEdgeShader.fragmentShader,
+		});
+	}
+
+	_createEdgesMaterial() {
+		return new THREE.ShaderMaterial({
+			uniforms: {
+				color: { value: new THREE.Color(0xffffff) },
+				edgeColor: { type: "t", value: this.edgesTexture },
+				waveOffset: { value: -3.0 },
+				directionalLightDirection: { type: "v3", value: new THREE.Vector3(1, 1, 1).normalize() },
+				ambientColor: { type: "v3", value: new THREE.Color(0x666666) },
+				emissionFactor: { value: 0.3 },
+			},
+			vertexShader: edgeShader.vertexShader,
+			fragmentShader: edgeShader.fragmentShader,
 		});
 	}
 
@@ -163,24 +178,37 @@ export class GraphMeshBuilder {
 		});
 	}
 
-	createEdges(showAll) {
+	createEdges(animated = false) {
 		let edges = this.graph.getAllEdges();
-
+		let material = animated ? this._createAnimatedEdgesMaterial() : this._createEdgesMaterial();
 		const totalEdgesToDraw = edges.length;
 		const instancedEdgeGeometry = new THREE.InstancedBufferGeometry();
 		instancedEdgeGeometry.copy(this._getUnitCylinder());
 
 		const instanceGradientOffsetArray = new Float32Array(totalEdgesToDraw);
 		const gradientOffsetAttribute = new THREE.InstancedBufferAttribute(instanceGradientOffsetArray, 1, true);
-		const instanceEdgeLengthArray = new Float32Array(totalEdgesToDraw);
-		const edgeLengthAttribute = new THREE.InstancedBufferAttribute(instanceEdgeLengthArray, 1, true);
-		const instanceEdgeNumberArray = new Uint32Array(totalEdgesToDraw);
-		const edgeNumberAttribute = new THREE.InstancedBufferAttribute(instanceEdgeNumberArray, 1, true);
+		const instanceEdgeLengthArray = animated ? new Float32Array(totalEdgesToDraw) : null;
+		const edgeLengthAttribute = animated ? new THREE.InstancedBufferAttribute(instanceEdgeLengthArray, 1, true) : null;
+		const instanceEdgeNumberArray = animated ? new Uint32Array(totalEdgesToDraw) : null;
+		const edgeNumberAttribute = animated ? new THREE.InstancedBufferAttribute(instanceEdgeNumberArray, 1, true) : null;
+		const instanceRandomSeedArray = !animated ? new Float32Array(totalEdgesToDraw) : null;
+		const randomSeedAttribute = !animated ? new THREE.InstancedBufferAttribute(instanceRandomSeedArray, 1, true) : null;
 
-		let material = this._createEdgesMaterial();
 		const instancedEdges = new THREE.InstancedMesh(instancedEdgeGeometry, material, totalEdgesToDraw);
 
+		this.setEdgesAttributes(edges, instancedEdges, instanceGradientOffsetArray, instanceEdgeLengthArray, instanceEdgeNumberArray, instanceRandomSeedArray, animated);
 
+		instancedEdgeGeometry.setAttribute("gradientOffset", gradientOffsetAttribute);
+		if (animated) {
+			instancedEdgeGeometry.setAttribute("edgeLength", edgeLengthAttribute);
+			instancedEdgeGeometry.setAttribute("edgeNumber", edgeNumberAttribute);
+		} else {
+			instancedEdgeGeometry.setAttribute("randomSeed", randomSeedAttribute);
+		}
+		return instancedEdges;
+	}
+
+	setEdgesAttributes(edges, instancedEdges, gradientOffsetArray, edgeLengthArray, edgeNumberArray, randomSeedArray, animated) {
 		const rotMatrix = new THREE.Matrix4();
 		const translationMatrix = new THREE.Matrix4();
 		const matrix = new THREE.Matrix4();
@@ -188,9 +216,9 @@ export class GraphMeshBuilder {
 		edges.forEach((edge, j) => {
 			const originNode = edge.getOrigin();
 			const targetNode = edge.getTarget();
-			const animatedEdge = (originNode.getDepth() !== -1 && targetNode.getDepth() !== -1);
+			const edgeIsAnimated = (originNode.getDepth() !== -1 && targetNode.getDepth() !== -1);
 
-			if (!showAll && !animatedEdge) {
+			if (animated !== edgeIsAnimated) {
 				return;
 			}
 
@@ -205,16 +233,22 @@ export class GraphMeshBuilder {
 			matrix.identity().makeScale(1, 1, length).premultiply(rotMatrix).premultiply(translationMatrix);
 
 			instancedEdges.setMatrixAt(j, matrix);
-			instanceGradientOffsetArray[j] = gradientOffset;
-			instanceEdgeNumberArray[j] = j;
-			instanceEdgeLengthArray[j] = length;
+			gradientOffsetArray[j] = gradientOffset;
+			if (animated) {
+				edgeNumberArray[j] = j;
+				edgeLengthArray[j] = length;
+			} else {
+				randomSeedArray[j] = 4.0;
+			}
 		});
+	}
 
-		instancedEdgeGeometry.setAttribute("edgeNumber", edgeNumberAttribute);
-		instancedEdgeGeometry.setAttribute("edgeLength", edgeLengthAttribute);
-		instancedEdgeGeometry.setAttribute("gradientOffset", gradientOffsetAttribute);
+	createdAnimatedEdges() {
+		return this.createEdges(true);
+	}
 
-		return instancedEdges;
+	createNonAnimatedEdges() {
+		return this.createEdges(false);
 	}
 
 	createNodes() {
