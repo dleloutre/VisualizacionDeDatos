@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Subgraph } from "./graph/subgraph";
+import { Subgraph } from "../graph/subgraph.js";
 
 export function loadCSV(url) {
     return fetch(url)
