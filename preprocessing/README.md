@@ -15,7 +15,7 @@ Data Visualization
 
 ## Run
 
-```main.py [-h] -e EDGES -c CATEGORIES [-e2 EDGES2] [-c2 CATEGORIES2] [-a ANIMATION] [-r {mcgs,degree,transitive}] [-rad RADIUS] [-l LIMIT] [-rr RATE]```
+```main.py [-h] -e EDGES -c CATEGORIES [-e2 EDGES2] [-c2 CATEGORIES2] [-a ANIMATION] [-r {mcgs,degree,transitive}] [-rad RADIUS] [-l LIMIT] [-rr RATE] [-log LOG]```
 ```
 options:
   -h, --help            show this help message and exit
@@ -37,6 +37,8 @@ options:
                         filter number of edges crossing inside each category
   -rr RATE, --rate RATE
                         sampling rate, namely, the proportion of the nodes preserved in the sample
+  -log LOG
+                        enables logger on execution
 ```
 ### Example
 
