@@ -11,4 +11,8 @@ export class Edge {
     getTarget() {
         return this.target;
     }
+
+    hasNode(nodeId) {
+        return this.origin.getId() === nodeId || this.target.getId() === nodeId;
+    }
 }
