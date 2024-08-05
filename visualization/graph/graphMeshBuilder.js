@@ -12,7 +12,7 @@ export class GraphMeshBuilder {
 	}
 
 	_getUnitCylinder() {
-		const cylinderGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 3, 1, true);
+		const cylinderGeometry = new THREE.CylinderGeometry(1, 1, 1, 5, 1, true);
 		cylinderGeometry.translate(0, 0.5, 0);
 		cylinderGeometry.rotateX(-Math.PI / 2);
 		return cylinderGeometry;
