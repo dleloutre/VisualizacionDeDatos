@@ -6,7 +6,7 @@ import { Graph } from "./graph/graph.js";
 import initialMetadata_A from "/data/data_A.json" assert { type: "json" };
 import initialMetadata_B from "/data/data_B.json" assert { type: "json" };
 import { AnimationController } from "./controllers/animationController.js";
-import { loadFiles } from "./fileManager.js";
+import { loadFiles } from "./utils/fileManager.js";
 import { BipartiteGraph } from "./graph/bipartiteGraph.js";
 
 let scene,
@@ -18,7 +18,8 @@ let scene,
   textlabelsA = [],
   textlabelsB = [],
   stats,
-  edges,
+  edges = [],
+  animatedEdges,
   graph,
   animationController,
   metadata = {
@@ -110,6 +111,7 @@ function changeButtonsVisibility(visibility) {
 
 function removeAllFromScene() {
   sceneElements.remove(edges);
+  sceneElements.remove(animatedEdges);
   graphAElements.remove(nodesA)
   textlabelsA.forEach((label) => graphAElements.remove(label));
 
@@ -122,7 +124,8 @@ function removeAllFromScene() {
 }
 
 function addAllToScene() {
-  sceneElements.add(edges);
+  if (params.showAllEdges) sceneElements.add(edges);
+  sceneElements.add(animatedEdges);
   graphAElements.add(nodesA)
   graphBElements.add(nodesB)
 
@@ -147,7 +150,10 @@ function updateGraph() {
   textlabelsB = graph.getPositionLabelsB();
 
   gmb = new GraphMeshBuilder(graph);
-  edges = gmb.createEdges(params.showAllEdges);
+  if (params.showAllEdges) {
+    edges = gmb.createNonAnimatedEdges();
+  }
+  animatedEdges = gmb.createdAnimatedEdges();
 
   addAllToScene();
 }
@@ -156,7 +162,7 @@ const animate = function () {
   stats.begin();
   animationController.setCameraToRenderer();
   requestAnimationFrame(animate);
-  edges.material.uniforms.time.value = time;
+  animatedEdges.material.uniforms.time.value = time;
   nodesA.material.uniforms.time.value = time;
   nodesB.material.uniforms.time.value = time;
 

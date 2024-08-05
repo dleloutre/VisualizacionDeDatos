@@ -41,13 +41,13 @@ export class Graph {
 
     getAnimatedEdges() {
         return this.allEdges.filter((edge) => {
-            return edge.getOrigin().getDepth() !== -1 || edge.getTarget().getDepth() !== -1
+            return edge.getOrigin().getDepth() !== -1 && edge.getTarget().getDepth() !== -1
         })
     }
 
-    getStillEdges() {
+    getNonAnimatedEdges() {
         return this.allEdges.filter((edge) => {
-            return edge.getOrigin().getDepth() === -1 && edge.getTarget().getDepth() === -1
+            return edge.getOrigin().getDepth() === -1 || edge.getTarget().getDepth() === -1
         })
     }
 
