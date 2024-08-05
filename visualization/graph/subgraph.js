@@ -27,6 +27,13 @@ export class Subgraph {
         this.edges = edgesData.map(([originId, targetId]) => {
             const originNode = this.searchNodeById(originId);
             const targetNode = this.searchNodeById(targetId);
+            if (originNode.getDepth() !== -1 && targetNode.getDepth() !== -1) {
+                originNode.markAsAnimated();
+                targetNode.markAsAnimated();
+            } else {
+                originNode.mark();
+                targetNode.mark();
+            }
             return new Edge(originNode, targetNode);
         });
     }
@@ -60,10 +67,6 @@ export class Subgraph {
 
     getOrder() {
         return this.nodes.length;
-    }
-
-    getSize() {
-        return this.edges.length;
     }
 
     getAngle(distanceToCenter, prevAngle) {

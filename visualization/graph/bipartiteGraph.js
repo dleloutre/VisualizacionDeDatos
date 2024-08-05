@@ -16,6 +16,10 @@ export class BipartiteGraph {
         });
     }
 
+    getTotalEdges() {
+        return this.crossingEdges.length;
+    }
+
     getAllEdges() {
         return this.crossingEdges;
     }
@@ -44,10 +48,6 @@ export class BipartiteGraph {
         return this.graphA.getTotalNodes() + this.graphB.getTotalNodes();
     }
 
-    getSubgraphs() {
-        return this.graphA.getSubgraphs().concat(this.graphB.getSubgraphs());
-    }
-
     getTotalSubgraphs() {
         return this.graphA.getTotalSubgraphs() + this.graphB.getTotalSubgraphs();
     }
@@ -58,31 +58,31 @@ export class BipartiteGraph {
 
     createCrossingEdges(crossing_A, crossing_B) {
         let crossingAToB = crossing_A.map(([originId, targetId]) => {
-            const originNode = this.graphA.getAllNodes().find(node => node.getId() === originId);
-            const targetNode = this.graphB.getAllNodes().find(node => node.getId() === targetId);
-            if (originNode && targetNode) {
-                return new Edge(originNode, targetNode);
+            const originNode = this.graphA.getNodesMap()[originId];
+            const targetNode = this.graphB.getNodesMap()[targetId];
+            if (originNode.getDepth() !== -1 && targetNode.getDepth() !== -1) {
+                originNode.markAsAnimated();
+                targetNode.markAsAnimated();
+            } else {
+                originNode.mark();
+                targetNode.mark();
             }
+            return new Edge(originNode, targetNode);
         });
 
         let crossingBToA = crossing_B.map(([originId, targetId]) => {
-            const originNode = this.graphB.getAllNodes().find(node => node.getId() === originId);
-            const targetNode = this.graphA.getAllNodes().find(node => node.getId() === targetId);
-            if (originNode && targetNode) {
-                return new Edge(originNode, targetNode);
+            const originNode = this.graphB.getNodesMap()[originId];
+            const targetNode = this.graphA.getNodesMap()[targetId];
+            if (originNode.getDepth() !== -1 && targetNode.getDepth() !== -1) {
+                originNode.markAsAnimated();
+                targetNode.markAsAnimated();
+            } else {
+                originNode.mark();
+                targetNode.mark();
             }
+            return new Edge(originNode, targetNode);
         });
-        crossingAToB = crossingAToB.filter((edge) => edge);
-        crossingBToA = crossingBToA.filter((edge) => edge);
         this.crossingEdges = crossingAToB.concat(crossingBToA);
-    }
-
-    getCrossingEdges() {
-        return this.crossingEdges;
-    }
-
-    getTotalEdges() {
-        return this.crossingEdges.length;
     }
 
     updateSeparation(factor) {
@@ -90,12 +90,8 @@ export class BipartiteGraph {
         this.graphB.updateSeparation(factor);
     }
 
+    // only called when drawing edges
     getNodeDepthFromIndex(idx) {
-        const depthA = this.graphA.getNodeDepthFromIndex(idx);
-        const depthB = this.graphB.getNodeDepthFromIndex(idx);
-        if (depthA !== -1) return depthA;
-        if (depthB !== -1) return depthB;
-
         return -1;
     }
 
@@ -107,6 +103,6 @@ export class BipartiteGraph {
         if (srcDepth === -1 || tgtDepth === -1) {
             return -1;
         }
-        return (srcDepth > tgtDepth) ? srcDepth : tgtDepth;
+        return Math.min(srcDepth, tgtDepth);
     }
 }
