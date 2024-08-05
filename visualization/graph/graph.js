@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {Edge} from "./edgeT.js";
-import {generateTextSprite} from "../utils/spriteText.js";
-import {SpiralLayout} from "./layouts/spiralLayout.js";
+import { Edge } from "./edgeT.js";
+import { generateTextSprite } from "../utils/spriteText.js";
+import { SpiralLayout } from "./layouts/spiralLayout.js";
 
 export class Graph {
 	totalSubgraphs = 0;
