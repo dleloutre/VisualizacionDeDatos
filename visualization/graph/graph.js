@@ -25,13 +25,17 @@ export class Graph {
         this.metadata = metadata;
 	}
 
+    getDefaultRadius() {
+        return 3*this.subgraphs[this.subgraphs.length-1].getRadius();
+    }
+
     distributePositions(offset = {}) {
         this.positionOffset = offset;
         this.layout = new SpiralLayout(this.subgraphs, this.totalNodes, {
             steps: offset["steps"] ?? 0.5,
             rounds: offset["rounds"] ?? 1,
             separation: offset["separation"] ?? 1,
-            constantRadius: true
+            constantRadius: offset["constantRadius"] ?? this.getDefaultRadius()
         });
         this.layout.distributeNodes(this.positionOffset);
     }
