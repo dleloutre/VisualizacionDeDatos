@@ -63,7 +63,7 @@ class BipartiteFileProcessor(BaseFileProcessor):
         df_nodes_position_constrained.columns = ['id_node', 'x', 'y', 'z']
         self.logger.debug(f"Nodes positions:\n{df_nodes_position_constrained.head()}\n{df_nodes_position_constrained.describe()}")
         if self.animate:
-            df_nodes_position_constrained = df_nodes_position_constrained.merge(self.df_animation, on='id_node', how='left').fillna(0)
+            df_nodes_position_constrained = df_nodes_position_constrained.merge(self.df_animation, on='id_node', how='left').fillna(-1)
             self.logger.debug(f"Nodes positions with animation:\n{df_nodes_position_constrained.head()}\n{df_nodes_position_constrained.describe()}")
         self.logger.debug("Ends _process_graph()")
         return df_nodes_position_constrained
