@@ -117,3 +117,11 @@ python3 main.py -e edges_comida.csv -c comida.csv -l 5
 ```
 python3 main.py -e edges_comida.csv -c comida.csv -e2 edges_musica.csv -c2 musica.csv -a animation_comida.csv -r mcgs
 ```
+
+Luego del procesamiento de datos ejecutar:
+```
+cd ../visualization
+```
+Para la visualización clásica: `npm run dev`
+
+Para la visualización conjunta: `npm run dev:joint`

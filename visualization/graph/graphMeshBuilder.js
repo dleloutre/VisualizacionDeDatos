@@ -227,9 +227,8 @@ export class GraphMeshBuilder {
 		edges.forEach((edge, j) => {
 			const originNode = edge.getOrigin();
 			const targetNode = edge.getTarget();
-			const edgeIsAnimated = (originNode.getDepth() !== -1 && targetNode.getDepth() !== -1);
 
-			if (animated !== edgeIsAnimated) {
+			if (animated !== edge.isAnimated()) {
 				return;
 			}
 

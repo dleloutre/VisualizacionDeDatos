@@ -46,8 +46,7 @@ def test_constrain_to_sphere_with_large_radius():
     })
 
     constrained_df = constraint.constrain_to_sphere(pos_df)
-    print(f"constrained: {constrained_df}")
-    
+
     assert list(constrained_df.columns) == ['node_id', 'x', 'y', 'z']
     for i, row in constrained_df.iterrows():
         distance_to_center = np.sqrt(row['x']**2 + row['y']**2 + row['z']**2)
