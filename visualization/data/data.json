@@ -1,0 +1,82 @@
+{
+  "BFMTV": {
+    "label": "BFM TV",
+    "color": "#FFFF00"
+  },
+  "afpfr": {
+    "label": "Agence France-Presse",
+    "color": "#ADFF2F"
+  },
+  "brutofficiel": {
+    "label": "Brut",
+    "color": "#FFA500"
+  },
+  "le_Parisien": {
+    "label": "Le Parisien",
+    "color": "#FFD700"
+  },
+  "franceinter": {
+    "label": "France Inter",
+    "color": "#FF8C00"
+  },
+  "libe": {
+    "label": "Libération",
+    "color": "#FF7F50"
+  },
+  "lemondefr": {
+    "label": "Le Monde",
+    "color": "#98FB98"
+  },
+  "CNEWS": {
+    "label": "CNews",
+    "color": "#32CD32"
+  },
+  "franceinfo": {
+    "label": "France Info",
+    "color": "#FFD700"
+  },
+  "Mediapart": {
+    "label": "Médiapart",
+    "color": "#FF6347"
+  },
+  "RTLFrance": {
+    "label": "RTL",
+    "color": "#9ACD32"
+  },
+  "LCI": {
+    "label": "LCI",
+    "color": "#6B8E23"
+  },
+  "Europe1": {
+    "label": "Europe 1",
+    "color": "#7FFF00"
+  },
+  "Le_Figaro": {
+    "label": "Le Figaro",
+    "color": "#3CB371"
+  },
+  "LeHuffPost": {
+    "label": "Le HuffPost",
+    "color": "#FF4500"
+  },
+  "lobs": {
+    "label": "L'Obs",
+    "color": "#FF7F50"
+  },
+  "20Minutes": {
+    "label": "20 Minutes",
+    "color": "#32CD32"
+  },
+  "LEXPRESS": {
+    "label": "L'Express",
+    "color": "#00FA9A"
+  },
+  "humanite_fr": {
+    "label": "L'Humanité",
+    "color": "#FF6347"
+  },
+  "canardenchaine": {
+    "label": "Le Canard enchainé",
+    "color": "#FF8C00"
+  }
+}

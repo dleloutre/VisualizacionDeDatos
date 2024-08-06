@@ -24,7 +24,7 @@ const params = {
   emissionFactor: 0.3,
   spiralSteps: 1,
   spiralRounds: 1,
-  subgraphSeparation: 2,
+  subgraphSeparation: 0,
   spiralSwitch: true,
   droneCamera: false,
   antialias: false,
@@ -35,7 +35,7 @@ const params = {
 
 function setup() {
   scene = new THREE.Scene();
-  animationController = new AnimationController(scene, [0, 22000, 0]);
+  animationController = new AnimationController(scene, [0, 28000, 0]);
   stats = new Stats();
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
@@ -163,7 +163,7 @@ setup();
 createUI();
 prepareData()
   .then((G) => {
-    G.distributePositions();
+    G.distributePositions({ separation: 0 });
     graph = G;
     updateGraph();
     animate();
