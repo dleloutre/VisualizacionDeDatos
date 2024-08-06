@@ -1,0 +1,50 @@
+{
+  "JLMelenchon": {
+    "label": "Mélenchon",
+    "color": "#eeff00"
+  },
+  "ZemmourEric": {
+    "label": "Zemmour",
+    "color": "#0000ff"
+  },
+  "EmmanuelMacron": {
+    "label": "Macron",
+    "color": "#00ff95"
+  },
+  "MLP_officiel": {
+    "label": "Le Pen",
+    "color": "#00c8ff"
+  },
+  "Fabien_Roussel": {
+    "label": "Roussel",
+    "color": "#ffe100"
+  },
+  "PhilippePoutou": {
+    "label": "Poutou",
+    "color": "#ff6600"
+  },
+  "jeanlassalle": {
+    "label": "Lassalle",
+    "color": "#00fbff"
+  },
+  "yjadot": {
+    "label": "Jadot",
+    "color": "#b7ff00"
+  },
+  "n_arthaud": {
+    "label": "Arthaud",
+    "color": "#ff0000"
+  },
+  "vpecresse": {
+    "label": "Pécresse",
+    "color": "#00ffd5"
+  },
+  "Anne_Hidalgo": {
+    "label": "Hidalgo",
+    "color": "#55ff00"
+  },
+  "dupontaignan": {
+    "label": "Dupont-Aignan",
+    "color": "#0077ff"
+  }
+}
