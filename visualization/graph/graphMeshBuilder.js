@@ -12,7 +12,7 @@ export class GraphMeshBuilder {
 	}
 
 	_getUnitCylinder() {
-		const cylinderGeometry = new THREE.CylinderGeometry(1, 1, 1, 5, 1, true);
+		const cylinderGeometry = new THREE.CylinderGeometry(3, 3, 1, 5, 1, true);
 		cylinderGeometry.translate(0, 0.5, 0);
 		cylinderGeometry.rotateX(-Math.PI / 2);
 		return cylinderGeometry;
@@ -93,7 +93,7 @@ export class GraphMeshBuilder {
 					// IMPORTANTE: data[i] no puede ser mayor a 255
 					// encender por niveles de profundidad
 					// cada arista se enciende en un tiempo distinto segun su profundidad
-					data[i] = this.graph.getDepthFromEdge(i) * 5;
+					data[i] = this.graph.getDepthFromEdge(i)*5;
 				} else {
 					data[i] = -1;
 				}
@@ -123,7 +123,7 @@ export class GraphMeshBuilder {
 				if (i < limit) {
 					// IMPORTANTE: data[i] no puede ser mayor a 255
 					// encender por niveles de profundidad
-					data[i] = this.graph.getNodeDepthFromIndex(i) * 5;
+					data[i] = this.graph.getNodeDepthFromIndex(i)*5;
 				} else {
 					data[i] = -1;
 				}
@@ -149,7 +149,7 @@ export class GraphMeshBuilder {
 				animationData: { type: "t", value: this.edgeAnimationTexture },
 				time: { value: 0.0 },
 				directionalLightDirection: { type: "v3", value: new THREE.Vector3(1, 1, 1).normalize() },
-				ambientColor: { type: "v3", value: new THREE.Color(0x333333) },
+				ambientColor: { type: "v3", value: new THREE.Color(0x666666) },
 				emissionFactor: { value: 0.3 },
 			},
 			defines: { ANIMATION_TEXTURE_SIDE: String(this.edgeAnimationTexture.image.width) + ".0" },
@@ -227,9 +227,8 @@ export class GraphMeshBuilder {
 		edges.forEach((edge, j) => {
 			const originNode = edge.getOrigin();
 			const targetNode = edge.getTarget();
-			const edgeIsAnimated = (originNode.getDepth() !== -1 && targetNode.getDepth() !== -1);
 
-			if (animated !== edgeIsAnimated) {
+			if (animated !== edge.isAnimated()) {
 				return;
 			}
 
@@ -286,7 +285,6 @@ export class GraphMeshBuilder {
 		const nodeNumber = [];
 
 		const nodes = this.graph.getAllNodes();
-		console.log("all nodes: ", nodes)
 		nodes.forEach((node, i) => {
 			const position = node.getVectorPosition();
 			translation.push(position.x, position.y, position.z);

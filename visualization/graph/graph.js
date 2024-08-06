@@ -26,7 +26,7 @@ export class Graph {
 	}
 
     getDefaultRadius() {
-        return 3*this.subgraphs[this.subgraphs.length-1].getRadius();
+        return 2*this.subgraphs[this.subgraphs.length-1].getRadius();
     }
 
     distributePositions(offset = {}) {
@@ -56,7 +56,9 @@ export class Graph {
         return rawEdges.map(([originId, targetId]) => {
             const originNode = this.allNodesMap[originId];
             const targetNode = this.allNodesMap[targetId];
-            if (originNode.getDepth() !== -1 && targetNode.getDepth() !== -1) {
+            const srcDepth = originNode.getDepth();
+            const tgtDepth = targetNode.getDepth();
+            if (srcDepth !== -1 && tgtDepth !== -1 && Math.abs(srcDepth - tgtDepth) === 1 && srcDepth < tgtDepth) {
                 originNode.markAsAnimated();
                 targetNode.markAsAnimated();
             } else {
@@ -83,9 +85,11 @@ export class Graph {
         const edge = this.allEdges[idx];
         const srcDepth = edge.getOrigin().getDepth();
         const tgtDepth = edge.getTarget().getDepth();
-        if (srcDepth === -1 || tgtDepth === -1) {
+
+        if (!edge.isAnimated()) {
             return -1;
         }
+
         return Math.min(srcDepth, tgtDepth);
     }
 
