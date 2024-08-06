@@ -30,7 +30,7 @@ let scene,
   gui = new dat.GUI({ hideable: false });
 
 const params = {
-  subgraphSeparation: 1,
+  subgraphSeparation: 0,
   droneCamera: false,
   antialias: false,
   showLabels: true,
@@ -41,7 +41,7 @@ const params = {
 
 function setup() {
   scene = new THREE.Scene();
-  animationController = new AnimationController(scene, [0, 12000, 15000]);
+  animationController = new AnimationController(scene, [0, 18000, 15000]);
   stats = new Stats();
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
@@ -90,6 +90,8 @@ function createUI() {
       .onChange((_v) => {
         updateGraph();
       });
+  animationFolder.add(params, "animation")
+      .name("play/pause animation");
   animationFolder
       .add(params, "time", 0, 30)
       .name("time")
@@ -97,8 +99,6 @@ function createUI() {
       .onChange((v) => {
         time = v;
       });
-  animationFolder.add(params, "animation")
-      .name("play/pause animation");
 }
 
 function changeButtonsVisibility(visibility) {

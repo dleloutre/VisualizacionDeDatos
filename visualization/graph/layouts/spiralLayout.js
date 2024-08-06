@@ -43,7 +43,7 @@ export class SpiralLayout {
             subgraphPosition.setY(subgraphPosition.y + yOffset);
             subgraphPosition.setZ(subgraphPosition.z + zOffset);
 
-            subgraph.setLabelPosition(subgraphPosition.clone().multiplyScalar(8));
+            subgraph.setLabelPosition(subgraphPosition.clone().multiplyScalar(7));
             subgraph.setPosition(subgraphPosition);
         }
     }

@@ -82,7 +82,7 @@ export class Subgraph {
     }
 
     setLabelPosition(position) {
-        this.labelPosition = position.addScalar(this.radius*1.5);
+        this.labelPosition = position;
     }
 
     setPosition(position) {

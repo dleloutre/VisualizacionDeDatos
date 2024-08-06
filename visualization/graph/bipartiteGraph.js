@@ -11,6 +11,7 @@ export class BipartiteGraph {
             "steps": 0.6
         });
         this.graphB.distributePositions({
+            "separation": 0,
             "constantRadius": this.getDefaultRadius(),
             "x-offset": 1000,
             "y-angle": -Math.PI/2,
