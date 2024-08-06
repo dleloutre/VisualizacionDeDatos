@@ -1,6 +1,6 @@
 # Visualización de Datos
 
-**Visualización de Datos** es una herramienta diseñada para la visualización de grafos en los que los nodos pertenecen a distintas categorías. Esta herramienta permite visualizar los nodos divididos en comunidades y ver fácilmente cómo se relacionan entre ellos. Además, ofrece una opción para generar una visualización conjunta entre dos grafos y otra para visualizar la propagación de un mensaje en la red.
+**Visualización de Datos** es una herramienta diseñada para la visualización de grafos en donde los nodos pertenecen a distintas categorías. Esta herramienta permite visualizar los nodos divididos en comunidades y ver fácilmente cómo se relacionan entre ellos. Además, ofrece una opción para generar una visualización conjunta entre dos grafos(con sus respectivos subgrafos) y otra para visualizar la propagación de un mensaje en la red.
 
 ## Requerimientos Técnicos
 
@@ -83,17 +83,37 @@ La visualización requiere que existan y sean correctos todos los archivos gener
 
 ### Ejemplos
 ```
-cp examples/ visualization/public/uploaded_files
+cp examples/* visualization/public/uploaded_files/
 ```
 
 ```
-python3 main.py -e edges_politicos.csv -c politicos.csv -a animation_comida.csv -rad 5
+cd preprocessing/
 ```
 
+##### Ejemplo de visualización con animación
 ```
-python3 main.py -e edges_musica.csv -c musica.csv -a animation_comida.csv
+python3 main.py -e edges_comida.csv -c comida.csv -a animation_comida.csv
 ```
 
+##### Ejemplo de visualización ajustando el radio de la esfera de cada subgrafo
+```
+python3 main.py -e edges_politicos.csv -c politicos.csv -a animation_comida.csv -rad 15
+```
+
+##### Ejemplo de visualización bipartita
 ```
 python3 main.py -e edges_comida.csv -c comida.csv -e2 edges_musica.csv -c2 musica.csv -a animation_comida.csv
+```
+##### Ejemplo de visualización con reducción de subgrafos a traves de MCGS
+```
+python3 main.py -e edges_comida.csv -c comida.csv -r mcgs
+```
+##### Ejemplo de visualización con limitación de aristas que cruzan entre subgrafos
+```
+python3 main.py -e edges_comida.csv -c comida.csv -l 5
+```
+
+##### Ejemplo de visualización bipartita con reducción de subgrafos a traves de MCGS y animación de aristas
+```
+python3 main.py -e edges_comida.csv -c comida.csv -e2 edges_musica.csv -c2 musica.csv -a animation_comida.csv -r mcgs
 ```
