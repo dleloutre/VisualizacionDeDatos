@@ -9,16 +9,11 @@ class SphereConstraint:
       if radius_scalator is None:
         radius_scalator = DEFAULT_RADIUS
       mean_size = sum(graph_sizes) / len(graph_sizes)
-      print("mean_size: ", mean_size)
       base_radius = mean_size
-      print("base_radius: ", base_radius)
       log_scaled_radius = base_radius * math.log(1 + sphere_radius) * radius_scalator
-      print("log_scaled_radius: ", log_scaled_radius)
       if log_scaled_radius < MIN_RADIUS:
         min_radius = (math.sqrt(sphere_radius * total_nodes) * math.log(1 + (sphere_radius * total_nodes)))/2
-        print("Calculated min_radius: ", (min_radius * radius_scalator))
         log_scaled_radius = max(MIN_RADIUS, min_radius)
-      print("Sphere radius final: ", log_scaled_radius)
       self.sphere_radius = log_scaled_radius
 
     def calculate_min_radius(self, sphere_radius, mean_size, graph_sizes):
