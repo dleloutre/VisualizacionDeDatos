@@ -21,7 +21,7 @@ def test_apply_force_algorithm_3D_format():
     assert len(pos_df) == len(G.nodes)
 
 def test_constrain_to_sphere():
-    constraint = SphereConstraint(sphere_radius=1, radius_scalator=1)
+    constraint = SphereConstraint(sphere_radius=1, total_nodes=4, graph_sizes=[4], radius_scalator=1)
     pos_df = pd.DataFrame({
         'node_id': [0, 1, 2, 3],
         'x': [1.5, 0.5, 0.0, 0.0],
@@ -37,7 +37,7 @@ def test_constrain_to_sphere():
         assert distance_to_center <= constraint.sphere_radius
 
 def test_constrain_to_sphere_with_large_radius():
-    constraint = SphereConstraint(sphere_radius=5, radius_scalator=1)
+    constraint = SphereConstraint(sphere_radius=5, total_nodes=4, graph_sizes=[4], radius_scalator=1)
     pos_df = pd.DataFrame({
         'node_id': [0, 1, 2, 3],
         'x': [3.0, 4.0, 5.0, 6.0],
@@ -53,7 +53,7 @@ def test_constrain_to_sphere_with_large_radius():
         assert math.floor(distance_to_center) <= constraint.sphere_radius
 
 def test_constrain_to_sphere_min_radius():
-    constraint = SphereConstraint(sphere_radius=0.1, radius_scalator=1)
+    constraint = SphereConstraint(sphere_radius=0.1, total_nodes=4, graph_sizes=[4], radius_scalator=1)
     pos_df = pd.DataFrame({
         'node_id': [0, 1, 2, 3],
         'x': [0.01, 0.01, 0.01, 0.01],
@@ -69,7 +69,7 @@ def test_constrain_to_sphere_min_radius():
         assert distance_to_center <= constraint.sphere_radius
 
 def test_constrain_to_sphere_scale_factor():
-    constraint = SphereConstraint(sphere_radius=1, radius_scalator=2)
+    constraint = SphereConstraint(sphere_radius=1, total_nodes=4, graph_sizes=[4], radius_scalator=2)
     pos_df = pd.DataFrame({
         'node_id': [0, 1, 2, 3],
         'x': [1.5, 0.5, 0.0, 0.0],
@@ -85,7 +85,7 @@ def test_constrain_to_sphere_scale_factor():
         assert distance_to_center <= constraint.sphere_radius
 
 def test_constrain_to_sphere_no_adjustment_needed():
-    constraint = SphereConstraint(sphere_radius=10, radius_scalator=1)
+    constraint = SphereConstraint(sphere_radius=10, total_nodes=4, graph_sizes=[4], radius_scalator=1)
     pos_df = pd.DataFrame({
         'node_id': [0, 1, 2, 3],
         'x': [1.0, 2.0, 3.0, 4.0],
