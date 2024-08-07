@@ -19,6 +19,7 @@ export class Edge {
     isAnimated() {
         const srcDepth = this.origin.getDepth();
         const tgtDepth = this.target.getDepth();
+        if (srcDepth >= 5) return false;
         return srcDepth !== -1 && tgtDepth !== -1 && Math.abs(srcDepth - tgtDepth) === 1 && srcDepth < tgtDepth;
     }
 }
