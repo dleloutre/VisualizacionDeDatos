@@ -285,7 +285,6 @@ export class GraphMeshBuilder {
 		const nodeNumber = [];
 
 		const nodes = this.graph.getAllNodes();
-		console.log("all nodes: ", nodes)
 		nodes.forEach((node, i) => {
 			const position = node.getVectorPosition();
 			translation.push(position.x, position.y, position.z);

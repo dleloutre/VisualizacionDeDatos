@@ -3,7 +3,7 @@ import { SSAARenderPass } from 'three/addons/postprocessing/SSAARenderPass.js';
 
 export class RenderController {
     constructor() {
-        this.renderer = new THREE.WebGLRenderer({antialias: true});
+        this.renderer = new THREE.WebGLRenderer({antialias: !isMobile.phone});
         THREE.ColorManagement.enabled = true;
         this.renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
     }
