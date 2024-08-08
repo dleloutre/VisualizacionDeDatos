@@ -1,6 +1,6 @@
-# Visualización de Datos
+# GLNetViz
 
-**Visualización de Datos** es una herramienta diseñada para la visualización de grafos en donde los nodos pertenecen a distintas categorías. Esta herramienta permite visualizar los nodos divididos en comunidades y ver fácilmente cómo se relacionan entre ellos. Además, ofrece una opción para generar una visualización conjunta entre dos grafos(con sus respectivos subgrafos) y otra para visualizar la propagación de un mensaje en la red.
+**GLNetViz** es una herramienta diseñada para la visualización de grafos en donde los nodos pertenecen a distintas categorías. Esta herramienta permite visualizar los nodos divididos en comunidades y ver fácilmente cómo se relacionan entre ellos. Además, ofrece una opción para generar una visualización conjunta entre dos grafos(con sus respectivos subgrafos) y otra para visualizar la propagación de un mensaje en la red.
 
 ## Requerimientos Técnicos
 
@@ -8,6 +8,42 @@
 - PIP
 - Python 3
 
+## Comandos a ejecutar para utilizar la herramienta
+
+1. Clonar el repositorio:
+
+    ```bash
+    git clone [URL]
+    ```
+2. Instalar las dependencias:
+
+    ```bash
+    cd visualization
+    npm install
+    cd ../preprocessing
+    pip install -r requirements.txt
+    ```
+3. Ejecutar el procesamiento de datos:
+
+    ```bash
+    python main.py -e [archivo_aristas] -c [archivo_nodos] [-e2 [archivo_aristas2] -c2 [archivo_nodos2]] [-a [archivo_animacion]] [-r {mcgs,degree,transitive}] [-rad [radio]] [-l [limite]] [-rr [tasa_muestreo]] [-log]
+    ```
+Opción 1: 
+    4. Ejecutar la visualización:
+
+        ```bash
+        cd ../visualization
+        npm run dev[:joint]
+        ```
+    5. Abrir el navegador en `http://localhost:[puerto]/` segun el puerto que se indique en la consola,  para visualizar el grafo.
+Opción 2:
+    4. Generar la visualización:
+
+        ```bash
+        cd ../visualization
+        npm run build[:joint]
+        ```
+    5. Copiar el contenido de la carpeta `dist` en un servidor web y abrir el navegador en la dirección correspondiente para visualizar el grafo.
 ## Estructura del Proyecto
 
 El proyecto consta de dos partes principales:
@@ -97,10 +133,10 @@ python3 main.py -e edges_comida.csv -c comida.csv -a animation_comida.csv
 
 ##### Ejemplo de visualización ajustando el radio de la esfera de cada subgrafo
 ```
-python3 main.py -e edges_politicos.csv -c politicos.csv -a animation_comida.csv -rad 15
+python3 main.py -e edges_politicos.csv -c politicos.csv -rad 2
 ```
 
-##### Ejemplo de visualización bipartita
+##### Ejemplo de visualización bipartita con animación
 ```
 python3 main.py -e edges_comida.csv -c comida.csv -e2 edges_musica.csv -c2 musica.csv -a animation_comida.csv
 ```
