@@ -28,22 +28,23 @@
     ```bash
     python main.py -e [archivo_aristas] -c [archivo_nodos] [-e2 [archivo_aristas2] -c2 [archivo_nodos2]] [-a [archivo_animacion]] [-r {mcgs,degree,transitive}] [-rad [radio]] [-l [limite]] [-rr [tasa_muestreo]] [-log]
     ```
-Opción 1: 
-    4. Ejecutar la visualización:
+4. Generar visualización:
+    - Opción 1:
+      1. Ejecutar la visualización:
 
-        ```bash
-        cd ../visualization
-        npm run dev[:joint]
-        ```
-    5. Abrir el navegador en `http://localhost:[puerto]/` segun el puerto que se indique en la consola,  para visualizar el grafo.
-Opción 2:
-    4. Generar la visualización:
+            ```bash
+            cd ../visualization
+            npm run dev[:joint]
+            ```
+      2. Abrir el navegador en `http://localhost:[puerto]/` segun el puerto que se indique en la consola,  para visualizar el grafo.
+    - Opción 2
+        1. Generar la visualización:
 
-        ```bash
-        cd ../visualization
-        npm run build[:joint]
-        ```
-    5. Copiar el contenido de la carpeta `dist` en un servidor web y abrir el navegador en la dirección correspondiente para visualizar el grafo.
+            ```bash
+            cd ../visualization
+            npm run build[:joint]
+            ```
+        2. Copiar el contenido de la carpeta `dist` en un servidor web y abrir el navegador en la dirección correspondiente para visualizar el grafo.
 ## Estructura del Proyecto
 
 El proyecto consta de dos partes principales:
