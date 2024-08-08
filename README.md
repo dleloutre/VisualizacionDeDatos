@@ -13,7 +13,7 @@
 1. Clonar el repositorio:
 
     ```bash
-    git clone [URL]
+    git clone git@github.com:dleloutre/VisualizacionDeDatos.git
     ```
 2. Instalar las dependencias:
 
@@ -30,7 +30,7 @@
     ```
 4. Generar visualización:
     - Opción 1:
-      1. Ejecutar la visualización:
+      1. Ejecutar la visualización de forma local:
 
             ```bash
             cd ../visualization
@@ -38,7 +38,7 @@
             ```
       2. Abrir el navegador en `http://localhost:[puerto]/` segun el puerto que se indique en la consola,  para visualizar el grafo.
     - Opción 2
-        1. Generar la visualización:
+        1. Generar la visualización para su despliegue:
 
             ```bash
             cd ../visualization
