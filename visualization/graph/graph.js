@@ -26,7 +26,7 @@ export class Graph {
 	}
 
     getDefaultRadius() {
-        return 3*this.subgraphs[this.subgraphs.length-1].getRadius();
+        return 2.5*this.subgraphs[this.subgraphs.length-1].getRadius();
     }
 
     distributePositions(offset = {}) {
