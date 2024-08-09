@@ -123,7 +123,7 @@ La visualización requiere que existan y sean correctos todos los archivos gener
 - Visualización de medios: [https://visualizaciondatos-medios.netlify.app/](https://visualizaciondatos-medios.netlify.app/)
 - Visualización conjunta: [https://visualizaciondatos-conjunta.netlify.app/](https://visualizaciondatos-conjunta.netlify.app/)
 
-### Ejemplos
+## Ejemplos
 ```
 cp examples/* visualization/public/uploaded_files/
 ```
