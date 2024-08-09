@@ -2,11 +2,6 @@
 
 **GLNetViz** es una herramienta diseñada para la visualización de grafos en donde los nodos pertenecen a distintas categorías. Esta herramienta permite visualizar los nodos divididos en comunidades y ver fácilmente cómo se relacionan entre ellos. Además, ofrece una opción para generar una visualización conjunta entre dos grafos(con sus respectivos subgrafos) y otra para visualizar la propagación de un mensaje en la red.
 
-## Demo
-- Visualización de grupos políticos: [https://visualizaciondatos-politicos.netlify.app/](https://visualizaciondatos-politicos.netlify.app/)
-- Visualización de medios: [https://visualizaciondatos-medios.netlify.app/](https://visualizaciondatos-medios.netlify.app/)
-- Visualización conjunta: [https://visualizaciondatos-conjunta.netlify.app/](https://visualizaciondatos-conjunta.netlify.app/)
-
 ## Requerimientos Técnicos
 
 - NPM
@@ -122,6 +117,11 @@ El procesamiento de datos genera nuevos archivos que se utilizarán para la visu
 La visualización genera un grafo con subgrafos diferenciados por color. Las aristas entre subgrafos de distintos grupos tendrán un color gradiente donde el extremo corresponderá al color del nodo del otro extremo. Esto permite identificar fácilmente las conexiones entre grupos.
 
 La visualización requiere que existan y sean correctos todos los archivos generados en el procesamiento de datos. El único archivo que puede editarse es `data.json`, respetando sus claves.
+
+## Demo
+- Visualización de grupos políticos: [https://visualizaciondatos-politicos.netlify.app/](https://visualizaciondatos-politicos.netlify.app/)
+- Visualización de medios: [https://visualizaciondatos-medios.netlify.app/](https://visualizaciondatos-medios.netlify.app/)
+- Visualización conjunta: [https://visualizaciondatos-conjunta.netlify.app/](https://visualizaciondatos-conjunta.netlify.app/)
 
 ### Ejemplos
 ```
